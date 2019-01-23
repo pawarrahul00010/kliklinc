@@ -16,7 +16,7 @@ import com.technohertz.model.UserRegister;
 import com.technohertz.service.IUserRegisterService;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/userRest")
 public class UserRegisterController {
 	
 	@Autowired
