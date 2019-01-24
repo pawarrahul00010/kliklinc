@@ -2,15 +2,23 @@ package com.technohertz;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Stream;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.technohertz.exception.ResourceNotFoundException;
+import com.technohertz.model.Biometric;
 import com.technohertz.model.UserProfile;
 import com.technohertz.model.UserRegister;
 import com.technohertz.service.IUserRegisterService;
@@ -18,48 +26,70 @@ import com.technohertz.service.IUserRegisterService;
 @RestController
 @RequestMapping("/userRest")
 public class UserRegisterController {
-	
+
 	@Autowired
 	private IUserRegisterService userRegisterService;
 
-//	@GetMapping("/employees")
-//	public List<UserRegister> getAllEmployees() {
-//		return userRegisterService.findAll();
-//	}
-//
-//	@GetMapping("/employees/{id}")
-//	public ResponseEntity<UserRegister> getEmployeeById(@PathVariable(value = "id") Long employeeId)
-//			throws ResourceNotFoundException {
-//		UserRegister employee = userRegisterService.findById(employeeId)
-//				.orElseThrow(() -> new ResourceNotFoundException("Employee not found for this id :: " + employeeId));
-//		return ResponseEntity.ok().body(employee);
-//	}
-
-	@PostMapping("/employees")
-	public UserRegister createEmployee(@Valid @RequestBody UserRegister user) {
-		return userRegisterService.save(user);
+	@GetMapping("/myprofile")
+	public List<UserRegister> getAllEmployees() {
+		return userRegisterService.getAll();
 	}
 	
+//
+	@GetMapping("/profile/{name}")
+	public ResponseEntity<List<UserRegister>> getEmployeeById(@PathVariable(value = "name") String userName)
+			throws ResourceNotFoundException {
+		List<UserRegister> username = (List<UserRegister>) userRegisterService.findByUserName(userName);
+		return ResponseEntity.ok().body(username);
+	}
+
+	@GetMapping("/login/{userName}/{password}")
+	public ResponseEntity<List<UserRegister>> loginCredential(@PathVariable(value = "userName") String userName,
+			@PathVariable(value = "password") String password) throws ResourceNotFoundException {
+
+		List<UserRegister> user = userRegisterService.findByUserNameAndPassword(userName, password);
+		System.out.println(userName);
+		if (userName.equals(userName) && password.equals(password)) {
+
+			return ResponseEntity.ok(user);
+		} else
+			return ResponseEntity.ok(user);
+
+		
+	}
+
 	@PostMapping("/saveall")
-	public  void addUser(@Valid @RequestBody UserRegister userDetails ) {
-		UserRegister user=new UserRegister();
+	public ResponseEntity<String> addUser(@Valid @RequestBody UserRegister userDetails) {
+		UserRegister user = new UserRegister();
+
+		UserProfile profile = new UserProfile();
 		
-		UserProfile profile=new UserProfile();
-		
+		Biometric biometric=new Biometric();
+
 		user.setUserName(userDetails.getUserName());
 		user.setPassword(userDetails.getPassword());
 		user.setMobilNumber(userDetails.getMobilNumber());
 		user.setIsActive(true);
 		user.setSourceFrom("Laptop");
-		user.setToken(3123);
+		user.setToken(getRandomNumber());
 		user.setCreateDate(getDate());
 		user.setLastModifiedDate(getDate());
 		profile.setDisplayName(userDetails.getUserName());
+		biometric.setIsActive(true);
+		biometric.setRegister(user);
+		user.getFiles().add(biometric);
 		user.setProfile(profile);
-		userRegisterService.save(user);
+		if(!userExists(userDetails.getUserName()).contains(user.getUserName())) {
+			userRegisterService.save(user);
+			return  ResponseEntity.ok("User Saved successfully");	
+		}
+		else {
+			System.out.println("User Allready Exist");
+			return  ResponseEntity.ok("User Allready Exist");
+		}
+	
 	}
-//
-//
+
 //	@PutMapping("/employees/{id}")
 //	public ResponseEntity<UserRegister> updateEmployee(@PathVariable(value = "id") Long employeeId,
 //			@Valid @RequestBody UserRegister employeeDetails) throws ResourceNotFoundException {
@@ -85,12 +115,26 @@ public class UserRegisterController {
 //		return response;
 //	}
 
+	private List<UserRegister> userExists(String userName) {
+		List<UserRegister> username = (List<UserRegister>) userRegisterService.findByUserName(userName);
+		return username;
+
+	}
+
 	private LocalDateTime getDate() {
-		
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  
-	    LocalDateTime now = LocalDateTime.now();  
-		   
+
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+		LocalDateTime now = LocalDateTime.now();
+
 		return now;
-		
+
+	}
+
+	private int getRandomNumber() {
+
+		int rand = new Random().nextInt(10000); 
+		  
+		return rand;
+
 	}
 }

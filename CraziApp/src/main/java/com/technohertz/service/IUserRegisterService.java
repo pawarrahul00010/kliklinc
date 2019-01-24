@@ -1,6 +1,7 @@
 package com.technohertz.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,9 @@ public interface IUserRegisterService {
 	public UserRegister getOneById(int userId);
 	public List<UserRegister> getAll();
 	public Page<UserRegister> getAll(Specification<UserRegister> s,Pageable pageable);
+	public List<UserRegister> findByUserNameAndPassword(String userName, String password);
+	List<UserRegister> findByUserName(String userName);
+
 	
 
 }
