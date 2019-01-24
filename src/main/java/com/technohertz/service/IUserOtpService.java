@@ -14,10 +14,12 @@ public interface IUserOtpService {
 
 	public UserOtp save(UserOtp userOtp);
 	public List<UserOtp> saveMultiple(List<UserOtp> list);
+
+	/* public void updateOTPByUserId(UserOtp userOtp); */
+	public void deleteById(int reg_Id);
 	public void update(UserOtp userOtp);
-	public void deleteById(int userOtpId);
-	
 	public UserOtp getOneById(int userOtpId);
+	UserOtp getOneByUserId(int reg_Id);
 	public List<UserOtp> getAll();
 	public Page<UserOtp> getAll(Specification<UserOtp> s,Pageable pageable);
 	

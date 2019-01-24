@@ -1,5 +1,7 @@
 package com.technohertz;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,13 +9,14 @@ import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.technohertz.model.UserOtp;
+import com.technohertz.model.UserRegister;
 import com.technohertz.service.IUserOtpService;
 import com.technohertz.service.IUserRegisterService;
 import com.technohertz.util.OtpUtil;
@@ -31,6 +34,7 @@ public class OtpRestController {
 	@Autowired
 	private IUserRegisterService userRegisterService;
 
+
 	
 	/**
 	 * 2. Save Otp
@@ -39,18 +43,56 @@ public class OtpRestController {
 	 * @param map
 	 * @return
 	 */
-	@PostMapping("/reset/{userId}")
-	public String save(@PathVariable("userId") int userId,BindingResult errors,ModelMap map){
-		if(errors.hasErrors()){
-			map.addAttribute("userId", userId);
-		}else{
+	@RequestMapping(value = "/otp", method = RequestMethod.GET)
+	public String saveOTP(@RequestParam("reg_Id") int reg_Id,ModelMap map){
+		
 			UserOtp otp = new UserOtp();
 			otp.setOtp(util.getOTP());
+			otp.setReg_Id(reg_Id);
+			otp.setCreateDate(getDate());
+			otp.setLastModifiedDate(getDate());
 			UserOtp userOtp=service.save(otp);
 			map.addAttribute("message", "Otp '"+userOtp+"' reset done");
 			map.addAttribute("otp", new UserOtp());
-		}
-		return "OtpRegister";
+		
+		return String.valueOf(otp.getOtp());
+	}
+	
+	@RequestMapping(value = "/otp/resend", method = RequestMethod.GET)
+	public String getOTP(@RequestParam("reg_Id") int reg_Id,ModelMap map){
+		
+		UserOtp userOtp = service.getOneByUserId(reg_Id);
+			
+			if(String.valueOf(userOtp.getOtp())!= null){
+					if(getDate().minusMinutes(30).isBefore(userOtp.getCreateDate()) ){
+						
+						userOtp.getOtp();
+						return String.valueOf(userOtp.getOtp());
+						
+					}else{
+						UserOtp saveUserOTP = new UserOtp();
+						saveUserOTP.setOtp(util.getOTP());
+						saveUserOTP.setOtpId(userOtp.getOtpId());
+						saveUserOTP.setReg_Id(reg_Id);
+						saveUserOTP.setCreateDate(getDate());
+						saveUserOTP.setLastModifiedDate(getDate());
+						service.update(saveUserOTP);
+						map.addAttribute("message", "Otp '"+saveUserOTP+"' reset done");
+						map.addAttribute("otp", String.valueOf(saveUserOTP.getOtp()));
+						return String.valueOf(saveUserOTP.getOtp());
+					}
+				}
+				else {
+					UserOtp saveUserOTP = new UserOtp();
+					saveUserOTP.setOtp(util.getOTP());
+					saveUserOTP.setReg_Id(reg_Id);
+					saveUserOTP.setCreateDate(getDate());
+					saveUserOTP.setLastModifiedDate(getDate());
+					UserOtp savedUserOtp=service.save(saveUserOTP);
+					map.addAttribute("message", "Otp '"+savedUserOtp+"' reset done");
+					map.addAttribute("otp", String.valueOf(savedUserOtp.getOtp()));
+					return String.valueOf(savedUserOtp.getOtp());
+				}
 	}
 	
 
@@ -111,4 +153,12 @@ public class OtpRestController {
 		return page;
 	}
 
+	private LocalDateTime getDate() {
+		
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  
+	    LocalDateTime now = LocalDateTime.now();  
+		   
+		return now;
+		
+	}
 }

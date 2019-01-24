@@ -34,22 +34,25 @@ public class UserOtpServiceImpl implements IUserOtpService {
 
 	@Override 
 	public void update(UserOtp userOtp) { 
-		userOtp.setCreateDate(userOtpRepo.getOne(userOtp.getUserId()) .getCreateDate());
-		userOtp.setLastModifiedDate(userOtp.getLastModifiedDate()); 
+		userOtp.setLastModifiedDate(userOtp.getLastModifiedDate());
+		userOtp.setCreateDate(userOtp.getCreateDate());
 		userOtpRepo.save(userOtp);
 	}
 
 	@Override 
-	public void deleteById(int userId) {
-		if(userOtpRepo.existsById(userId))
+	public void deleteById(int reg_Id) {
+		if(userOtpRepo.existsById(reg_Id))
 			{ 
-				userOtpRepo.deleteById(userId); 
+				userOtpRepo.deleteById(reg_Id); 
 			} 
 		}
 
 	@Override 
-	public UserOtp getOneById(int userOtpId) { return
-			userOtpRepo.getOne(userOtpId); }
+	public UserOtp getOneById(int reg_Id) {
+		
+		return userOtpRepo.getOne(reg_Id);
+		
+	}
 
 	@Override 
 	public List<UserOtp> getAll() { 
@@ -66,6 +69,22 @@ public class UserOtpServiceImpl implements IUserOtpService {
 			return page; 
 		}
 
+	@Override
+	public UserOtp getOneByUserId(int reg_Id) {
+		// TODO Auto-generated method stub
+		return userOtpRepo.getOneByUserId(reg_Id);
+	}
+
+	/*
+	 * @Override public void updateOTPByUserId(UserOtp userOtp) {
+	 * 
+	 * userOtpRepo.updateOTPByUserId(userOtp.getOtp(),
+	 * userOtp.getLastModifiedDate(), userOtp.getReg_Id());
+	 * 
+	 * }
+	 */
+
+	
 
 
 

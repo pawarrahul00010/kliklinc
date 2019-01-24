@@ -15,7 +15,7 @@ import org.hibernate.annotations.CascadeType;
 
 @Entity
 @Table(name = "USER_OTP")
-public class UserOtp {
+public class UserOtp implements Comparable<UserOtp>{
 
 	
 
@@ -26,8 +26,8 @@ public class UserOtp {
 	@Column(name = "OTPID")
 	private int otpId;
 	
-	@Column(name = "USERID")
-	private int userId;
+	@Column(name = "REG_ID")
+	private int reg_Id;
 
 	@Column(name = "OTP")
 	private int otp;
@@ -42,21 +42,24 @@ public class UserOtp {
 		super();
 	}
 
+
 	/**
 	 * @param otpId
-	 * @param userId
+	 * @param reg_Id
 	 * @param otp
 	 * @param createDate
 	 * @param lastModifiedDate
 	 */
-	public UserOtp(int otpId, int userId, int otp, LocalDateTime createDate, LocalDateTime lastModifiedDate) {
+	public UserOtp(int otpId, int reg_Id, int otp, LocalDateTime createDate, LocalDateTime lastModifiedDate) {
 		super();
 		this.otpId = otpId;
-		this.userId = userId;
+		this.reg_Id = reg_Id;
 		this.otp = otp;
 		this.createDate = createDate;
 		this.lastModifiedDate = lastModifiedDate;
 	}
+
+
 
 	/**
 	 * @return the otpId
@@ -72,19 +75,6 @@ public class UserOtp {
 		this.otpId = otpId;
 	}
 
-	/**
-	 * @return the userId
-	 */
-	public int getUserId() {
-		return userId;
-	}
-
-	/**
-	 * @param userId the userId to set
-	 */
-	public void setUserId(int userId) {
-		this.userId = userId;
-	}
 
 	/**
 	 * @return the otp
@@ -128,14 +118,36 @@ public class UserOtp {
 		this.lastModifiedDate = lastModifiedDate;
 	}
 
+	/**
+	 * @return the reg_Id
+	 */
+	public int getReg_Id() {
+		return reg_Id;
+	}
+
+	/**
+	 * @param reg_Id the reg_Id to set
+	 */
+	public void setReg_Id(int reg_Id) {
+		this.reg_Id = reg_Id;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "UserOtp [otpId=" + otpId + ", userId=" + userId + ", otp=" + otp + ", createDate=" + createDate
+		return "UserOtp [otpId=" + otpId + ", reg_Id=" + reg_Id + ", otp=" + otp + ", createDate=" + createDate
 				+ ", lastModifiedDate=" + lastModifiedDate + "]";
 	}
+
+
+	@Override
+	public int compareTo(UserOtp o) {
+
+		return (int) (o.getReg_Id()-this.getReg_Id());
+	}
+
 
 
 }
