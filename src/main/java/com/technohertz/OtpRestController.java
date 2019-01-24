@@ -16,9 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.technohertz.model.UserOtp;
-import com.technohertz.model.UserRegister;
 import com.technohertz.service.IUserOtpService;
-import com.technohertz.service.IUserRegisterService;
 import com.technohertz.util.OtpUtil;
 
 @RestController
@@ -31,10 +29,6 @@ public class OtpRestController {
 	@Autowired
 	private OtpUtil util;
 	
-	@Autowired
-	private IUserRegisterService userRegisterService;
-
-
 	
 	/**
 	 * 2. Save Otp
