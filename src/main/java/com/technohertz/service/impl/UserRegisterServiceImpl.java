@@ -3,6 +3,7 @@ package com.technohertz.service.impl;
 
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -65,6 +66,19 @@ public class UserRegisterServiceImpl implements IUserRegisterService {
 			
 			return page; 
 		}
+
+	@Override
+	public List<UserRegister> findByUserNameAndPassword(String userName, String password) {
+	List<UserRegister> user=userRegisterRepo.findByUserNameAndPassword(userName, password);
+		return user;
+	}
+
+	@Override
+	public List<UserRegister> findByUserName(String userName) {
+		List<UserRegister> userList=userRegisterRepo.findByUserName(userName);
+		return userList;
+	}
+
 
 
 

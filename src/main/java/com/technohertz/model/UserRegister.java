@@ -1,20 +1,25 @@
 package com.technohertz.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Table(name = "User_Register")
+@DynamicUpdate
 public class UserRegister {
 
 	
@@ -46,17 +51,20 @@ public class UserRegister {
 	@Column(name = "status", nullable = false, length = 200)
 	private Boolean isActive;
 	
-	@Column(name = "createDate", nullable = false, length = 200)
+	@Column(name = "createDate", nullable = false)
 	private LocalDateTime createDate;
 	
 	@Column(name = "lastModifiedDate", nullable = false, length = 200)
 	private LocalDateTime lastModifiedDate;
 	
-
+	@OneToMany(cascade=javax.persistence.CascadeType.ALL,mappedBy="register")
+	private List<Biometric> files=new ArrayList<Biometric>();
+	
 	@OneToOne(mappedBy="register")
 	@Cascade(CascadeType.ALL)
 	private UserProfile profile;
 			
+	
 	public int getUserId() {
 		return userId;
 	}
@@ -137,6 +145,15 @@ public class UserRegister {
 
 	public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
 		this.lastModifiedDate = lastModifiedDate;
+	}
+
+	
+	public List<Biometric> getFiles() {
+		return files;
+	}
+
+	public void setFiles(List<Biometric> files) {
+		this.files = files;
 	}
 
 	@Override
