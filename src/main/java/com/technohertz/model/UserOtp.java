@@ -7,7 +7,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "USER_OTP")
@@ -34,6 +38,11 @@ public class UserOtp implements Comparable<UserOtp>{
 	@Column(name = "LAST_MODIFIED_DATE", nullable = false, length = 200)
 	private LocalDateTime lastModifiedDate;
 
+	@JsonIgnore
+	@OneToOne
+	@PrimaryKeyJoinColumn
+	private UserRegister register;
+	
 	public UserOtp() {
 		super();
 	}
@@ -127,6 +136,14 @@ public class UserOtp implements Comparable<UserOtp>{
 	public void setReg_Id(int reg_Id) {
 		this.reg_Id = reg_Id;
 	}
+	public UserRegister getRegister() {
+		return register;
+	}
+
+
+	public void setRegister(UserRegister register) {
+		this.register = register;
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -136,6 +153,8 @@ public class UserOtp implements Comparable<UserOtp>{
 		return "UserOtp [otpId=" + otpId + ", reg_Id=" + reg_Id + ", otp=" + otp + ", createDate=" + createDate
 				+ ", lastModifiedDate=" + lastModifiedDate + "]";
 	}
+
+
 
 
 	@Override

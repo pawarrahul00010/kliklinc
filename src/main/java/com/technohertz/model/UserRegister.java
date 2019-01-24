@@ -64,7 +64,10 @@ public class UserRegister {
 	@Cascade(CascadeType.ALL)
 	private UserProfile profile;
 			
-	
+	@OneToOne(mappedBy="register")
+	@Cascade(CascadeType.ALL)
+	private UserOtp otp;
+			
 	public int getUserId() {
 		return userId;
 	}
@@ -148,6 +151,14 @@ public class UserRegister {
 	}
 
 	
+	public UserOtp getOtp() {
+		return otp;
+	}
+
+	public void setOtp(UserOtp otp) {
+		this.otp = otp;
+	}
+
 	public List<Biometric> getFiles() {
 		return files;
 	}
