@@ -24,7 +24,7 @@ import com.technohertz.repo.UserProfileRepository;
 
 @RestController
 @RequestMapping("/biometric")
-public class BiometricLogin {
+public class BiometricLoginController {
 	@Autowired
 	private BiometricRepository biometricrepo;
 	

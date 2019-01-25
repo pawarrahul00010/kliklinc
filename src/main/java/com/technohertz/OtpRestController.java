@@ -1,8 +1,9 @@
 package com.technohertz;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.ModelMap;
@@ -10,13 +11,17 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.technohertz.model.UserOtp;
+import com.technohertz.model.UserRegister;
 import com.technohertz.service.IUserOtpService;
+import com.technohertz.service.IUserRegisterService;
 import com.technohertz.util.OtpUtil;
 
 @RestController
@@ -25,6 +30,9 @@ public class OtpRestController {
 	
 	@Autowired
 	private IUserOtpService service;
+	
+	@Autowired
+	private IUserRegisterService userRegisterService;
 	
 	@Autowired
 	private OtpUtil util;
@@ -37,60 +45,128 @@ public class OtpRestController {
 	 * @param map
 	 * @return
 	 */
-	@RequestMapping(value = "/otp", method = RequestMethod.GET)
-	public String saveOTP(@RequestParam("reg_Id") int reg_Id,ModelMap map){
+	@RequestMapping(value = "/otp", method = RequestMethod.POST)
+	public void saveOTP(@Valid @RequestBody UserRegister userRegister,ModelMap map){
 		
-			UserOtp otp = new UserOtp();
-			otp.setOtp(util.getOTP());
-			otp.setReg_Id(reg_Id);
-			otp.setCreateDate(getDate());
-			otp.setLastModifiedDate(getDate());
-			UserOtp userOtp=service.save(otp);
-			map.addAttribute("message", "Otp '"+userOtp+"' reset done");
-			map.addAttribute("otp", new UserOtp());
+			long mobilNumber = userRegister.getMobilNumber();
+			String userName = userRegister.getUserName();
+			UserRegister retrievedUserRegister = userRegisterService.findByMobileOrUserName(mobilNumber, userName).get(0);
+			
+			if(retrievedUserRegister != null) {
+			
+				UserOtp userOtp = new UserOtp();
+				int otp = util.getOTP();
+				userOtp.setOtp(otp);
+				userOtp.setCreateDate(getDate());
+				userOtp.setLastModifiedDate(getDate());
+				retrievedUserRegister.setUserOtp(userOtp);
+				
+				userRegisterService.save(retrievedUserRegister);
+				map.addAttribute("message", otp);
+			}
+			else {
+				map.addAttribute("message", "You are not a registered User please register first");
+			}
 		
-		return String.valueOf(otp.getOtp());
 	}
 	
-	@RequestMapping(value = "/otp/resend", method = RequestMethod.GET)
-	public String getOTP(@RequestParam("reg_Id") int reg_Id,ModelMap map){
-		
-		UserOtp userOtp = service.getOneByUserId(reg_Id);
+		@RequestMapping(value = "/forget/otp", method = RequestMethod.POST)
+		public void saveForgetOTP(@Valid @RequestBody UserRegister userRegister, ModelMap map){
 			
-			if(String.valueOf(userOtp.getOtp())!= null){
-					if(getDate().minusMinutes(30).isBefore(userOtp.getCreateDate()) ){
+			String userName = userRegister.getUserName();
+			
+			UserRegister retrievedUserRegister = new UserRegister ();
+			
+			if(userName != null) {
+				try {
+				Long mobilNumber = Long.parseLong(userName);
+				 retrievedUserRegister = userRegisterService.findByMobileOrUserName(mobilNumber, null).get(0);
+				}catch (Exception e) {
+					
+				 retrievedUserRegister = userRegisterService.findByMobileOrUserName(null, userName).get(0);
+				}
+			}	
+				
+			
+		/*
+		 * if(retrievedUserRegister != null) {
+		 * 
+		 * UserOtp userOtp = new UserOtp(); int otp = util.getOTP();
+		 * userOtp.setOtp(otp); userOtp.setCreateDate(getDate());
+		 * userOtp.setLastModifiedDate(getDate());
+		 * retrievedUserRegister.setUserOtp(userOtp);
+		 * 
+		 * userRegisterService.save(retrievedUserRegister); map.addAttribute("message",
+		 * otp); } else { map.addAttribute("message",
+		 * "You are not a registered User please register first"); }
+		 */
+		
+			
+			if(retrievedUserRegister.getUserOtp()!= null){
+				if(getDate().minusMinutes(1).isBefore(retrievedUserRegister.getUserOtp().getCreateDate()) ){
+					
+					map.addAttribute("message", retrievedUserRegister.getUserOtp().getOtp());
+					
+				}else{
+					UserOtp saveUserOTP = new UserOtp();
+					int otp = util.getOTP();
+					saveUserOTP.setOtp(otp);
+					saveUserOTP.setOtpId(retrievedUserRegister.getUserOtp().getOtpId());
+					saveUserOTP.setCreateDate(getDate());
+					saveUserOTP.setLastModifiedDate(getDate());
+					retrievedUserRegister.setUserOtp(saveUserOTP);
+					userRegisterService.save(retrievedUserRegister);
+					map.addAttribute("message", otp);
+				}
+				
+			}else {
+				map.addAttribute("message", "You are not a registered User please register first");
+			}
+			
+		}
+	
+	@RequestMapping(value = "/otp/resend", method = RequestMethod.GET)
+	public void getOTP(@RequestParam("mobilNumber") String userData, ModelMap map){
+		
+		UserRegister retrievedUserRegister = new UserRegister ();
+		
+		if(userData != null) {
+			try {
+				Long mobilNumber = Long.parseLong(userData);
+				retrievedUserRegister = userRegisterService.findByMobileOrUserName(mobilNumber, null).get(0);
+			}catch (Exception e) {
+				
+				retrievedUserRegister = userRegisterService.findByMobileOrUserName(null, userData).get(0);
+			}
+		}
+		
+			if(retrievedUserRegister.getUserOtp()!= null){
+					if(getDate().minusMinutes(30).isBefore(retrievedUserRegister.getUserOtp().getCreateDate()) ){
 						
-						userOtp.getOtp();
-						return String.valueOf(userOtp.getOtp());
+						map.addAttribute("message", retrievedUserRegister.getUserOtp().getOtp());
 						
 					}else{
 						UserOtp saveUserOTP = new UserOtp();
-						saveUserOTP.setOtp(util.getOTP());
-						saveUserOTP.setOtpId(userOtp.getOtpId());
-						saveUserOTP.setReg_Id(reg_Id);
+						int otp = util.getOTP();
+						saveUserOTP.setOtp(otp);
+						saveUserOTP.setOtpId(retrievedUserRegister.getUserOtp().getOtpId());
 						saveUserOTP.setCreateDate(getDate());
 						saveUserOTP.setLastModifiedDate(getDate());
-						service.update(saveUserOTP);
-						map.addAttribute("message", "Otp '"+saveUserOTP+"' reset done");
-						map.addAttribute("otp", String.valueOf(saveUserOTP.getOtp()));
-						return String.valueOf(saveUserOTP.getOtp());
+						retrievedUserRegister.setUserOtp(saveUserOTP);
+						userRegisterService.save(retrievedUserRegister);
+						map.addAttribute("message", otp);
 					}
+					
+				}else {
+					map.addAttribute("message", "You are not a registered User please register first");
 				}
-				else {
-					UserOtp saveUserOTP = new UserOtp();
-					saveUserOTP.setOtp(util.getOTP());
-					saveUserOTP.setReg_Id(reg_Id);
-					saveUserOTP.setCreateDate(getDate());
-					saveUserOTP.setLastModifiedDate(getDate());
-					UserOtp savedUserOtp=service.save(saveUserOTP);
-					map.addAttribute("message", "Otp '"+savedUserOtp+"' reset done");
-					map.addAttribute("otp", String.valueOf(savedUserOtp.getOtp()));
-					return String.valueOf(savedUserOtp.getOtp());
-				}
+			
 	}
 	
 
 	
+	
+
 	/**
 	 * 3. Get All Otps
 	 * @param map
@@ -147,9 +223,8 @@ public class OtpRestController {
 		return page;
 	}
 
-	private LocalDateTime getDate() {
+	public LocalDateTime getDate() {
 		
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  
 	    LocalDateTime now = LocalDateTime.now();  
 		   
 		return now;

@@ -11,7 +11,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.technohertz.model.UserOtp;
+import com.technohertz.model.UserRegister;
 import com.technohertz.repo.UserOtpRepository;
+import com.technohertz.repo.UserRegisterRepository;
 import com.technohertz.service.IUserOtpService;
 
 @Service
@@ -19,6 +21,9 @@ public class UserOtpServiceImpl implements IUserOtpService {
 
 	@Autowired
 	private UserOtpRepository userOtpRepo;
+	
+	@Autowired
+	private UserRegisterRepository userRegisterRepo;
 
 
 	@Override 
@@ -38,19 +43,21 @@ public class UserOtpServiceImpl implements IUserOtpService {
 		userOtp.setCreateDate(userOtp.getCreateDate());
 		userOtpRepo.save(userOtp);
 	}
+	
+
 
 	@Override 
 	public void deleteById(int reg_Id) {
-		if(userOtpRepo.existsById(reg_Id))
+		if(userOtpRepo.existsById(userRegisterRepo.getOne(reg_Id).getUserOtp().getOtpId()))
 			{ 
-				userOtpRepo.deleteById(reg_Id); 
+			userOtpRepo.deleteById(userRegisterRepo.getOne(reg_Id).getUserOtp().getOtpId()); 
 			} 
 		}
 
 	@Override 
 	public UserOtp getOneById(int reg_Id) {
 		
-		return userOtpRepo.getOne(reg_Id);
+		return userOtpRepo.getOne(userRegisterRepo.getOne(reg_Id).getUserOtp().getOtpId());
 		
 	}
 
@@ -69,11 +76,6 @@ public class UserOtpServiceImpl implements IUserOtpService {
 			return page; 
 		}
 
-	@Override
-	public UserOtp getOneByUserId(int reg_Id) {
-		// TODO Auto-generated method stub
-		return userOtpRepo.getOneByUserId(reg_Id);
-	}
 
 	/*
 	 * @Override public void updateOTPByUserId(UserOtp userOtp) {

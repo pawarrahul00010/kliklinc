@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.technohertz.model.UserOtp;
+import com.technohertz.model.UserRegister;
 
 
 public interface IUserOtpService {
@@ -19,7 +20,6 @@ public interface IUserOtpService {
 	public void deleteById(int reg_Id);
 	public void update(UserOtp userOtp);
 	public UserOtp getOneById(int userOtpId);
-	UserOtp getOneByUserId(int reg_Id);
 	public List<UserOtp> getAll();
 	public Page<UserOtp> getAll(Specification<UserOtp> s,Pageable pageable);
 	
