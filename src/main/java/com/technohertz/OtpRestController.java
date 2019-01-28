@@ -71,7 +71,7 @@ public class OtpRestController {
 	}
 	
 		@RequestMapping(value = "/forget/otp", method = RequestMethod.POST)
-		public void saveForgetOTP(@Valid @RequestBody UserRegister userRegister, ModelMap map){
+		public String saveForgetOTP(@Valid @RequestBody UserRegister userRegister, ModelMap map){
 			
 			String userName = userRegister.getUserName();
 			
@@ -83,7 +83,12 @@ public class OtpRestController {
 				 retrievedUserRegister = userRegisterService.findByMobileOrUserName(mobilNumber, null).get(0);
 				}catch (Exception e) {
 					
-				 retrievedUserRegister = userRegisterService.findByMobileOrUserName(null, userName).get(0);
+					 try {
+						retrievedUserRegister = userRegisterService.findByMobileOrUserName(null, userName).get(0);
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 				}
 			}	
 				
@@ -107,6 +112,8 @@ public class OtpRestController {
 					
 					map.addAttribute("message", retrievedUserRegister.getUserOtp().getOtp());
 					
+					return String.valueOf(retrievedUserRegister.getUserOtp().getOtp());
+					
 				}else{
 					UserOtp saveUserOTP = new UserOtp();
 					int otp = util.getOTP();
@@ -117,16 +124,20 @@ public class OtpRestController {
 					retrievedUserRegister.setUserOtp(saveUserOTP);
 					userRegisterService.save(retrievedUserRegister);
 					map.addAttribute("message", otp);
+					
+					return String.valueOf(otp);
 				}
 				
 			}else {
 				map.addAttribute("message", "You are not a registered User please register first");
+				
+				return "You are not a registered User please register first";
 			}
 			
 		}
 	
 	@RequestMapping(value = "/otp/resend", method = RequestMethod.GET)
-	public void getOTP(@RequestParam("mobilNumber") String userData, ModelMap map){
+	public String getOTP(@RequestParam("mobilNumber") String userData, ModelMap map){
 		
 		UserRegister retrievedUserRegister = new UserRegister ();
 		
@@ -136,7 +147,12 @@ public class OtpRestController {
 				retrievedUserRegister = userRegisterService.findByMobileOrUserName(mobilNumber, null).get(0);
 			}catch (Exception e) {
 				
-				retrievedUserRegister = userRegisterService.findByMobileOrUserName(null, userData).get(0);
+				try {
+					retrievedUserRegister = userRegisterService.findByMobileOrUserName(null, userData).get(0);
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		}
 		
@@ -144,6 +160,8 @@ public class OtpRestController {
 					if(getDate().minusMinutes(30).isBefore(retrievedUserRegister.getUserOtp().getCreateDate()) ){
 						
 						map.addAttribute("message", retrievedUserRegister.getUserOtp().getOtp());
+						
+						return String.valueOf(retrievedUserRegister.getUserOtp().getOtp());
 						
 					}else{
 						UserOtp saveUserOTP = new UserOtp();
@@ -155,15 +173,111 @@ public class OtpRestController {
 						retrievedUserRegister.setUserOtp(saveUserOTP);
 						userRegisterService.save(retrievedUserRegister);
 						map.addAttribute("message", otp);
+						
+						return String.valueOf(otp);
 					}
 					
 				}else {
 					map.addAttribute("message", "You are not a registered User please register first");
+					
+					return "You are not a registered User please register first";
 				}
 			
 	}
 	
-
+	@RequestMapping(value = "/otp/verify", method = RequestMethod.POST)
+	public String verifyOTP(@Valid @RequestBody UserRegister userRegister, ModelMap map){
+		
+		String userName = userRegister.getUserName();
+		Integer otp = userRegister.getUserOtp().getOtp();
+		
+		UserRegister retrievedUserRegister = new UserRegister ();
+		
+		if(userName != null) {
+			try {
+			Long mobilNumber = Long.parseLong(userName);
+			 retrievedUserRegister = userRegisterService.findByMobileOrUserName(mobilNumber, null).get(0);
+			}catch (Exception e) {
+				
+				 try {
+					retrievedUserRegister = userRegisterService.findByMobileOrUserName(null, userName).get(0);
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		}	
+			
+		
+	/*
+	 * if(retrievedUserRegister != null) {
+	 * 
+	 * UserOtp userOtp = new UserOtp(); int otp = util.getOTP();
+	 * userOtp.setOtp(otp); userOtp.setCreateDate(getDate());
+	 * userOtp.setLastModifiedDate(getDate());
+	 * retrievedUserRegister.setUserOtp(userOtp);
+	 * 
+	 * userRegisterService.save(retrievedUserRegister); map.addAttribute("message",
+	 * otp); } else { map.addAttribute("message",
+	 * "You are not a registered User please register first"); }
+	 */
+	
+		
+		if(retrievedUserRegister.getUserOtp()!= null){
+			if(getDate().minusMinutes(1).isBefore(retrievedUserRegister.getUserOtp().getCreateDate()) ){
+				
+				if(retrievedUserRegister.getUserOtp().getOtp() == otp) {
+					
+					UserOtp saveUserOTP = new UserOtp();
+					saveUserOTP.setOtp(otp);
+					saveUserOTP.setOtpId(retrievedUserRegister.getUserOtp().getOtpId());
+					saveUserOTP.setCreateDate(retrievedUserRegister.getUserOtp().getCreateDate());
+					saveUserOTP.setLastModifiedDate(getDate());
+					retrievedUserRegister.setUserOtp(saveUserOTP);
+					userRegisterService.save(retrievedUserRegister);
+					
+					map.addAttribute("message", "verified");
+					return "verified";
+					
+				}else {
+					UserOtp saveUserOTP = new UserOtp();
+					int newOtp = util.getOTP();
+					saveUserOTP.setOtp(newOtp);
+					saveUserOTP.setOtpId(retrievedUserRegister.getUserOtp().getOtpId());
+					saveUserOTP.setCreateDate(getDate());
+					saveUserOTP.setLastModifiedDate(getDate());
+					retrievedUserRegister.setUserOtp(saveUserOTP);
+					userRegisterService.save(retrievedUserRegister);
+					map.addAttribute("message", " Sorry wrong OTP please try again new OTP is: "+newOtp);
+					
+					return String.valueOf(newOtp);
+					
+					
+				}
+				
+				
+				
+			}else{
+				UserOtp saveUserOTP = new UserOtp();
+				int newOtp = util.getOTP();
+				saveUserOTP.setOtp(newOtp);
+				saveUserOTP.setOtpId(retrievedUserRegister.getUserOtp().getOtpId());
+				saveUserOTP.setCreateDate(getDate());
+				saveUserOTP.setLastModifiedDate(getDate());
+				retrievedUserRegister.setUserOtp(saveUserOTP);
+				userRegisterService.save(retrievedUserRegister);
+				map.addAttribute("message", " Your OTP is expired please try again new OTP is: "+newOtp);
+				
+				return String.valueOf(newOtp);
+			}
+			
+		}else {
+			map.addAttribute("message", "You are not a registered User please register first");
+			
+			return "You are not a registered User please register first";
+		}
+		
+	}
 	
 	
 

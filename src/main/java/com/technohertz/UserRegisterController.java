@@ -5,7 +5,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.util.stream.Stream;
 
 import javax.persistence.EntityManager;
 import javax.validation.Valid;
@@ -44,7 +43,11 @@ public class UserRegisterController {
 	@Autowired
 	private OtpUtil util;
 	
-
+	
+	@GetMapping("/myprofile")
+	public List<UserRegister> getAllEmployees() {
+		return userRegisterService.getAll();
+	}
 
 	@GetMapping("/myprofile/{userId}")
 	public Optional<UserRegister> getAllEmployees(@PathVariable(value = "userId") Integer userId) {
@@ -117,11 +120,7 @@ public class UserRegisterController {
 		user.setLastModifiedDate(getDate());
 		profile.setDisplayName(userDetails.getUserName());
 		biometric.setIsActive(true);
-		biometric.setRegister(user);
-		user.getFiles().add(biometric);
 		user.setProfile(profile);
-
-		
 
 		UserOtp userOtp = new UserOtp();
 		if(!userExists(userDetails.getUserName())) {
@@ -131,11 +130,8 @@ public class UserRegisterController {
 			int OTP = util.getOTP();
 			userOtp.setOtp(OTP);
 			user.setUserOtp(userOtp);
-			
 
 			userRegisterService.save(user);
-
-			
 
 			return  ResponseEntity.ok("User Saved successfully and your OTP is : "+OTP);	
 
@@ -148,6 +144,42 @@ public class UserRegisterController {
 	}
 		
 
+//	@PutMapping("/employees/{id}")
+//	public ResponseEntity<UserRegister> updateEmployee(@PathVariable(value = "id") Long employeeId,
+//			@Valid @RequestBody UserRegister employeeDetails) throws ResourceNotFoundException {
+//		UserRegister employee = userRegisterService.findById(employeeId)
+//				.orElseThrow(() -> new ResourceNotFoundException("Employee not found for this id :: " + employeeId));
+//
+//		employee.setEmailId(employeeDetails.getEmailId());
+//		employee.setLastName(employeeDetails.getLastName());
+//		employee.setFirstName(employeeDetails.getFirstName());
+//		final Employee updatedEmployee = userRegisterService.save(employee);
+//		return ResponseEntity.ok(updatedEmployee);
+//	}
+//
+//	@DeleteMapping("/employees/{id}")
+//	public Map<String, Boolean> deleteEmployee(@PathVariable(value = "id") Long employeeId)
+//			throws ResourceNotFoundException {
+//		Employee employee = userRegisterService.findById(employeeId)
+//				.orElseThrow(() -> new ResourceNotFoundException("Employee not found for this id :: " + employeeId));
+//
+//		userRegisterService.delete(employee);
+//		Map<String, Boolean> response = new HashMap<>();
+//		response.put("deleted", Boolean.TRUE);
+//		return response;
+//	}
+
+	private boolean userNotExists(String userName) {
+		boolean userNotExist = false;
+		
+		List<UserRegister> UserList =(List<UserRegister>) userRegisterService.findByUserName(userName);
+		
+		if(UserList.isEmpty()) {
+			
+			userNotExist = true;
+		}
+		return userNotExist;
+	}
 	private boolean userExists(String userName)
 	{
 		String hql="FROM UserRegister as ur WHERE ur.userName= ?1";

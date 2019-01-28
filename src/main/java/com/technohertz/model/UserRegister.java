@@ -1,23 +1,18 @@
 package com.technohertz.model;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.DynamicUpdate;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "User_Register")
@@ -59,17 +54,14 @@ public class UserRegister {
 	@Column(name = "lastModifiedDate", nullable = false, length = 200)
 	private LocalDateTime lastModifiedDate;
 	
-	@OneToMany(cascade=javax.persistence.CascadeType.ALL,mappedBy="register")
-	private List<Biometric> files=new ArrayList<Biometric>();
 	
-	@OneToOne(mappedBy="register")
-	 @JsonBackReference
-	@Cascade(CascadeType.ALL)
-	private UserProfile profile;
-			
-	@OneToOne(mappedBy="register")
-	@Cascade(CascadeType.ALL)
-	private UserOtp userOtp;
+	@OneToOne(cascade=javax.persistence.CascadeType.ALL)
+	@JoinColumn(name="USR_DET_ID")
+	private UserProfile profile = new UserProfile();
+	
+	@OneToOne(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)		
+	@JoinColumn(name="OTP_ID")
+	private UserOtp userOtp = new UserOtp();
 			
 	public int getUserId() {
 		return userId;
@@ -154,13 +146,6 @@ public class UserRegister {
 	}
 
 
-	public List<Biometric> getFiles() {
-		return files;
-	}
-
-	public void setFiles(List<Biometric> files) {
-		this.files = files;
-	}
 
 	
 	/**
@@ -184,11 +169,8 @@ public class UserRegister {
 	public String toString() {
 		return "UserRegister [userId=" + userId + ", userName=" + userName + ", sourceFrom=" + sourceFrom
 				+ ", password=" + password + ", mobilNumber=" + mobilNumber + ", Token=" + Token + ", isActive="
-				+ isActive + ", createDate=" + createDate + ", lastModifiedDate=" + lastModifiedDate + ", files="
-				+ files + ", profile=" + profile + ", userOtp=" + userOtp + "]";
+				+ isActive + ", createDate=" + createDate + ", lastModifiedDate=" + lastModifiedDate + ", profile="
+				+ profile + ", userOtp=" + userOtp + "]";
 	}
 
-
-
-	
 }

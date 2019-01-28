@@ -5,21 +5,21 @@ import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.DynamicUpdate;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "Biometric_Table")
 @DynamicUpdate
 public class Biometric implements Serializable {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,11 +35,6 @@ public class Biometric implements Serializable {
 	@Column(name = "Biometric_Last_Modified_Date")
 	private LocalDateTime lastModifiedDate;
 
-	@JsonIgnore
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="USR_DET_ID")
-	UserRegister register;
-	
 	public Integer getBiometricId() {
 		return biometricId;
 	}
@@ -80,19 +75,15 @@ public class Biometric implements Serializable {
 		this.lastModifiedDate = lastModifiedDate;
 	}
 
-	public UserRegister getRegister() {
-		return register;
-	}
-
-	public void setRegister(UserRegister register) {
-		this.register = register;
-	}
-
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "Biometric [biometricId=" + biometricId + ", biometricImage=" + biometricImage + ", isActive=" + isActive
 				+ ", createDate=" + createDate + ", lastModifiedDate=" + lastModifiedDate + "]";
 	}
-	
+
+
 	
 }

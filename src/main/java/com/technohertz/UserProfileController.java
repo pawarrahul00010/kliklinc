@@ -66,7 +66,6 @@ public class UserProfileController {
 		mediaFiles.setIsShared(true);
 		mediaFiles.setLikes(12);
 		mediaFiles.setRating(12);
-		mediaFiles.setProfile(profile);
 		profile.getFiles().add(mediaFiles);
 		
 		

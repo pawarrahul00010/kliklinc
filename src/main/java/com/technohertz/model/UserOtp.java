@@ -24,7 +24,7 @@ public class UserOtp implements Comparable<UserOtp>{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "OTPID")
+	@Column(name = "OTP_ID")
 	private int otpId;
 	
 	@Column(name = "OTP")
@@ -38,12 +38,6 @@ public class UserOtp implements Comparable<UserOtp>{
 	
 	@Column(name = "LAST_MODIFIED_DATE", nullable = false, length = 200)
 	private LocalDateTime lastModifiedDate;
-
-	@JsonIgnore
-	@OneToOne
-	@PrimaryKeyJoinColumn
-	@JoinColumn(name="userid")
-	private UserRegister register;
 	
 	public UserOtp() {
 		super();
@@ -66,12 +60,14 @@ public class UserOtp implements Comparable<UserOtp>{
 	}
 
 
+
 	/**
 	 * @return the otpId
 	 */
 	public int getOtpId() {
 		return otpId;
 	}
+
 
 	/**
 	 * @param otpId the otpId to set
@@ -88,6 +84,7 @@ public class UserOtp implements Comparable<UserOtp>{
 		return otp;
 	}
 
+
 	/**
 	 * @param otp the otp to set
 	 */
@@ -95,45 +92,7 @@ public class UserOtp implements Comparable<UserOtp>{
 		this.otp = otp;
 	}
 
-	/**
-	 * @return the createDate
-	 */
-	public LocalDateTime getCreateDate() {
-		return createDate;
-	}
 
-	/**
-	 * @param createDate the createDate to set
-	 */
-	public void setCreateDate(LocalDateTime createDate) {
-		this.createDate = createDate;
-	}
-
-	/**
-	 * @return the lastModifiedDate
-	 */
-	public LocalDateTime getLastModifiedDate() {
-		return lastModifiedDate;
-	}
-
-	/**
-	 * @param lastModifiedDate the lastModifiedDate to set
-	 */
-	public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
-		this.lastModifiedDate = lastModifiedDate;
-	}
-
-	public UserRegister getRegister() {
-		return register;
-	}
-
-
-	public void setRegister(UserRegister register) {
-		this.register = register;
-	}
-
-	
-	
 	/**
 	 * @return the is_active
 	 */
@@ -150,6 +109,38 @@ public class UserOtp implements Comparable<UserOtp>{
 	}
 
 
+	/**
+	 * @return the createDate
+	 */
+	public LocalDateTime getCreateDate() {
+		return createDate;
+	}
+
+
+	/**
+	 * @param createDate the createDate to set
+	 */
+	public void setCreateDate(LocalDateTime createDate) {
+		this.createDate = createDate;
+	}
+
+
+	/**
+	 * @return the lastModifiedDate
+	 */
+	public LocalDateTime getLastModifiedDate() {
+		return lastModifiedDate;
+	}
+
+
+	/**
+	 * @param lastModifiedDate the lastModifiedDate to set
+	 */
+	public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
+		this.lastModifiedDate = lastModifiedDate;
+	}
+
+	
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -157,7 +148,7 @@ public class UserOtp implements Comparable<UserOtp>{
 	@Override
 	public String toString() {
 		return "UserOtp [otpId=" + otpId + ", otp=" + otp + ", is_active=" + is_active + ", createDate=" + createDate
-				+ ", lastModifiedDate=" + lastModifiedDate + ", register=" + register + "]";
+				+ ", lastModifiedDate=" + lastModifiedDate + "]";
 	}
 
 

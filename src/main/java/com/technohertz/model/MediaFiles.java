@@ -26,7 +26,7 @@ public class MediaFiles implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "fileId")
+	@Column(name = "file_Id")
 	private Integer fileId;
 	
 	@Column(name = "File_Path")
@@ -52,10 +52,6 @@ public class MediaFiles implements Serializable {
 	
 	@Column(name = "Liked_Status", nullable = false, length = 200)
 	private Boolean isLiked;
-	@JsonIgnore
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="USR_DET_ID")
-	UserProfile profile;
 
 	public Integer getFileId() {
 		return fileId;
@@ -129,19 +125,15 @@ public class MediaFiles implements Serializable {
 		this.isLiked = isLiked;
 	}
 
-	public UserProfile getProfile() {
-		return profile;
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "MediaFiles [fileId=" + fileId + ", filePath=" + filePath + ", createDate=" + createDate
+				+ ", lastModifiedDate=" + lastModifiedDate + ", likes=" + likes + ", rating=" + rating
+				+ ", isBookMarked=" + isBookMarked + ", isShared=" + isShared + ", isLiked=" + isLiked + "]";
 	}
-
-	public void setProfile(UserProfile profile) {
-		this.profile = profile;
-	}
-
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
-
-
 
 
 
