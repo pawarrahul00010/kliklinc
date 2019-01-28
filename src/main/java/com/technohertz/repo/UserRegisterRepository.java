@@ -15,6 +15,6 @@ public interface UserRegisterRepository extends JpaRepository<UserRegister, Inte
 	
 	@Query(value="SELECT  r.userName, r.password from UserRegister r WHERE r.userName=?1 AND r.password=?2")
 	List<UserRegister> findByUserNameAndPassword(String userName,String Password);
-	@Query(value="SELECT  r.userName from UserRegister r WHERE r.userName=?1")
+	@Query(value="SELECT  r from UserRegister r WHERE r.userName=?1")
 	List<UserRegister> findByUserName(String userName);
 }

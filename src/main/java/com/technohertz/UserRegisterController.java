@@ -3,9 +3,11 @@ package com.technohertz;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Stream;
 
+import javax.persistence.EntityManager;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +31,13 @@ public class UserRegisterController {
 
 	@Autowired
 	private IUserRegisterService userRegisterService;
+	
+	@Autowired
+	private EntityManager entitymanager;
 
-	@GetMapping("/myprofile")
-	public List<UserRegister> getAllEmployees() {
-		return userRegisterService.getAll();
+	@GetMapping("/myprofile/{userId}")
+	public Optional<UserRegister> getAllEmployees(@PathVariable(value = "userId") Integer userId) {
+		return userRegisterService.getById(userId);
 	}
 	
 //
@@ -43,20 +48,45 @@ public class UserRegisterController {
 		return ResponseEntity.ok().body(username);
 	}
 
-	@GetMapping("/login/{userName}/{password}")
-	public ResponseEntity<List<UserRegister>> loginCredential(@PathVariable(value = "userName") String userName,
-			@PathVariable(value = "password") String password) throws ResourceNotFoundException {
+//	@GetMapping("/login/{userName}/{password}")
+//	public ResponseEntity<List<UserRegister>> loginCredential(@PathVariable(value = "userName") String userName,
+//			@PathVariable(value = "password") String password) throws ResourceNotFoundException {
+//
+//		List<UserRegister> user = userRegisterService.findByUserNameAndPassword(userName, password);
+//		System.out.println(userName);
+//		if (userName.equals(userName) && password.equals(password)) {
+//
+//			return ResponseEntity.ok(user);
+//		} else
+//			return ResponseEntity.ok(user);
+//
+//		
+//	}
+	
+	@PostMapping("/login")
+	public ResponseEntity<String> loginCredential(@Valid @RequestBody UserRegister userDetails)
+			throws ResourceNotFoundException {
 
-		List<UserRegister> user = userRegisterService.findByUserNameAndPassword(userName, password);
-		System.out.println(userName);
-		if (userName.equals(userName) && password.equals(password)) {
-
-			return ResponseEntity.ok(user);
-		} else
-			return ResponseEntity.ok(user);
-
+		List<UserRegister> userRegisterList = userRegisterService.findByUserName(userDetails.getUserName());
+		/*get from database*/
 		
+		UserRegister userRegister = userRegisterList.get(0);
+		String name = userRegister.getUserName();
+		String password = userRegister.getPassword();
+		Boolean userStatus=userRegister.getIsActive();
+		/*get from body*/
+		
+		String uname = userDetails.getUserName();
+		String pass = userDetails.getPassword();
+		
+		if (name.equals(uname) && password.equals(pass) && userStatus==true) {
+
+			return ResponseEntity.ok("user Logged in successfully");
+		} else
+			return ResponseEntity.ok("Please check username or password");
+
 	}
+
 
 	@PostMapping("/saveall")
 	public ResponseEntity<String> addUser(@Valid @RequestBody UserRegister userDetails) {
@@ -79,46 +109,24 @@ public class UserRegisterController {
 		biometric.setRegister(user);
 		user.getFiles().add(biometric);
 		user.setProfile(profile);
-		if(!userExists(userDetails.getUserName()).contains(user.getUserName())) {
+		if(!userExists(userDetails.getUserName())) {
 			userRegisterService.save(user);
-			return  ResponseEntity.ok("User Saved successfully");	
+			return  ResponseEntity.ok("User Saved successfully. . . !!!");	
 		}
 		else {
-			System.out.println("User Allready Exist");
-			return  ResponseEntity.ok("User Allready Exist");
+			
+			return  ResponseEntity.ok("User Allready Exist. . .!!!");
 		}
 	
 	}
 
-//	@PutMapping("/employees/{id}")
-//	public ResponseEntity<UserRegister> updateEmployee(@PathVariable(value = "id") Long employeeId,
-//			@Valid @RequestBody UserRegister employeeDetails) throws ResourceNotFoundException {
-//		UserRegister employee = userRegisterService.findById(employeeId)
-//				.orElseThrow(() -> new ResourceNotFoundException("Employee not found for this id :: " + employeeId));
-//
-//		employee.setEmailId(employeeDetails.getEmailId());
-//		employee.setLastName(employeeDetails.getLastName());
-//		employee.setFirstName(employeeDetails.getFirstName());
-//		final Employee updatedEmployee = userRegisterService.save(employee);
-//		return ResponseEntity.ok(updatedEmployee);
-//	}
-//
-//	@DeleteMapping("/employees/{id}")
-//	public Map<String, Boolean> deleteEmployee(@PathVariable(value = "id") Long employeeId)
-//			throws ResourceNotFoundException {
-//		Employee employee = userRegisterService.findById(employeeId)
-//				.orElseThrow(() -> new ResourceNotFoundException("Employee not found for this id :: " + employeeId));
-//
-//		userRegisterService.delete(employee);
-//		Map<String, Boolean> response = new HashMap<>();
-//		response.put("deleted", Boolean.TRUE);
-//		return response;
-//	}
-
-	private List<UserRegister> userExists(String userName) {
-		List<UserRegister> username = (List<UserRegister>) userRegisterService.findByUserName(userName);
-		return username;
-
+	private boolean userExists(String userName)
+	{
+		String hql="FROM UserRegister as ur WHERE ur.userName= ?1";
+		int count=entitymanager.createQuery(hql).setParameter(1, userName).getResultList().size();
+		
+		return count>0 ? true : false;
+		
 	}
 
 	private LocalDateTime getDate() {

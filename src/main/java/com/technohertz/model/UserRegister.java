@@ -17,6 +17,8 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.DynamicUpdate;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 @Table(name = "User_Register")
 @DynamicUpdate
@@ -61,6 +63,7 @@ public class UserRegister {
 	private List<Biometric> files=new ArrayList<Biometric>();
 	
 	@OneToOne(mappedBy="register")
+	 @JsonBackReference
 	@Cascade(CascadeType.ALL)
 	private UserProfile profile;
 			
