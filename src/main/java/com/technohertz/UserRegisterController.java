@@ -80,11 +80,17 @@ public class UserRegisterController {
 	@PostMapping("/login")
 	public ResponseEntity<String> loginCredential(@Valid @RequestBody UserRegister userDetails)
 			throws ResourceNotFoundException {
-
+		UserRegister userRegister=null;
 		List<UserRegister> userRegisterList = userRegisterService.findByUserName(userDetails.getUserName());
 		/*get from database*/
 		
-		UserRegister userRegister = userRegisterList.get(0);
+		if(userRegisterList.isEmpty())
+		{
+			return ResponseEntity.ok("Please check username");
+		}
+		else {
+			userRegister = userRegisterList.get(0);
+	
 		String name = userRegister.getUserName();
 		String password = userRegister.getPassword();
 		Boolean userStatus=userRegister.getIsActive();
@@ -93,12 +99,12 @@ public class UserRegisterController {
 		String uname = userDetails.getUserName();
 		String pass = userDetails.getPassword();
 		
-		if (name.equals(uname) && password.equals(pass) && userStatus==true) {
+		if (name.equals(uname) && password.equals(pass) && userStatus==true) 
 
 			return ResponseEntity.ok("user Logged in successfully");
-		} else
+		 else
 			return ResponseEntity.ok("Please check username or password");
-
+		}
 	}
 
 

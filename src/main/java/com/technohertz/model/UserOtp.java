@@ -1,5 +1,6 @@
 package com.technohertz.model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
@@ -16,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "USER_OTP")
-public class UserOtp implements Comparable<UserOtp>{
+public class UserOtp implements Comparable<UserOtp>,Serializable {
 
 	
 

@@ -1,5 +1,6 @@
 package com.technohertz.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,10 +16,13 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.DynamicUpdate;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "User_Profile")
 @DynamicUpdate
-public class UserProfile {
+public class UserProfile implements Serializable{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "USR_DET_ID")
@@ -29,6 +33,8 @@ public class UserProfile {
 	@Column(name = "About_User")
 	private String aboutUser;
 
+
+	 @JsonIgnore
 	@OneToMany(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)
 	@JoinColumn(name="USR_DET_ID")
 	private List<MediaFiles> files=new ArrayList<MediaFiles>();

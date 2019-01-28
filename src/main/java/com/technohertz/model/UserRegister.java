@@ -14,6 +14,9 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.DynamicUpdate;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "User_Register")
 @DynamicUpdate
@@ -54,11 +57,26 @@ public class UserRegister {
 	@Column(name = "lastModifiedDate", nullable = false, length = 200)
 	private LocalDateTime lastModifiedDate;
 	
-	
+
+	 @JsonIgnore
 	@OneToOne(cascade=javax.persistence.CascadeType.ALL)
 	@JoinColumn(name="USR_DET_ID")
 	private UserProfile profile = new UserProfile();
-	
+	 
+	 @JsonIgnore
+	@OneToOne(cascade=javax.persistence.CascadeType.ALL)
+	@JoinColumn(name="POST_CARD_ID")
+	private PostCard postCard = new PostCard();
+
+
+	 
+	 @JsonIgnore
+	@OneToOne(cascade=javax.persistence.CascadeType.ALL)
+	@JoinColumn(name="GREATING_CARD_ID")
+	private GreatingCard greatingCard = new GreatingCard();
+
+	 
+	 @JsonIgnore
 	@OneToOne(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)		
 	@JoinColumn(name="OTP_ID")
 	private UserOtp userOtp = new UserOtp();
