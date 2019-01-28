@@ -27,7 +27,7 @@ public class UserProfileController {
 	@Autowired
 	private UserProfileRepository userprofilerepo;
 	@PutMapping("/user/{name}")
-	public ResponseEntity<UserProfile> updateEmployee(@PathVariable(value = "name") String displayName,
+	public ResponseEntity<UserProfile> updateUser(@PathVariable(value = "name") String displayName,
 			@Valid @RequestBody UserProfile profileDetails) throws ResourceNotFoundException {
 		UserProfile profile = (UserProfile) userprofilerepo.findBydisplayName(displayName);
 		
@@ -70,10 +70,23 @@ public class UserProfileController {
 		
 		
 		
-		final UserProfile updatedEmployee = userprofilerepo.save(profile);
-		return ResponseEntity.ok(updatedEmployee);
+		final UserProfile updatedUser = userprofilerepo.save(profile);
+		return ResponseEntity.ok(updatedUser);
 	}
-	
+	@PutMapping("/user/displayName/{displayName}")
+	public ResponseEntity<UserProfile> updateDisplayName(@PathVariable(value = "displayName") String displayName,
+			@Valid @RequestBody UserProfile profileDetails) throws ResourceNotFoundException {
+		UserProfile profile=null;
+		if(displayName!=null) {
+		 profile = (UserProfile) userprofilerepo.findBydisplayName(displayName);
+		}
+		else {
+			System.out.println("please give name");
+		}
+		profile.setDisplayName(profileDetails.getDisplayName());		
+		final UserProfile updateDisplayName = userprofilerepo.save(profile);
+		return ResponseEntity.ok(updateDisplayName);
+	}
 	private LocalDateTime getDate() {
 
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");

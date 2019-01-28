@@ -4,6 +4,8 @@ package com.technohertz.service.impl;
 
 import java.util.List;
 
+import java.util.Optional;
+
 import javax.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +54,8 @@ public class UserRegisterServiceImpl implements IUserRegisterService {
 		}
 
 	@Override 
-	public UserRegister getOneById(int userId) { return
+	public UserRegister getOneById(int userId) { 
+		return
 			userRegisterRepo.getOne(userId); }
 
 	@Override 
@@ -70,11 +73,11 @@ public class UserRegisterServiceImpl implements IUserRegisterService {
 			return page; 
 		}
 
-	@Override
-	public List<UserRegister> findByUserNameAndPassword(String userName, String password) {
-	List<UserRegister> user=userRegisterRepo.findByUserNameAndPassword(userName, password);
-		return user;
-	}
+//	@Override
+//	public List<UserRegister> findByUserNameAndPassword(String userName, String password) {
+//	List<UserRegister> user=userRegisterRepo.findByUserNameAndPassword(userName, password);
+//		return user;
+//	}
 
 	@Override
 	public List<UserRegister> findByUserName(String userName) {
@@ -82,6 +85,12 @@ public class UserRegisterServiceImpl implements IUserRegisterService {
 		return userList;
 	}
 
+
+	@Override
+	public Optional<UserRegister> getById(Integer userId) {
+		Optional<UserRegister> idList=userRegisterRepo.findById(userId);
+		return idList;
+	}
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<UserRegister> findByMobileOrUserName(Long mobilNumber, String userName) {
@@ -91,6 +100,7 @@ public class UserRegisterServiceImpl implements IUserRegisterService {
 				"(:mobilNumber is null or r.mobilNumber=:mobilNumber)")
 				.setParameter("userName", userName)
 				.setParameter("mobilNumber", mobilNumber).getResultList();
+
 	}
 
 
