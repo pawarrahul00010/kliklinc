@@ -26,9 +26,11 @@ public interface IUserRegisterService {
 	List<UserRegister> findByUserName(String userName);
 
 	public Optional<UserRegister> getById(Integer userId);
-	
 
 	public List<UserRegister> findByMobileOrUserName(Long mobilNumber, String userName);
+	
+	public List<UserRegister> getAllMobileAndProfile();
+	List<Long> getAllMobile();
 
 
 	
