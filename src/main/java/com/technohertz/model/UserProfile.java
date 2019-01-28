@@ -33,25 +33,10 @@ public class UserProfile {
 	private String displayName;
 	@Column(name = "About_User")
 	private String aboutUser;
-
-	@OneToMany(cascade=CascadeType.ALL,mappedBy="profile")
-	private List<MediaFiles> files=new ArrayList<MediaFiles>();
-
-
-	@JsonIgnore
-	@OneToOne
-	@PrimaryKeyJoinColumn
-	private UserRegister register;
 	
-	public UserRegister getRegister() {
-		return register;
-	}
-
-	public void setRegister(UserRegister register) {
-		this.register = register;
-	}
-
-
+	@OneToMany(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)
+	@JoinColumn(name="USR_DET_ID")
+	private List<MediaFiles> files=new ArrayList<MediaFiles>();
 
 	public Integer getProfileId() {
 		return profileId;
@@ -86,13 +71,15 @@ public class UserProfile {
 		this.aboutUser = aboutUser;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "UserProfile [profileId=" + profileId + ", displayName=" + displayName + ", aboutUser=" + aboutUser
-				+ ", files=" + files + ", register=" + register + "]";
+				+ ", files=" + files + "]";
 	}
 
 
-	
 
 }

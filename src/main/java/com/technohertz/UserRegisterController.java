@@ -4,8 +4,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Stream;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +36,9 @@ public class UserRegisterController {
 	private IUserRegisterService userRegisterService;
 	
 	@Autowired
-	private UserOtpRepository userOtpRepo;
-	
-	@Autowired
 	private OtpUtil util;
 	
-
+	
 	@GetMapping("/myprofile")
 	public List<UserRegister> getAllEmployees() {
 		return userRegisterService.getAll();
@@ -72,30 +71,32 @@ public class UserRegisterController {
 	public ResponseEntity<String> addUser(@Valid @RequestBody UserRegister userDetails) {
 		UserRegister user = new UserRegister();
 
-		UserProfile profile = new UserProfile();
-		
-		Biometric biometric=new Biometric();
-
-		user.setUserName(userDetails.getUserName());
-		user.setPassword(userDetails.getPassword());
-		user.setMobilNumber(userDetails.getMobilNumber());
-		user.setIsActive(true);
-		user.setSourceFrom("Laptop");
-		user.setToken(getRandomNumber());
-		user.setCreateDate(getDate());
-		user.setLastModifiedDate(getDate());
-		profile.setDisplayName(userDetails.getUserName());
-		biometric.setIsActive(true);
-		biometric.setRegister(user);
-		user.getFiles().add(biometric);
-		user.setProfile(profile);
-		UserOtp userOtp = new UserOtp();
-		if(!userExists(userDetails.getUserName()).contains(user.getUserName())) {
-			userOtp.setIs_active(true);
-			userOtp.setCreateDate(getDate());
-			userOtp.setLastModifiedDate(getDate());
-			int OTP = util.getOTP();
-			userOtp.setOtp(OTP);
+		if(userNotExists(userDetails.getUserName())){
+			user.setUserName(userDetails.getUserName());
+			user.setPassword(userDetails.getPassword());
+			user.setMobilNumber(userDetails.getMobilNumber());
+			user.setIsActive(true);
+			user.setSourceFrom("Laptop");
+			user.setToken(getRandomNumber());
+			user.setCreateDate(getDate());
+			user.setLastModifiedDate(getDate());
+			
+			UserProfile profile = new UserProfile();
+				profile.setDisplayName(userDetails.getUserName());
+				
+			Biometric biometric=new Biometric();
+				biometric.setIsActive(true);
+				
+			user.getFiles().add(biometric);
+			user.setProfile(profile);
+			
+			UserOtp userOtp = new UserOtp();
+				userOtp.setIs_active(true);
+				userOtp.setCreateDate(getDate());
+				userOtp.setLastModifiedDate(getDate());
+				int OTP = util.getOTP();
+				userOtp.setOtp(OTP);
+				
 			user.setUserOtp(userOtp);
 			
 			userRegisterService.save(user);
@@ -134,9 +135,16 @@ public class UserRegisterController {
 //		return response;
 //	}
 
-	private List<UserRegister> userExists(String userName) {
-		List<UserRegister> username = (List<UserRegister>) userRegisterService.findByUserName(userName);
-		return username;
+	private boolean userNotExists(String userName) {
+		boolean userNotExist = false;
+		
+		List<UserRegister> UserList =(List<UserRegister>) userRegisterService.findByUserName(userName);
+		
+		if(UserList.isEmpty()) {
+			
+			userNotExist = true;
+		}
+		return userNotExist;
 
 	}
 

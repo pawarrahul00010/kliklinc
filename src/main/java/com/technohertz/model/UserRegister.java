@@ -6,9 +6,11 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -57,16 +59,17 @@ public class UserRegister {
 	@Column(name = "lastModifiedDate", nullable = false, length = 200)
 	private LocalDateTime lastModifiedDate;
 	
-	@OneToMany(cascade=javax.persistence.CascadeType.ALL,mappedBy="register")
+	@OneToMany(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)
+	@JoinColumn(name="userid")
 	private List<Biometric> files=new ArrayList<Biometric>();
 	
-	@OneToOne(mappedBy="register")
-	@Cascade(CascadeType.ALL)
-	private UserProfile profile;
-			
-	@OneToOne(mappedBy="register")
-	@Cascade(CascadeType.ALL)
-	private UserOtp userOtp;
+	@OneToOne(cascade=javax.persistence.CascadeType.ALL)
+	@JoinColumn(name="USR_DET_ID")
+	private UserProfile profile = new UserProfile();
+	
+	@OneToOne(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)		
+	@JoinColumn(name="OTP_ID")
+	private UserOtp userOtp = new UserOtp();
 			
 	public int getUserId() {
 		return userId;
