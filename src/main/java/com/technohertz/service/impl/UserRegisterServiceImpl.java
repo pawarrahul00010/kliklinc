@@ -3,8 +3,10 @@ package com.technohertz.service.impl;
 
 
 import java.util.List;
-import java.util.Map;
+
 import java.util.Optional;
+
+import javax.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,8 @@ public class UserRegisterServiceImpl implements IUserRegisterService {
 	@Autowired
 	private UserRegisterRepository userRegisterRepo;
 
+	@Autowired
+	public EntityManager entityManager;
 
 	@Override 
 	public UserRegister save(UserRegister user) { 
@@ -81,10 +85,22 @@ public class UserRegisterServiceImpl implements IUserRegisterService {
 		return userList;
 	}
 
+
 	@Override
 	public Optional<UserRegister> getById(Integer userId) {
 		Optional<UserRegister> idList=userRegisterRepo.findById(userId);
 		return idList;
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<UserRegister> findByMobileOrUserName(Long mobilNumber, String userName) {
+		
+		return entityManager.createQuery("from UserRegister r WHERE "+
+				"(:userName is null or r.userName=:userName) and "+
+				"(:mobilNumber is null or r.mobilNumber=:mobilNumber)")
+				.setParameter("userName", userName)
+				.setParameter("mobilNumber", mobilNumber).getResultList();
+
 	}
 
 

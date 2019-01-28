@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
@@ -26,11 +27,11 @@ public class UserOtp implements Comparable<UserOtp>{
 	@Column(name = "OTPID")
 	private int otpId;
 	
-	@Column(name = "REG_ID")
-	private int reg_Id;
-
 	@Column(name = "OTP")
 	private int otp;
+
+	@Column(name = "ISACTIVE")
+	private boolean is_active;
 	
 	@Column(name = "CREATE_DATE", nullable = false, length = 200)
 	private LocalDateTime createDate;
@@ -41,6 +42,7 @@ public class UserOtp implements Comparable<UserOtp>{
 	@JsonIgnore
 	@OneToOne
 	@PrimaryKeyJoinColumn
+	@JoinColumn(name="userid")
 	private UserRegister register;
 	
 	public UserOtp() {
@@ -58,12 +60,10 @@ public class UserOtp implements Comparable<UserOtp>{
 	public UserOtp(int otpId, int reg_Id, int otp, LocalDateTime createDate, LocalDateTime lastModifiedDate) {
 		super();
 		this.otpId = otpId;
-		this.reg_Id = reg_Id;
 		this.otp = otp;
 		this.createDate = createDate;
 		this.lastModifiedDate = lastModifiedDate;
 	}
-
 
 
 	/**
@@ -123,19 +123,6 @@ public class UserOtp implements Comparable<UserOtp>{
 		this.lastModifiedDate = lastModifiedDate;
 	}
 
-	/**
-	 * @return the reg_Id
-	 */
-	public int getReg_Id() {
-		return reg_Id;
-	}
-
-	/**
-	 * @param reg_Id the reg_Id to set
-	 */
-	public void setReg_Id(int reg_Id) {
-		this.reg_Id = reg_Id;
-	}
 	public UserRegister getRegister() {
 		return register;
 	}
@@ -145,22 +132,39 @@ public class UserOtp implements Comparable<UserOtp>{
 		this.register = register;
 	}
 
+	
+	
+	/**
+	 * @return the is_active
+	 */
+	public boolean isIs_active() {
+		return is_active;
+	}
+
+
+	/**
+	 * @param is_active the is_active to set
+	 */
+	public void setIs_active(boolean is_active) {
+		this.is_active = is_active;
+	}
+
+
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "UserOtp [otpId=" + otpId + ", reg_Id=" + reg_Id + ", otp=" + otp + ", createDate=" + createDate
-				+ ", lastModifiedDate=" + lastModifiedDate + "]";
+		return "UserOtp [otpId=" + otpId + ", otp=" + otp + ", is_active=" + is_active + ", createDate=" + createDate
+				+ ", lastModifiedDate=" + lastModifiedDate + ", register=" + register + "]";
 	}
-
-
 
 
 	@Override
 	public int compareTo(UserOtp o) {
 
-		return (int) (o.getReg_Id()-this.getReg_Id());
+		return (int) (o.getOtpId()-this.getOtpId());
 	}
 
 

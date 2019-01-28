@@ -21,9 +21,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.technohertz.exception.ResourceNotFoundException;
 import com.technohertz.model.Biometric;
+import com.technohertz.model.UserOtp;
 import com.technohertz.model.UserProfile;
 import com.technohertz.model.UserRegister;
+import com.technohertz.repo.UserOtpRepository;
 import com.technohertz.service.IUserRegisterService;
+import com.technohertz.util.OtpUtil;
 
 @RestController
 @RequestMapping("/userRest")
@@ -33,7 +36,15 @@ public class UserRegisterController {
 	private IUserRegisterService userRegisterService;
 	
 	@Autowired
+
 	private EntityManager entitymanager;
+
+	private UserOtpRepository userOtpRepo;
+	
+	@Autowired
+	private OtpUtil util;
+	
+
 
 	@GetMapping("/myprofile/{userId}")
 	public Optional<UserRegister> getAllEmployees(@PathVariable(value = "userId") Integer userId) {
@@ -109,9 +120,25 @@ public class UserRegisterController {
 		biometric.setRegister(user);
 		user.getFiles().add(biometric);
 		user.setProfile(profile);
+
+		
+
+		UserOtp userOtp = new UserOtp();
 		if(!userExists(userDetails.getUserName())) {
+			userOtp.setIs_active(true);
+			userOtp.setCreateDate(getDate());
+			userOtp.setLastModifiedDate(getDate());
+			int OTP = util.getOTP();
+			userOtp.setOtp(OTP);
+			user.setUserOtp(userOtp);
+			
+
 			userRegisterService.save(user);
-			return  ResponseEntity.ok("User Saved successfully. . . !!!");	
+
+			
+
+			return  ResponseEntity.ok("User Saved successfully and your OTP is : "+OTP);	
+
 		}
 		else {
 			
@@ -119,6 +146,7 @@ public class UserRegisterController {
 		}
 	
 	}
+		
 
 	private boolean userExists(String userName)
 	{

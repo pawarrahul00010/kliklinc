@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -52,7 +53,7 @@ public class MediaFiles implements Serializable {
 	@Column(name = "Liked_Status", nullable = false, length = 200)
 	private Boolean isLiked;
 	@JsonIgnore
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="USR_DET_ID")
 	UserProfile profile;
 

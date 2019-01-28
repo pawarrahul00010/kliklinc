@@ -69,7 +69,7 @@ public class UserRegister {
 			
 	@OneToOne(mappedBy="register")
 	@Cascade(CascadeType.ALL)
-	private UserOtp otp;
+	private UserOtp userOtp;
 			
 	public int getUserId() {
 		return userId;
@@ -153,14 +153,6 @@ public class UserRegister {
 		this.lastModifiedDate = lastModifiedDate;
 	}
 
-	
-	public UserOtp getOtp() {
-		return otp;
-	}
-
-	public void setOtp(UserOtp otp) {
-		this.otp = otp;
-	}
 
 	public List<Biometric> getFiles() {
 		return files;
@@ -170,13 +162,32 @@ public class UserRegister {
 		this.files = files;
 	}
 
+	
+	/**
+	 * @return the userOtp
+	 */
+	public UserOtp getUserOtp() {
+		return userOtp;
+	}
+
+	/**
+	 * @param userOtp the userOtp to set
+	 */
+	public void setUserOtp(UserOtp userOtp) {
+		this.userOtp = userOtp;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "UserRegister [userId=" + userId + ", userName=" + userName + ", sourceFrom=" + sourceFrom
 				+ ", password=" + password + ", mobilNumber=" + mobilNumber + ", Token=" + Token + ", isActive="
-				+ isActive + ", createDate=" + createDate + ", lastModifiedDate=" + lastModifiedDate + ", profile="
-				+ profile + "]";
+				+ isActive + ", createDate=" + createDate + ", lastModifiedDate=" + lastModifiedDate + ", files="
+				+ files + ", profile=" + profile + ", userOtp=" + userOtp + "]";
 	}
+
 
 
 	

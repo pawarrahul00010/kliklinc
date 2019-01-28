@@ -24,8 +24,12 @@ public interface IUserRegisterService {
 	public Page<UserRegister> getAll(Specification<UserRegister> s,Pageable pageable);
 //	public UserRegister findByUserNameAndPassword(String userName, String password);
 	List<UserRegister> findByUserName(String userName);
+
 	public Optional<UserRegister> getById(Integer userId);
 	
+
+	public List<UserRegister> findByMobileOrUserName(Long mobilNumber, String userName);
+
 
 	
 
