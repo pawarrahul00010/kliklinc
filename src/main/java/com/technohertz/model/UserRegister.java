@@ -1,6 +1,8 @@
 package com.technohertz.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,10 +11,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.DynamicUpdate;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "User_Register")
@@ -54,15 +59,21 @@ public class UserRegister {
 	@Column(name = "lastModifiedDate", nullable = false, length = 200)
 	private LocalDateTime lastModifiedDate;
 	
-	
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	@OneToOne(cascade=javax.persistence.CascadeType.ALL)
 	@JoinColumn(name="USR_DET_ID")
 	private UserProfile profile = new UserProfile();
 	
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	@OneToOne(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)		
 	@JoinColumn(name="OTP_ID")
 	private UserOtp userOtp = new UserOtp();
-			
+	
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+	@OneToMany(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)		
+	@JoinColumn(name="userid")
+	private List<UserContact> userContactList=new ArrayList<UserContact>();
+
 	public int getUserId() {
 		return userId;
 	}
@@ -162,6 +173,22 @@ public class UserRegister {
 		this.userOtp = userOtp;
 	}
 
+	
+	
+	/**
+	 * @return the userContactList
+	 */
+	public List<UserContact> getUserContactList() {
+		return userContactList;
+	}
+
+	/**
+	 * @param userContactList the userContactList to set
+	 */
+	public void setUserContactList(List<UserContact> userContactList) {
+		this.userContactList = userContactList;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -170,7 +197,8 @@ public class UserRegister {
 		return "UserRegister [userId=" + userId + ", userName=" + userName + ", sourceFrom=" + sourceFrom
 				+ ", password=" + password + ", mobilNumber=" + mobilNumber + ", Token=" + Token + ", isActive="
 				+ isActive + ", createDate=" + createDate + ", lastModifiedDate=" + lastModifiedDate + ", profile="
-				+ profile + ", userOtp=" + userOtp + "]";
+				+ profile + ", userOtp=" + userOtp + ", userContactList=" + userContactList + "]";
 	}
+
 
 }

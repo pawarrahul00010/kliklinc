@@ -26,6 +26,10 @@ public class UserProfile {
 
 	@Column(name = "Display_Name")
 	private String displayName;
+
+	@Column(name = "current_Profile")
+	private String currentProfile;
+	
 	@Column(name = "About_User")
 	private String aboutUser;
 
@@ -66,15 +70,28 @@ public class UserProfile {
 		this.aboutUser = aboutUser;
 	}
 
+	/**
+	 * @return the currentProfile
+	 */
+	public String getCurrentProfile() {
+		return currentProfile;
+	}
+
+	/**
+	 * @param currentProfile the currentProfile to set
+	 */
+	public void setCurrentProfile(String currentProfile) {
+		this.currentProfile = currentProfile;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "UserProfile [profileId=" + profileId + ", displayName=" + displayName + ", aboutUser=" + aboutUser
-				+ ", files=" + files + "]";
+		return "UserProfile [profileId=" + profileId + ", displayName=" + displayName + ", currentProfile="
+				+ currentProfile + ", aboutUser=" + aboutUser + ", files=" + files + "]";
 	}
 
-
-
+	
 }
