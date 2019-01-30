@@ -11,7 +11,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,6 +22,7 @@ import com.technohertz.model.UserRegister;
 import com.technohertz.service.IUserOtpService;
 import com.technohertz.service.IUserRegisterService;
 import com.technohertz.util.OtpUtil;
+import com.technohertz.util.sendSMS;
 
 @RestController
 @RequestMapping("/otpRest")
@@ -36,6 +36,9 @@ public class OtpRestController {
 	
 	@Autowired
 	private OtpUtil util;
+	
+	@Autowired
+	private sendSMS sms;
 	
 	
 	/**
@@ -62,6 +65,8 @@ public class OtpRestController {
 				retrievedUserRegister.setUserOtp(userOtp);
 				
 				userRegisterService.save(retrievedUserRegister);
+				String message = sms.sendSms(String.valueOf(mobilNumber), "Your Registration is successful enter OTP to verify : "+otp);
+				System.out.println(message);
 				map.addAttribute("message", otp);
 			}
 			else {

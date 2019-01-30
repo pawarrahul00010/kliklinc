@@ -26,6 +26,7 @@ import com.technohertz.model.UserRegister;
 import com.technohertz.repo.UserOtpRepository;
 import com.technohertz.service.IUserRegisterService;
 import com.technohertz.util.OtpUtil;
+import com.technohertz.util.sendSMS;
 
 @RestController
 @RequestMapping("/userRest")
@@ -42,6 +43,9 @@ public class UserRegisterController {
 	
 	@Autowired
 	private OtpUtil util;
+	
+	@Autowired
+	private sendSMS sms;
 	
 	
 	@GetMapping("/myprofile")
@@ -124,7 +128,7 @@ public class UserRegisterController {
 			user.setUserOtp(userOtp);
 
 			userRegisterService.save(user);
-
+			sms.sendSms(String.valueOf(userDetails.getMobilNumber()), "Your CraziApp Registration is successful enter OTP to verify : "+OTP);
 			return  ResponseEntity.ok("User Saved successfully and your OTP is : "+OTP);	
 
 		}
