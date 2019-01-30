@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.technohertz.exception.ResourceNotFoundException;
-import com.technohertz.model.MediaFiles;
 import com.technohertz.model.UserProfile;
 import com.technohertz.repo.UserProfileRepository;
 

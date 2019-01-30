@@ -1,11 +1,7 @@
 package com.technohertz.repo;
 
 import java.util.List;
-import java.util.Map;
 
-import javax.persistence.EntityManager;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
