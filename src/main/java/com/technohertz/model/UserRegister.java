@@ -82,8 +82,6 @@ public class UserRegister {
 	@JoinColumn(name="GREATING_CARD_ID")
 	private GreatingCard greatingCard = new GreatingCard();
 
-	 
-
 	
 	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
@@ -96,6 +94,12 @@ public class UserRegister {
 	@JoinColumn(name="userid")
 	private List<UserContact> userContactList=new ArrayList<UserContact>();
 
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+	@OneToMany(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)		
+	@JoinColumn(name="BIOMETRIC_ID")
+	
+	private List<Biometric> biometric=new ArrayList<Biometric>();
+	
 	public int getUserId() {
 		return userId;
 	}
@@ -211,16 +215,44 @@ public class UserRegister {
 		this.userContactList = userContactList;
 	}
 
+	public PostCard getPostCard() {
+		return postCard;
+	}
+
+	public void setPostCard(PostCard postCard) {
+		this.postCard = postCard;
+	}
+
+	public GreatingCard getGreatingCard() {
+		return greatingCard;
+	}
+
+	public void setGreatingCard(GreatingCard greatingCard) {
+		this.greatingCard = greatingCard;
+	}
+
+	public List<Biometric> getBiometric() {
+		return biometric;
+	}
+
+	public void setBiometric(List<Biometric> biometric) {
+		this.biometric = biometric;
+	}
+
+	
+	
+	
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
+
 	@Override
 	public String toString() {
 		return "UserRegister [userId=" + userId + ", userName=" + userName + ", sourceFrom=" + sourceFrom
 				+ ", password=" + password + ", mobilNumber=" + mobilNumber + ", Token=" + Token + ", isActive="
 				+ isActive + ", createDate=" + createDate + ", lastModifiedDate=" + lastModifiedDate + ", profile="
-				+ profile + ", userOtp=" + userOtp + ", userContactList=" + userContactList + "]";
+				+ profile + ", postCard=" + postCard + ", greatingCard=" + greatingCard + ", userOtp=" + userOtp
+				+ ", userContactList=" + userContactList + ", biometric=" + biometric + "]";
 	}
-
-
 }

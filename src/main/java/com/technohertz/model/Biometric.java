@@ -24,7 +24,7 @@ public class Biometric implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "Biometric_ID")
-	private Integer biometricId;
+	private int biometricId;
 	@Column(name = "Biometric_Images")
 	private String biometricImage;
 	@Column(name = "Status")

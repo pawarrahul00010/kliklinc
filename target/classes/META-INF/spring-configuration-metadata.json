@@ -1,0 +1,17 @@
+{
+  "hints": [],
+  "groups": [
+    {
+      "sourceType": "com.technohertz.util.FileStorageProperties",
+      "name": "file",
+      "type": "com.technohertz.util.FileStorageProperties"
+    }
+  ],
+  "properties": [
+    {
+      "sourceType": "com.technohertz.util.FileStorageProperties",
+      "name": "file.upload-dir",
+      "type": "java.lang.String"
+    }
+  ]
+}

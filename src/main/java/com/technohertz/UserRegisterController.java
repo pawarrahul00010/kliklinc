@@ -62,20 +62,6 @@ public class UserRegisterController {
 		return ResponseEntity.ok().body(username);
 	}
 
-//	@GetMapping("/login/{userName}/{password}")
-//	public ResponseEntity<List<UserRegister>> loginCredential(@PathVariable(value = "userName") String userName,
-//			@PathVariable(value = "password") String password) throws ResourceNotFoundException {
-//
-//		List<UserRegister> user = userRegisterService.findByUserNameAndPassword(userName, password);
-//		System.out.println(userName);
-//		if (userName.equals(userName) && password.equals(password)) {
-//
-//			return ResponseEntity.ok(user);
-//		} else
-//			return ResponseEntity.ok(user);
-//
-//		
-//	}
 	
 	@PostMapping("/login")
 	public ResponseEntity<String> loginCredential(@Valid @RequestBody UserRegister userDetails)
@@ -127,7 +113,7 @@ public class UserRegisterController {
 		profile.setDisplayName(userDetails.getUserName());
 		biometric.setIsActive(true);
 		user.setProfile(profile);
-
+		user.getBiometric().add(biometric);	
 		UserOtp userOtp = new UserOtp();
 		if(!userExists(userDetails.getUserName())) {
 			userOtp.setIs_active(true);
@@ -150,30 +136,6 @@ public class UserRegisterController {
 	}
 		
 
-//	@PutMapping("/employees/{id}")
-//	public ResponseEntity<UserRegister> updateEmployee(@PathVariable(value = "id") Long employeeId,
-//			@Valid @RequestBody UserRegister employeeDetails) throws ResourceNotFoundException {
-//		UserRegister employee = userRegisterService.findById(employeeId)
-//				.orElseThrow(() -> new ResourceNotFoundException("Employee not found for this id :: " + employeeId));
-//
-//		employee.setEmailId(employeeDetails.getEmailId());
-//		employee.setLastName(employeeDetails.getLastName());
-//		employee.setFirstName(employeeDetails.getFirstName());
-//		final Employee updatedEmployee = userRegisterService.save(employee);
-//		return ResponseEntity.ok(updatedEmployee);
-//	}
-//
-//	@DeleteMapping("/employees/{id}")
-//	public Map<String, Boolean> deleteEmployee(@PathVariable(value = "id") Long employeeId)
-//			throws ResourceNotFoundException {
-//		Employee employee = userRegisterService.findById(employeeId)
-//				.orElseThrow(() -> new ResourceNotFoundException("Employee not found for this id :: " + employeeId));
-//
-//		userRegisterService.delete(employee);
-//		Map<String, Boolean> response = new HashMap<>();
-//		response.put("deleted", Boolean.TRUE);
-//		return response;
-//	}
 
 	private boolean userNotExists(String userName) {
 		boolean userNotExist = false;
