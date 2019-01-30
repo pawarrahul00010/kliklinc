@@ -30,7 +30,7 @@ public class UserProfileController {
 			@Valid @RequestBody UserProfile profileDetails) throws ResourceNotFoundException {
 		UserProfile profile = (UserProfile) userprofilerepo.findBydisplayName(displayName);
 		
-		MediaFiles mediaFiles=new MediaFiles();
+//		MediaFiles mediaFiles=new MediaFiles();
 		
 		String name=profileDetails.getDisplayName();
 		
@@ -57,17 +57,17 @@ public class UserProfileController {
 //		profile.setPrifilePic(profile.getPrifilePic());
 //		}
 		
-		mediaFiles.setFilePath("abc/bac");
-		mediaFiles.setIsBookMarked(true);
-		mediaFiles.setCreateDate(getDate());
-		mediaFiles.setLastModifiedDate(getDate());
-		mediaFiles.setIsLiked(true);
-		mediaFiles.setIsShared(true);
-		mediaFiles.setLikes(12);
-		mediaFiles.setRating(12);
-		profile.getFiles().add(mediaFiles);
-		
-		
+//		mediaFiles.setFilePath("abc/bac");
+//		mediaFiles.setIsBookMarked(true);
+//		mediaFiles.setCreateDate(getDate());
+//		mediaFiles.setLastModifiedDate(getDate());
+//		mediaFiles.setIsLiked(true);
+//		mediaFiles.setIsShared(true);
+//		mediaFiles.setLikes(12);
+//		mediaFiles.setRating(12);
+//		profile.getFiles().add(mediaFiles);
+//		
+//		
 		
 		final UserProfile updatedUser = userprofilerepo.save(profile);
 		return ResponseEntity.ok(updatedUser);

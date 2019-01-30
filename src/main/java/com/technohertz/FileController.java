@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.technohertz.model.MediaFiles;
 import com.technohertz.payload.UploadFileResponse;
 import com.technohertz.service.impl.FileStorageService;
 
@@ -31,14 +32,14 @@ public class FileController {
 
     @PostMapping("/uploadFile")
     public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file) {
-        String fileName = fileStorageService.storeFile(file);
+        MediaFiles fileName = fileStorageService.storeFile(file);
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/downloadFile/")
-                .path(fileName)
+                .path(fileName.getFilePath())
                 .toUriString();
 
-        return new UploadFileResponse(fileName, fileDownloadUri,
+        return new UploadFileResponse(fileName.getFilePath(), fileDownloadUri,
                 file.getContentType(), file.getSize());
     }
 

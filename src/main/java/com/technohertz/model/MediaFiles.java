@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -44,14 +45,32 @@ public class MediaFiles implements Serializable {
 	@Column(name = "Total_Rating")
 	private Integer rating;
 	
-	@Column(name = "Bookmarked_Status", nullable = false, length = 200)
+	@Column(name = "Bookmarked_Status")
 	private Boolean isBookMarked;
 
-	@Column(name = "Shared_Status", nullable = false, length = 200)
+	@Column(name = "Shared_Status")
 	private Boolean isShared;
 	
-	@Column(name = "Liked_Status", nullable = false, length = 200)
+	@Column(name = "Liked_Status")
 	private Boolean isLiked;
+	 
+	@Column(name = "file_Type")
+	private String fileType;
+
+
+	
+	
+	
+	public MediaFiles(String fileName, String contentType,LocalDateTime createDate,LocalDateTime lastModifiedDate) {
+		this.filePath=fileName;
+		this.fileType=contentType;
+		this.createDate=createDate;
+		this.lastModifiedDate=lastModifiedDate;
+	}
+
+	public MediaFiles() {
+		// TODO Auto-generated constructor stub
+	}
 
 	public Integer getFileId() {
 		return fileId;

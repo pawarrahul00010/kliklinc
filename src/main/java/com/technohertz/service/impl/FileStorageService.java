@@ -10,6 +10,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.technohertz.exception.FileStorageException;
 import com.technohertz.exception.MyFileNotFoundException;
+import com.technohertz.model.MediaFiles;
+import com.technohertz.repo.DBFileRepository;
+import com.technohertz.util.DateUtil;
 import com.technohertz.util.FileStorageProperties;
 
 import java.io.IOException;
@@ -23,6 +26,10 @@ import java.nio.file.StandardCopyOption;
 public class FileStorageService {
 
     private final Path fileStorageLocation;
+    @Autowired
+    private DBFileRepository dbFileRepository;
+    
+    DateUtil dateUtil=new DateUtil();
 
     @Autowired
     public FileStorageService(FileStorageProperties fileStorageProperties) {
@@ -36,7 +43,7 @@ public class FileStorageService {
         }
     }
 
-    public String storeFile(MultipartFile file) {
+    public MediaFiles storeFile(MultipartFile file) {
         // Normalize file name
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
 
@@ -45,12 +52,14 @@ public class FileStorageService {
             if(fileName.contains("..")) {
                 throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
             }
+            MediaFiles dbFile = new MediaFiles(fileName, file.getContentType(),dateUtil.getDate(),dateUtil.getDate());
 
+            
             // Copy file to the target location (Replacing existing file with the same name)
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-            return fileName;
+            return dbFileRepository.save(dbFile);
         } catch (IOException ex) {
             throw new FileStorageException("Could not store file " + fileName + ". Please try again!", ex);
         }
