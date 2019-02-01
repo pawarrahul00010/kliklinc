@@ -3,27 +3,26 @@ package com.technohertz;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 
 import javax.persistence.EntityManager;
-import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.technohertz.exception.ResourceNotFoundException;
 import com.technohertz.model.Biometric;
+import com.technohertz.model.ExceptionHandle;
+import com.technohertz.model.MediaFiles;
 import com.technohertz.model.UserOtp;
 import com.technohertz.model.UserProfile;
 import com.technohertz.model.UserRegister;
-import com.technohertz.repo.UserOtpRepository;
 import com.technohertz.service.IUserRegisterService;
 import com.technohertz.util.OtpUtil;
 import com.technohertz.util.sendSMS;
@@ -39,8 +38,6 @@ public class UserRegisterController {
 
 	private EntityManager entitymanager;
 
-	private UserOtpRepository userOtpRepo;
-	
 	@Autowired
 	private OtpUtil util;
 	
@@ -54,8 +51,25 @@ public class UserRegisterController {
 	}
 
 	@GetMapping("/myprofile/{userId}")
-	public Optional<UserRegister> getAllEmployees(@PathVariable(value = "userId") Integer userId) {
-		return userRegisterService.getById(userId);
+	public ResponseEntity<ExceptionHandle> getAllEmployees(@PathVariable(value = "userId") Integer userId) {
+		ExceptionHandle exceptionHandle =new ExceptionHandle();
+	
+		List<UserRegister> register = userRegisterService.getById(userId);
+	if(!register.isEmpty()) {
+	exceptionHandle.setMassage("your data is retrived successfully");
+	exceptionHandle.setObject(register);
+	exceptionHandle.setError_code("false");
+	exceptionHandle.setStatus("success");
+	return ResponseEntity.ok(exceptionHandle);	
+	}
+	else {
+		exceptionHandle.setMassage("no data found");
+		exceptionHandle.setObject("[]");
+		exceptionHandle.setError_code("true");
+		exceptionHandle.setStatus("fail");
+		return ResponseEntity.ok(exceptionHandle);		
+	}
+	
 	}
 	
 //
@@ -68,58 +82,71 @@ public class UserRegisterController {
 
 	
 	@PostMapping("/login")
-	public ResponseEntity<String> loginCredential(@Valid @RequestBody UserRegister userDetails)
+	public ResponseEntity<ExceptionHandle> loginCredential(@RequestParam String userName,@RequestParam String password)
 			throws ResourceNotFoundException {
 		UserRegister userRegister=null;
-		List<UserRegister> userRegisterList = userRegisterService.findByUserName(userDetails.getUserName());
+		List<UserRegister> userRegisterList = userRegisterService.findByUserName(userName);
 		/*get from database*/
-		
+		ExceptionHandle exceptionHandle = new ExceptionHandle();
 		if(userRegisterList.isEmpty())
 		{
-			return ResponseEntity.ok("Please check username");
+			exceptionHandle.setMassage("no user found please do entry");
+			exceptionHandle.setError_code("1");
+			exceptionHandle.setStatus("fail");
+			exceptionHandle.setObject(userRegisterList);
+			return ResponseEntity.ok(exceptionHandle);
 		}
 		else {
 			userRegister = userRegisterList.get(0);
 	
 		String name = userRegister.getUserName();
-		String password = userRegister.getPassword();
+		String dbpassword = userRegister.getPassword();
 		Boolean userStatus=userRegister.getIsActive();
-		/*get from body*/
-		
-		String uname = userDetails.getUserName();
-		String pass = userDetails.getPassword();
-		
-		if (name.equals(uname) && password.equals(pass) && userStatus==true) 
 
-			return ResponseEntity.ok("user Logged in successfully");
-		 else
-			return ResponseEntity.ok("Please check username or password");
+		
+		if (name.equals(userName) && password.equals(dbpassword) && userStatus==true) 
+		{
+			exceptionHandle.setStatus("success");
+		exceptionHandle.setMassage("Logged in successfully");
+		exceptionHandle.setError_code("false");
+		exceptionHandle.setObject(userRegisterList);
+			return ResponseEntity.ok(exceptionHandle);
+		}else {
+			 exceptionHandle.setStatus("false");
+		exceptionHandle.setMassage("please check username or password");
+		exceptionHandle.setError_code("1");
+		exceptionHandle.setObject("[]");
+			return ResponseEntity.ok(exceptionHandle);
 		}
 	}
+}
 
 
 	@PostMapping("/saveall")
-	public ResponseEntity<String> addUser(@Valid @RequestBody UserRegister userDetails) {
+	public ResponseEntity<ExceptionHandle> addUser(@RequestParam String userName,@RequestParam String password,@RequestParam String mobileNumber) {
 		UserRegister user = new UserRegister();
 
+		ExceptionHandle exceptionHandle=new ExceptionHandle();
 		UserProfile profile = new UserProfile();
-		
+		MediaFiles mediaFiles=new MediaFiles();
 		Biometric biometric=new Biometric();
 
-		user.setUserName(userDetails.getUserName());
-		user.setPassword(userDetails.getPassword());
-		user.setMobilNumber(userDetails.getMobilNumber());
+		user.setUserName(userName);
+		user.setPassword(password);
+		user.setMobilNumber(Long.parseLong(mobileNumber));
 		user.setIsActive(true);
 		user.setSourceFrom("Laptop");
 		user.setToken(getRandomNumber());
 		user.setCreateDate(getDate());
 		user.setLastModifiedDate(getDate());
-		profile.setDisplayName(userDetails.getUserName());
+		profile.setDisplayName(user.getUserName());
+		
+		profile.getFiles().add(mediaFiles);
 		biometric.setIsActive(true);
 		user.setProfile(profile);
 		user.getBiometric().add(biometric);	
 		UserOtp userOtp = new UserOtp();
-		if(!userExists(userDetails.getUserName())) {
+		if(!userExists(userName) ){
 			userOtp.setIs_active(true);
 			userOtp.setCreateDate(getDate());
 			userOtp.setLastModifiedDate(getDate());
@@ -128,30 +155,26 @@ public class UserRegisterController {
 			user.setUserOtp(userOtp);
 
 			userRegisterService.save(user);
-			sms.sendSms(String.valueOf(userDetails.getMobilNumber()), "Your CraziApp Registration is successful enter OTP to verify : "+OTP);
-			return  ResponseEntity.ok("User Saved successfully and your OTP is : "+OTP);	
-
+			sms.sendSms(String.valueOf(mobileNumber), "Your CraziApp Registration is successful enter OTP to verify : "+OTP);
+			
+			exceptionHandle.setStatus("success");
+			exceptionHandle.setMassage("  CraziApp Registration is successful");
+			exceptionHandle.setError_code("false");
+			exceptionHandle.setObject(user);
+				return ResponseEntity.ok(exceptionHandle);
+			
 		}
 		else {
-			
-			return  ResponseEntity.ok("User Allready Exist. . .!!!");
+
+			exceptionHandle.setStatus("fail");
+			exceptionHandle.setMassage(" user is allready Registered");
+			exceptionHandle.setError_code("1");
+			exceptionHandle.setObject("[]");
+				return ResponseEntity.ok(exceptionHandle);
 		}
 	
 	}
 		
-
-
-	private boolean userNotExists(String userName) {
-		boolean userNotExist = false;
-		
-		List<UserRegister> UserList =(List<UserRegister>) userRegisterService.findByUserName(userName);
-		
-		if(UserList.isEmpty()) {
-			
-			userNotExist = true;
-		}
-		return userNotExist;
-	}
 	private boolean userExists(String userName)
 	{
 		String hql="FROM UserRegister as ur WHERE ur.userName= ?1";

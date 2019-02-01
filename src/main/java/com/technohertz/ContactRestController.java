@@ -53,7 +53,7 @@ public class ContactRestController {
 		
 		List<UserContact> contactList = new ArrayList<UserContact>();
 		
-		List<UserRegister> retrivedUserList =(List<UserRegister>) userRegisterService.getAllMobileAndProfile();
+		List<UserRegister> retrivedUserList =(List<UserRegister>) userRegisterService.getAll();
 		
 		List<Long> retrievedContactList = userRegisterService.getAllMobile();
 		

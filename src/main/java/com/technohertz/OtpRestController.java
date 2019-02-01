@@ -1,11 +1,13 @@
 package com.technohertz;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +23,9 @@ import com.technohertz.model.UserOtp;
 import com.technohertz.model.UserRegister;
 import com.technohertz.service.IUserOtpService;
 import com.technohertz.service.IUserRegisterService;
+import com.technohertz.util.JsonUtil;
 import com.technohertz.util.OtpUtil;
+import com.technohertz.util.ResponseObject;
 import com.technohertz.util.sendSMS;
 
 @RestController
@@ -41,6 +45,14 @@ public class OtpRestController {
 	private sendSMS sms;
 	
 	
+	@Autowired
+	private ResponseObject response;
+	
+	
+	@Autowired
+	private JsonUtil jsonUtil;
+	
+	
 	/**
 	 * 2. Save Otp
 	 * @param otp
@@ -49,11 +61,22 @@ public class OtpRestController {
 	 * @return
 	 */
 	@RequestMapping(value = "/otp", method = RequestMethod.POST)
-	public void saveOTP(@Valid @RequestBody UserRegister userRegister,ModelMap map){
+	public ResponseEntity<String> saveOTP(@Valid @RequestBody UserRegister userRegister){
 		
-			long mobilNumber = userRegister.getMobilNumber();
-			String userName = userRegister.getUserName();
-			UserRegister retrievedUserRegister = userRegisterService.findByMobileOrUserName(mobilNumber, userName).get(0);
+			int userId = userRegister.getUserId();
+			
+			UserRegister retrievedUserRegister = new UserRegister();
+			try {
+				retrievedUserRegister = userRegisterService.getOneById(userId);
+			} catch (Exception e) {
+				
+				response.setError(true);
+				response.setMessage("You are not a registered User please register first");
+				response.setData(retrievedUserRegister);
+				response.setStatus("FAILURE");
+				jsonUtil.objToJson(response);
+				return ResponseEntity.ok(jsonUtil.objToJson(response));
+			}
 			
 			if(retrievedUserRegister != null) {
 			
@@ -65,227 +88,150 @@ public class OtpRestController {
 				retrievedUserRegister.setUserOtp(userOtp);
 				
 				userRegisterService.save(retrievedUserRegister);
-				String message = sms.sendSms(String.valueOf(mobilNumber), "Your Registration is successful enter OTP to verify : "+otp);
-				System.out.println(message);
-				map.addAttribute("message", otp);
+				String sendmessage = sms.sendSms(String.valueOf(userId), "Your Registration is successful enter OTP to verify : "+otp);
+				System.out.println(sendmessage);
+				String message = "Your Registration is successful enter OTP to verify";
+				response.setError(false);
+				response.setMessage(message);
+				response.setData(retrievedUserRegister);
+				response.setStatus("SUCCESS");
+				jsonUtil.objToJson(response);
+				return ResponseEntity.ok(jsonUtil.objToJson(response));
 			}
 			else {
-				map.addAttribute("message", "You are not a registered User please register first");
+				
+				response.setError(true);
+				response.setMessage("You are not a registered User please register first");
+				response.setData(retrievedUserRegister);
+				response.setStatus("FAILURE");
+				jsonUtil.objToJson(response);
+				return ResponseEntity.ok(jsonUtil.objToJson(response));
 			}
-		
 	}
 	
-		@RequestMapping(value = "/forget/otp", method = RequestMethod.POST)
-		public String saveForgetOTP(@Valid @RequestBody UserRegister userRegister, ModelMap map){
+		@RequestMapping(value = {"/forget/otp","/otp/resend"}, method = RequestMethod.POST)
+		public ResponseEntity<ResponseObject> saveForgetOTP(@RequestParam("userId") int userId){
 			
-			String userName = userRegister.getUserName();
+			List<UserRegister> retrievedUserRegister = new ArrayList<UserRegister> ();
 			
-			UserRegister retrievedUserRegister = new UserRegister ();
-			
-			if(userName != null) {
-				try {
-				Long mobilNumber = Long.parseLong(userName);
-				 retrievedUserRegister = userRegisterService.findByMobileOrUserName(mobilNumber, null).get(0);
-				}catch (Exception e) {
-					
-					 try {
-						retrievedUserRegister = userRegisterService.findByMobileOrUserName(null, userName).get(0);
-					} catch (Exception e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+			if(String.valueOf(userId) != null) {
+				
+					 retrievedUserRegister = userRegisterService.getById(userId);
+					 
+					 if(!retrievedUserRegister.isEmpty()) {
+						 
+						 if((retrievedUserRegister.get(0).getUserOtp().getOtp() == 0) || (String.valueOf(retrievedUserRegister.get(0).getUserOtp().getOtp()) == null) || (String.valueOf(retrievedUserRegister.get(0).getUserOtp().getOtp()) == "")){
+							 
+							 UserOtp userOtp = new UserOtp();
+								int otp = util.getOTP();
+								userOtp.setOtp(otp);
+								userOtp.setCreateDate(getDate());
+								userOtp.setLastModifiedDate(getDate());
+								retrievedUserRegister.get(0).setUserOtp(userOtp);
+								
+								userRegisterService.save(retrievedUserRegister.get(0));
+								
+								String message = "OTP send successfully enter OTP to verify";
+								response.setError(false);
+								response.setMessage(message);
+								response.setData(retrievedUserRegister.get(0));
+								response.setStatus("SUCCESS");
+								return ResponseEntity.ok(response);
+								
+							
+						}else {
+							String message = "OTP send successfully enter OTP to verify";
+							response.setError(false);
+							response.setMessage(message);
+							response.setData(retrievedUserRegister.get(0));
+							response.setStatus("SUCCESS");
+							return ResponseEntity.ok(response);
+						}
+						 
+					} else {
+						response.setError(true);
+						response.setMessage("You are not a registered User please register first");
+						response.setData("[]");
+						response.setStatus("FAILURE");
+						return ResponseEntity.ok(response);
 					}
-				}
-			}	
-				
+				 }else {
+					 
+					response.setError(true);
+					response.setMessage("wrong userId please enter numeric value");
+					response.setData("[]");
+					response.setStatus("FAILURE");
+					return ResponseEntity.ok(response);
 			
-		/*
-		 * if(retrievedUserRegister != null) {
-		 * 
-		 * UserOtp userOtp = new UserOtp(); int otp = util.getOTP();
-		 * userOtp.setOtp(otp); userOtp.setCreateDate(getDate());
-		 * userOtp.setLastModifiedDate(getDate());
-		 * retrievedUserRegister.setUserOtp(userOtp);
-		 * 
-		 * userRegisterService.save(retrievedUserRegister); map.addAttribute("message",
-		 * otp); } else { map.addAttribute("message",
-		 * "You are not a registered User please register first"); }
-		 */
-		
-			
-			if(retrievedUserRegister.getUserOtp()!= null){
-				if(getDate().minusMinutes(1).isBefore(retrievedUserRegister.getUserOtp().getCreateDate()) ){
-					
-					map.addAttribute("message", retrievedUserRegister.getUserOtp().getOtp());
-					
-					return String.valueOf(retrievedUserRegister.getUserOtp().getOtp());
-					
-				}else{
-					UserOtp saveUserOTP = new UserOtp();
-					int otp = util.getOTP();
-					saveUserOTP.setOtp(otp);
-					saveUserOTP.setOtpId(retrievedUserRegister.getUserOtp().getOtpId());
-					saveUserOTP.setCreateDate(getDate());
-					saveUserOTP.setLastModifiedDate(getDate());
-					retrievedUserRegister.setUserOtp(saveUserOTP);
-					userRegisterService.save(retrievedUserRegister);
-					map.addAttribute("message", otp);
-					
-					return String.valueOf(otp);
-				}
-				
-			}else {
-				map.addAttribute("message", "You are not a registered User please register first");
-				
-				return "You are not a registered User please register first";
+				 }
 			}
-			
-		}
 	
-	@RequestMapping(value = "/otp/resend", method = RequestMethod.GET)
-	public String getOTP(@RequestParam("mobilNumber") String userData, ModelMap map){
-		
-		UserRegister retrievedUserRegister = new UserRegister ();
-		
-		if(userData != null) {
-			try {
-				Long mobilNumber = Long.parseLong(userData);
-				retrievedUserRegister = userRegisterService.findByMobileOrUserName(mobilNumber, null).get(0);
-			}catch (Exception e) {
-				
-				try {
-					retrievedUserRegister = userRegisterService.findByMobileOrUserName(null, userData).get(0);
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		}
-		
-			if(retrievedUserRegister.getUserOtp()!= null){
-					if(getDate().minusMinutes(30).isBefore(retrievedUserRegister.getUserOtp().getCreateDate()) ){
-						
-						map.addAttribute("message", retrievedUserRegister.getUserOtp().getOtp());
-						
-						return String.valueOf(retrievedUserRegister.getUserOtp().getOtp());
-						
-					}else{
-						UserOtp saveUserOTP = new UserOtp();
-						int otp = util.getOTP();
-						saveUserOTP.setOtp(otp);
-						saveUserOTP.setOtpId(retrievedUserRegister.getUserOtp().getOtpId());
-						saveUserOTP.setCreateDate(getDate());
-						saveUserOTP.setLastModifiedDate(getDate());
-						retrievedUserRegister.setUserOtp(saveUserOTP);
-						userRegisterService.save(retrievedUserRegister);
-						map.addAttribute("message", otp);
-						
-						return String.valueOf(otp);
-					}
-					
-				}else {
-					map.addAttribute("message", "You are not a registered User please register first");
-					
-					return "You are not a registered User please register first";
-				}
-			
-	}
 	
 	@RequestMapping(value = "/otp/verify", method = RequestMethod.POST)
-	public String verifyOTP(@Valid @RequestBody UserRegister userRegister, ModelMap map){
+	public ResponseEntity<ResponseObject> verifyOTP(@RequestParam("userId") int userId,@RequestParam("otp") int otp, ModelMap map){
 		
-		String userName = userRegister.getUserName();
-		Integer otp = userRegister.getUserOtp().getOtp();
-		
-		UserRegister retrievedUserRegister = new UserRegister ();
-		
-		if(userName != null) {
-			try {
-			Long mobilNumber = Long.parseLong(userName);
-			 retrievedUserRegister = userRegisterService.findByMobileOrUserName(mobilNumber, null).get(0);
-			}catch (Exception e) {
+			
+			List<UserRegister> retrievedUserRegister = new ArrayList<UserRegister> ();
+			
+			if(String.valueOf(userId) != null) {
 				
-				 try {
-					retrievedUserRegister = userRegisterService.findByMobileOrUserName(null, userName).get(0);
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				 retrievedUserRegister = userRegisterService.getById(userId);
+				 
+				 if(!retrievedUserRegister.isEmpty()) {				
+		
+					if(retrievedUserRegister.get(0).getUserOtp()!= null){
+							
+							if(retrievedUserRegister.get(0).getUserOtp().getOtp() == otp) {
+								
+								UserOtp saveUserOTP = new UserOtp();
+								saveUserOTP.setOtp(otp);
+								saveUserOTP.setOtpId(retrievedUserRegister.get(0).getUserOtp().getOtpId());
+								saveUserOTP.setCreateDate(retrievedUserRegister.get(0).getUserOtp().getCreateDate());
+								saveUserOTP.setLastModifiedDate(getDate());
+								retrievedUserRegister.get(0).setUserOtp(saveUserOTP);
+								userRegisterService.save(retrievedUserRegister.get(0));
+								
+								response.setError(false);
+								response.setMessage("verified");
+								response.setData(retrievedUserRegister.get(0));
+								response.setStatus("SUCCESS");
+								return ResponseEntity.ok(response);
+								
+							}else {
+								
+								response.setError(true);
+								response.setMessage("Sorry wrong OTP please try again...");
+								response.setData("[]");
+								response.setStatus("FAILURE");
+								return ResponseEntity.ok(response);
+									
+								}
+				
+						}else {
+							response.setError(true);
+							response.setMessage("click on resend OTP");
+							response.setData("[]");
+							response.setStatus("FAILURE");
+							return ResponseEntity.ok(response);
+						}
+						
+				 } else {
+						response.setError(true);
+						response.setMessage("You are not a registered User please register first");
+						response.setData("[]");
+						response.setStatus("FAILURE");
+						return ResponseEntity.ok(response);
+					}
+			 }
+			else {	
+				
+				response.setError(true);
+				response.setMessage("wrong userId please enter numeric value");
+				response.setData("[]");
+				response.setStatus("FAILURE");
+				return ResponseEntity.ok(response);
 			}
-		}	
-			
-		
-	/*
-	 * if(retrievedUserRegister != null) {
-	 * 
-	 * UserOtp userOtp = new UserOtp(); int otp = util.getOTP();
-	 * userOtp.setOtp(otp); userOtp.setCreateDate(getDate());
-	 * userOtp.setLastModifiedDate(getDate());
-	 * retrievedUserRegister.setUserOtp(userOtp);
-	 * 
-	 * userRegisterService.save(retrievedUserRegister); map.addAttribute("message",
-	 * otp); } else { map.addAttribute("message",
-	 * "You are not a registered User please register first"); }
-	 */
-	
-		
-		if(retrievedUserRegister.getUserOtp()!= null){
-			if(getDate().minusMinutes(1).isBefore(retrievedUserRegister.getUserOtp().getCreateDate()) ){
-				
-				if(retrievedUserRegister.getUserOtp().getOtp() == otp) {
-					
-					UserOtp saveUserOTP = new UserOtp();
-					saveUserOTP.setOtp(otp);
-					saveUserOTP.setOtpId(retrievedUserRegister.getUserOtp().getOtpId());
-					saveUserOTP.setCreateDate(retrievedUserRegister.getUserOtp().getCreateDate());
-					saveUserOTP.setLastModifiedDate(getDate());
-					retrievedUserRegister.setUserOtp(saveUserOTP);
-					userRegisterService.save(retrievedUserRegister);
-					
-					map.addAttribute("message", "verified");
-					return "verified";
-					
-				}else {
-					UserOtp saveUserOTP = new UserOtp();
-					int newOtp = util.getOTP();
-					saveUserOTP.setOtp(newOtp);
-					saveUserOTP.setOtpId(retrievedUserRegister.getUserOtp().getOtpId());
-					saveUserOTP.setCreateDate(getDate());
-					saveUserOTP.setLastModifiedDate(getDate());
-					retrievedUserRegister.setUserOtp(saveUserOTP);
-					userRegisterService.save(retrievedUserRegister);
-					map.addAttribute("message", " Sorry wrong OTP please try again new OTP is: "+newOtp);
-					
-					return String.valueOf(newOtp);
-					
-					
-				}
-				
-				
-				
-			}else{
-				UserOtp saveUserOTP = new UserOtp();
-				int newOtp = util.getOTP();
-				saveUserOTP.setOtp(newOtp);
-				saveUserOTP.setOtpId(retrievedUserRegister.getUserOtp().getOtpId());
-				saveUserOTP.setCreateDate(getDate());
-				saveUserOTP.setLastModifiedDate(getDate());
-				retrievedUserRegister.setUserOtp(saveUserOTP);
-				userRegisterService.save(retrievedUserRegister);
-				map.addAttribute("message", " Your OTP is expired please try again new OTP is: "+newOtp);
-				
-				return String.valueOf(newOtp);
-			}
-			
-		}else {
-			map.addAttribute("message", "You are not a registered User please register first");
-			
-			return "You are not a registered User please register first";
 		}
-		
-	}
-	
-	
-
 	/**
 	 * 3. Get All Otps
 	 * @param map

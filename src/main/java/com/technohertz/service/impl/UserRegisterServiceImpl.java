@@ -3,7 +3,6 @@ package com.technohertz.service.impl;
 
 
 import java.util.List;
-import java.util.Optional;
 
 import javax.persistence.EntityManager;
 
@@ -86,8 +85,8 @@ public class UserRegisterServiceImpl implements IUserRegisterService {
 
 
 	@Override
-	public Optional<UserRegister> getById(Integer userId) {
-		Optional<UserRegister> idList=userRegisterRepo.findById(userId);
+	public List<UserRegister> getById(Integer userId) {
+		List<UserRegister> idList=userRegisterRepo.getById(userId);
 		return idList;
 	}
 	@SuppressWarnings("unchecked")
@@ -102,14 +101,6 @@ public class UserRegisterServiceImpl implements IUserRegisterService {
 
 	}
 	
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<UserRegister> getAllMobileAndProfile() {
-		
-		return entityManager.createQuery("SELECT r from UserRegister r ")
-				.getResultList();
-
-	}
 
 	@SuppressWarnings("unchecked")
 	@Override

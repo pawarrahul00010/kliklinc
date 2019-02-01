@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 			try {
 				// Construct data
 				String apiKey = "apikey=" + "SPwzQH4INk0-AEo3VhF18WF9V5GKTNQeL37IPNtv4u";
-				String sender = "&sender=" + /*"TXTLCL"*/ "CraziApp";
+			String sender = "&sender=" + /*"TXTLCL"*/ "CraziApp" ;
 				String message = "&message=" + txt;
 				String numbers = "&numbers=" + mobile;
 				

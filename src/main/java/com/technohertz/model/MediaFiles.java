@@ -33,10 +33,10 @@ public class MediaFiles implements Serializable {
 	@Column(name = "File_Path")
 	private String filePath;
 	
-	@Column(name = "File_Create_Date", nullable = false)
+	@Column(name = "File_Create_Date")
 	private LocalDateTime createDate;
 	
-	@Column(name = "File_Last_Modified_Date", nullable = false, length = 200)
+	@Column(name = "File_Last_Modified_Date")
 	private LocalDateTime lastModifiedDate;
 	
 	@Column(name = "Total_Likes")
