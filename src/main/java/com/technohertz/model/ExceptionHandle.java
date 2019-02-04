@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class ExceptionHandle implements Serializable {
 private String error_code;
 private String status;
-private Object object;
+private Object data;
 private String massage;
 
 
@@ -22,12 +22,7 @@ public String getStatus() {
 public void setStatus(String status) {
 	this.status = status;
 }
-public Object getObject() {
-	return object;
-}
-public void setObject(Object object) {
-	this.object = object;
-}
+
 public String getMassage() {
 	return massage;
 }
@@ -35,9 +30,26 @@ public void setMassage(String massage) {
 	this.massage = massage;
 }
 
+
+
+/**
+ * @return the data
+ */
+public Object getData() {
+	return data;
+}
+/**
+ * @param data the data to set
+ */
+public void setData(Object data) {
+	this.data = data;
+}
+/* (non-Javadoc)
+ * @see java.lang.Object#toString()
+ */
 @Override
 public String toString() {
-	return "ExceptionHandle [error_code=" + error_code + ", status=" + status + ", object=" + object + ", massage="
+	return "ExceptionHandle [error_code=" + error_code + ", status=" + status + ", data=" + data + ", massage="
 			+ massage + "]";
 }
 

@@ -1,34 +1,29 @@
 package com.technohertz;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 
 import javax.persistence.EntityManager;
-import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.technohertz.exception.ResourceNotFoundException;
 import com.technohertz.model.Biometric;
-import com.technohertz.model.ExceptionHandle;
-import com.technohertz.model.MediaFiles;
 import com.technohertz.model.UserOtp;
 import com.technohertz.model.UserProfile;
 import com.technohertz.model.UserRegister;
-import com.technohertz.repo.UserOtpRepository;
 import com.technohertz.service.IUserRegisterService;
 import com.technohertz.util.OtpUtil;
+import com.technohertz.util.ResponseObject;
 import com.technohertz.util.sendSMS;
 
 @RestController
@@ -42,7 +37,8 @@ public class UserRegisterController {
 
 	private EntityManager entitymanager;
 
-	private UserOtpRepository userOtpRepo;
+	@Autowired
+	private ResponseObject response;
 	
 	@Autowired
 	private OtpUtil util;
@@ -57,145 +53,172 @@ public class UserRegisterController {
 	}
 
 	@GetMapping("/myprofile/{userId}")
-	public ResponseEntity<ExceptionHandle> getAllEmployees(@PathVariable(value = "userId") Integer userId) {
-		ExceptionHandle exceptionHandle =new ExceptionHandle();
-	
-		List<UserRegister> register=	userRegisterService.getById(userId);
-	if(!register.isEmpty()) {
-	exceptionHandle.setMassage("your data is retrived successfully");
-	exceptionHandle.setObject(register);
-	exceptionHandle.setError_code("");
-	exceptionHandle.setStatus("success");
-	return ResponseEntity.ok(exceptionHandle);	
-	}
-	else {
-		exceptionHandle.setMassage("no data found");
-		exceptionHandle.setObject("[]");
-		exceptionHandle.setError_code("");
-		exceptionHandle.setStatus("fail");
-		return ResponseEntity.ok(exceptionHandle);		
-	}
-	
+	public ResponseEntity<ResponseObject> getAllEmployees(@PathVariable(value = "userId") String userid) {
+		
+		
+		int userId = 0;
+		List<UserRegister> register = new ArrayList<UserRegister>();
+		try {
+			
+			userId = Integer.parseInt(userid);
+			register = userRegisterService.getById(userId);
+			
+		} catch (NumberFormatException e) {
+			
+			response.setError("1");
+			response.setMessage("wrong userId please enter numeric value");
+			response.setData("[]");
+			response.setStatus("FAIL");
+			return ResponseEntity.ok(response);
+			
+		}
+		
+		if(!register.isEmpty()) {
+		response.setMessage("your data is retrived successfully");
+		response.setData(register);
+		response.setError("0");
+		response.setStatus("success");
+		return ResponseEntity.ok(response);	
+		}
+		else {
+			response.setMessage("no data found");
+			response.setData("[]");
+			response.setError("0");
+			response.setStatus("FAIL");
+			return ResponseEntity.ok(response);		
+		}
+		
 	}
 	
 //
-	@GetMapping("/profile/{name}")
-	public ResponseEntity<List<UserRegister>> getEmployeeById(@PathVariable(value = "name") String userName)
-			throws ResourceNotFoundException {
-		List<UserRegister> username = (List<UserRegister>) userRegisterService.findByUserName(userName);
-		return ResponseEntity.ok().body(username);
-	}
-
 	
+	@SuppressWarnings("unused")
 	@PostMapping("/login")
-	public ResponseEntity<ExceptionHandle> loginCredential(@RequestParam String userName,@RequestParam String passWord)
+	public ResponseEntity<ResponseObject> loginCredential(@RequestParam String user,@RequestParam String pass)
 			throws ResourceNotFoundException {
-		UserRegister userRegister=null;
-		List<UserRegister> userRegisterList = userRegisterService.findByUserName(userName);
-		/*get from database*/
-		ExceptionHandle exceptionHandle = new ExceptionHandle();
-		if(userRegisterList.isEmpty())
-		{
-			exceptionHandle.setMassage("no user found please do entry");
-			exceptionHandle.setError_code("1");
-			exceptionHandle.setStatus("fail");
-			exceptionHandle.setObject(userRegisterList);
-			return ResponseEntity.ok(exceptionHandle);
-		}
-		else {
-			userRegister = userRegisterList.get(0);
-	
-		String name = userRegister.getUserName();
-		String password = userRegister.getPassword();
-		Boolean userStatus=userRegister.getIsActive();
-
 		
-		if (name.equals(userName) && password.equals(passWord) && userStatus==true) 
-		{
-			exceptionHandle.setStatus("true");
-		exceptionHandle.setMassage("Logged in successfully");
-		exceptionHandle.setError_code("");
-		exceptionHandle.setObject(userRegisterList);
-			return ResponseEntity.ok(exceptionHandle);
-		}else {
-			 exceptionHandle.setStatus("false");
-		exceptionHandle.setMassage("please check username or password");
-		exceptionHandle.setError_code("1");
-		exceptionHandle.setObject("[]");
-			return ResponseEntity.ok(exceptionHandle);
-		}
-	}
+			if(user.equals("") && user == null && pass.equals("") && pass == null) {
+				
+				response.setError("1");
+				response.setMessage("wrong username and password please enter correct value");
+				response.setData("[]");
+				response.setStatus("FAIL");
+				return ResponseEntity.ok(response);
+			
+			}
+			else {
+				UserRegister userRegister=null;
+				List<UserRegister> userRegisterList = userRegisterService.findByUserName(user);
+				/*get from database*/
+				
+					if(userRegisterList.isEmpty())
+					{
+						response.setMessage("user not found please try again");
+						response.setError("1");
+						response.setStatus("FAIL");
+						response.setData(userRegisterList);
+						return ResponseEntity.ok(response);
+					}
+					else {
+						userRegister = userRegisterList.get(0);
+				
+						String name = userRegister.getUserName();
+						String password = userRegister.getPassword();
+						Boolean userStatus=userRegister.getIsActive();
+			
+					
+					if (name.equals(user) && password.equals(pass) && userStatus==true) 
+					{
+						response.setStatus("true");
+						response.setMessage("Logged in successfully");
+						response.setError("");
+						response.setData(userRegisterList);
+						return ResponseEntity.ok(response);
+						
+					}else {
+						 response.setStatus("false");
+						response.setMessage("please check username or password");
+						response.setError("1");
+						response.setData("[]");
+						return ResponseEntity.ok(response);
+					}
+				}
+			}
 		}
 
 
+	@SuppressWarnings("unused")
 	@PostMapping("/saveall")
-	public ResponseEntity<ExceptionHandle> addUser(@RequestParam String userName,@RequestParam String password,@RequestParam String mobileNumber) {
-		UserRegister user = new UserRegister();
-
-		ExceptionHandle exceptionHandle=new ExceptionHandle();
-		UserProfile profile = new UserProfile();
-		//MediaFiles mediaFiles=new MediaFiles();
-		Biometric biometric=new Biometric();
-
-		user.setUserName(userName);
-		user.setPassword(password);
-		user.setMobilNumber(Long.parseLong(mobileNumber));
-		user.setIsActive(true);
-		user.setSourceFrom("Laptop");
-		user.setToken(getRandomNumber());
-		user.setCreateDate(getDate());
-		user.setLastModifiedDate(getDate());
-		profile.setDisplayName(user.getUserName());
-		//profile.getFiles().add(mediaFiles);
-		biometric.setIsActive(true);
-		user.setProfile(profile);
-		user.getBiometric().add(biometric);	
-		UserOtp userOtp = new UserOtp();
-		if(!userExists(userName) ){
-			userOtp.setIs_active(true);
-			userOtp.setCreateDate(getDate());
-			userOtp.setLastModifiedDate(getDate());
-			int OTP = util.getOTP();
-			userOtp.setOtp(OTP);
-			user.setUserOtp(userOtp);
-
-			userRegisterService.save(user);
-			sms.sendSms(String.valueOf(mobileNumber), "Your CraziApp Registration is successful enter OTP to verify : "+OTP);
+	public ResponseEntity<ResponseObject> addUser(@RequestParam String userName,
+												@RequestParam String password,
+												@RequestParam String mobileNumber) {
+		
+		if(userName.equals("") && userName == null &&
+				password.equals("") && password == null &&
+				mobileNumber.equals("") && mobileNumber == null) {
 			
-			exceptionHandle.setStatus("Success");
-			exceptionHandle.setMassage("  CraziApp Registration is successful");
-			exceptionHandle.setError_code("");
-			exceptionHandle.setObject(user);
-				return ResponseEntity.ok(exceptionHandle);
-			
-			
-			
-
+			response.setError("1");
+			response.setMessage("wrong userName, password, mobileNumber please enter correct value");
+			response.setData("[]");
+			response.setStatus("FAIL");
+			return ResponseEntity.ok(response);
+		
+		}else {
+		
+				UserRegister user = new UserRegister();
+		
+				UserProfile profile = new UserProfile();
+				//MediaFiles mediaFiles=new MediaFiles();
+				Biometric biometric=new Biometric();
+		
+				user.setUserName(userName);
+				user.setPassword(password);
+				user.setMobilNumber(Long.parseLong(mobileNumber));
+				user.setIsActive(true);
+				user.setSourceFrom("Laptop");
+				user.setToken(getRandomNumber());
+				user.setCreateDate(getDate());
+				user.setLastModifiedDate(getDate());
+				profile.setDisplayName(user.getUserName());
+				//profile.getFiles().add(mediaFiles);
+				biometric.setIsActive(true);
+				user.setProfile(profile);
+				user.getBiometric().add(biometric);	
+				UserOtp userOtp = new UserOtp();
+				
+				if(!userExists(userName) ){
+					userOtp.setIs_active(true);
+					userOtp.setCreateDate(getDate());
+					userOtp.setLastModifiedDate(getDate());
+					int OTP = util.getOTP();
+					userOtp.setOtp(OTP);
+					user.setUserOtp(userOtp);
+		
+					userRegisterService.save(user);
+					
+					sms.sendSms(String.valueOf(mobileNumber), "Your CraziApp Registration is successful enter OTP to verify : "+OTP);
+					
+					response.setStatus("Success");
+					response.setMessage("  CraziApp Registration is successful");
+					response.setError("");
+					response.setData(user);
+					
+					return ResponseEntity.ok(response);
+					
+				}
+				else {
+		
+					response.setStatus("FAIL");
+					response.setMessage(" user is allready Registered");
+					response.setError("1");
+					response.setData("[]");
+						return ResponseEntity.ok(response);
+				}
+			}
 		}
-		else {
-
-			exceptionHandle.setStatus("FAIL");
-			exceptionHandle.setMassage(" user is allready Registered");
-			exceptionHandle.setError_code("1");
-			exceptionHandle.setObject("[]");
-				return ResponseEntity.ok(exceptionHandle);
-		}
-	
-	}
 		
 
 
-	private boolean userNotExists(String userName) {
-		boolean userNotExist = false;
-		
-		List<UserRegister> UserList =(List<UserRegister>) userRegisterService.findByUserName(userName);
-		
-		if(UserList.isEmpty()) {
-			
-			userNotExist = true;
-		}
-		return userNotExist;
-	}
 	private boolean userExists(String userName)
 	{
 		String hql="FROM UserRegister as ur WHERE ur.userName= ?1";
@@ -207,7 +230,6 @@ public class UserRegisterController {
 
 	private LocalDateTime getDate() {
 
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 		LocalDateTime now = LocalDateTime.now();
 
 		return now;
