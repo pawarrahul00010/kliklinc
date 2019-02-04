@@ -3,20 +3,17 @@ package com.technohertz.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.DynamicUpdate;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "Media_Files")
 @DynamicUpdate
@@ -40,7 +37,7 @@ public class MediaFiles implements Serializable {
 	private LocalDateTime lastModifiedDate;
 	
 	@Column(name = "Total_Likes")
-	private Integer likes;
+	private Long likes;
 	
 	@Column(name = "Total_Rating")
 	private Integer rating;
@@ -50,20 +47,16 @@ public class MediaFiles implements Serializable {
 
 	@Column(name = "Shared_Status")
 	private Boolean isShared;
-	
-	@Column(name = "Liked_Status")
-	private Boolean isLiked;
-	 
-	@Column(name = "file_Type")
-	private String fileType;
 
-
+	@ManyToOne(cascade=CascadeType.ALL)
+	@JoinColumn(name ="USR_DET_ID")
+	private UserProfile profile;
 	
 	
 	
-	public MediaFiles(String fileName, String contentType,LocalDateTime createDate,LocalDateTime lastModifiedDate) {
+	public MediaFiles(String fileName,LocalDateTime createDate,LocalDateTime lastModifiedDate) {
 		this.filePath=fileName;
-		this.fileType=contentType;
+		
 		this.createDate=createDate;
 		this.lastModifiedDate=lastModifiedDate;
 	}
@@ -104,11 +97,11 @@ public class MediaFiles implements Serializable {
 		this.lastModifiedDate = lastModifiedDate;
 	}
 
-	public Integer getLikes() {
+	public Long getLikes() {
 		return likes;
 	}
 
-	public void setLikes(Integer likes) {
+	public void setLikes(Long likes) {
 		this.likes = likes;
 	}
 
@@ -136,23 +129,26 @@ public class MediaFiles implements Serializable {
 		this.isShared = isShared;
 	}
 
-	public Boolean getIsLiked() {
-		return isLiked;
+
+	public UserProfile getProfile() {
+		return profile;
 	}
 
-	public void setIsLiked(Boolean isLiked) {
-		this.isLiked = isLiked;
+	public void setProfile(UserProfile profile) {
+		this.profile = profile;
 	}
-
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
+
 	@Override
 	public String toString() {
 		return "MediaFiles [fileId=" + fileId + ", filePath=" + filePath + ", createDate=" + createDate
 				+ ", lastModifiedDate=" + lastModifiedDate + ", likes=" + likes + ", rating=" + rating
-				+ ", isBookMarked=" + isBookMarked + ", isShared=" + isShared + ", isLiked=" + isLiked + "]";
+				+ ", isBookMarked=" + isBookMarked + ", isShared=" + isShared + ", profile=" + profile + "]";
 	}
+
+
 
 
 

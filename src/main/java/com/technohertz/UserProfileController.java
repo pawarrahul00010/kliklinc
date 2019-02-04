@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -34,17 +37,17 @@ public class UserProfileController {
 	@Autowired
 	private UserProfileRepository userprofilerepo;
 	
+	@Autowired
+	private MediaFileRepo mediaFileRepo;
+	
 	  @Autowired
 	  private FileStorageService fileStorageService;
-	  
-	  @Autowired
-	  private MediaFileRepo mediaFileRepo;
-	  
 	  private static String UPLOADED_FOLDER = "F://temp//";
 		
 	  
 	  @PutMapping("/user/displayName/{id}")
 		public ResponseEntity<ExceptionHandle> updateDisplayName(@RequestParam("displayName") String displayName,@PathVariable(value = "id") int  id) throws ResourceNotFoundException {
+			UserProfile userProfile = new UserProfile();
 			ExceptionHandle exceptionHandle =new ExceptionHandle();
 			List<UserProfile> profile = null;
 			 UserProfile updateDisplayName =null;
@@ -78,9 +81,37 @@ public class UserProfileController {
 			}
 			
 		}
+	  @PostMapping("/likes")
+	    public long totalLikes(@RequestParam("fileid") int fileid,@RequestParam("isLiked") boolean isLiked) {
+			MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
+			//Long totalLikes=mediaFiles.getLikes();
+			long count=0;
+			System.out.println(mediaFiles.getLikes());
+			if(mediaFiles.getLikes() == null) {
+				count=0;
+			} else{
+				count=mediaFiles.getLikes();
+			}
+			if(isLiked==true) {
+				count = count+1;
+				mediaFiles.setLikes(count);
+				mediaFileRepo.save(mediaFiles);
+		    	return count;
+		    	
+			}
+			else {
+			
+				mediaFiles.setLikes(count);
+				mediaFileRepo.save(mediaFiles);
+		    	return count;
+			}
+	    
+			}
+
 	  
 		@PutMapping("/user/aboutUs/{id}")
 		public ResponseEntity<ExceptionHandle> updateStatus(@RequestParam("aboutUs") String aboutUs,@PathVariable(value = "id") int  id) throws ResourceNotFoundException {
+			UserProfile userProfile = new UserProfile();
 			ExceptionHandle exceptionHandle =new ExceptionHandle();
 			List<UserProfile> profile = null;
 			 UserProfile updateDisplayName =null;
@@ -114,20 +145,19 @@ public class UserProfileController {
 			
 		}
 	
-		 @PutMapping("/uploadFile/{id}")
-		    public UploadFileResponse updateProfile(@RequestParam("file") MultipartFile file,@PathVariable(value = "id") int id) {
-		    	UserProfile userProfile = fileStorageService.saveProfile(file,id);
-		    	MediaFiles files=mediaFileRepo.getOne(Integer.valueOf(String.valueOf(userProfile.getFiles().get(userProfile.getFiles().size()-1).getFileId())));
-		        System.out.println(files);
-		    	String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-		                .path("/downloadFile/")
-		                .path(String.valueOf(files.getFileId()))
-		                .toUriString();
-		      
-				return new UploadFileResponse(userProfile.getCurrentProfile(), fileDownloadUri,
-		                file.getContentType(), file.getSize());
-		    }
-			
+    @PutMapping("/uploadFile/{id}")
+    public UploadFileResponse updateProfile(@RequestParam("file") MultipartFile file,@PathVariable(value = "id") int id) {
+    	UserProfile userProfile = fileStorageService.saveProfile(file,id);
+    	MediaFiles files=mediaFileRepo.getOne(Integer.valueOf(String.valueOf(userProfile.getFiles().get(userProfile.getFiles().size()-1).getFileId())));
+        System.out.println(files);
+    	String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/downloadFile/")
+                .path(String.valueOf(files.getFileId()))
+                .toUriString();
+      
+		return new UploadFileResponse(userProfile.getCurrentProfile(), fileDownloadUri,
+                file.getContentType(), file.getSize());
+    }
 	
     @PostMapping("/upload") // //new annotation since 4.3
     public String singleFileUpload(@RequestParam("file") MultipartFile file,
@@ -155,5 +185,13 @@ public class UserProfileController {
         return "redirect:/uploadStatus";
     }
  
+	private LocalDateTime getDate() {
+
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+		LocalDateTime now = LocalDateTime.now();
+
+		return now;
+
+	}
 
 }

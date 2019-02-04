@@ -3,15 +3,18 @@ package com.technohertz;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import javax.persistence.EntityManager;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +26,7 @@ import com.technohertz.model.MediaFiles;
 import com.technohertz.model.UserOtp;
 import com.technohertz.model.UserProfile;
 import com.technohertz.model.UserRegister;
+import com.technohertz.repo.UserOtpRepository;
 import com.technohertz.service.IUserRegisterService;
 import com.technohertz.util.OtpUtil;
 import com.technohertz.util.sendSMS;
@@ -38,6 +42,8 @@ public class UserRegisterController {
 
 	private EntityManager entitymanager;
 
+	private UserOtpRepository userOtpRepo;
+	
 	@Autowired
 	private OtpUtil util;
 	
@@ -54,18 +60,18 @@ public class UserRegisterController {
 	public ResponseEntity<ExceptionHandle> getAllEmployees(@PathVariable(value = "userId") Integer userId) {
 		ExceptionHandle exceptionHandle =new ExceptionHandle();
 	
-		List<UserRegister> register = userRegisterService.getById(userId);
+		List<UserRegister> register=	userRegisterService.getById(userId);
 	if(!register.isEmpty()) {
 	exceptionHandle.setMassage("your data is retrived successfully");
 	exceptionHandle.setObject(register);
-	exceptionHandle.setError_code("false");
+	exceptionHandle.setError_code("");
 	exceptionHandle.setStatus("success");
 	return ResponseEntity.ok(exceptionHandle);	
 	}
 	else {
 		exceptionHandle.setMassage("no data found");
 		exceptionHandle.setObject("[]");
-		exceptionHandle.setError_code("true");
+		exceptionHandle.setError_code("");
 		exceptionHandle.setStatus("fail");
 		return ResponseEntity.ok(exceptionHandle);		
 	}
@@ -82,7 +88,7 @@ public class UserRegisterController {
 
 	
 	@PostMapping("/login")
-	public ResponseEntity<ExceptionHandle> loginCredential(@RequestParam String userName,@RequestParam String password)
+	public ResponseEntity<ExceptionHandle> loginCredential(@RequestParam String userName,@RequestParam String passWord)
 			throws ResourceNotFoundException {
 		UserRegister userRegister=null;
 		List<UserRegister> userRegisterList = userRegisterService.findByUserName(userName);
@@ -100,15 +106,15 @@ public class UserRegisterController {
 			userRegister = userRegisterList.get(0);
 	
 		String name = userRegister.getUserName();
-		String dbpassword = userRegister.getPassword();
+		String password = userRegister.getPassword();
 		Boolean userStatus=userRegister.getIsActive();
 
 		
-		if (name.equals(userName) && password.equals(dbpassword) && userStatus==true) 
+		if (name.equals(userName) && password.equals(passWord) && userStatus==true) 
 		{
-			exceptionHandle.setStatus("success");
+			exceptionHandle.setStatus("true");
 		exceptionHandle.setMassage("Logged in successfully");
-		exceptionHandle.setError_code("false");
+		exceptionHandle.setError_code("");
 		exceptionHandle.setObject(userRegisterList);
 			return ResponseEntity.ok(exceptionHandle);
 		}else {
@@ -119,7 +125,7 @@ public class UserRegisterController {
 			return ResponseEntity.ok(exceptionHandle);
 		}
 	}
-}
+		}
 
 
 	@PostMapping("/saveall")
@@ -128,7 +134,7 @@ public class UserRegisterController {
 
 		ExceptionHandle exceptionHandle=new ExceptionHandle();
 		UserProfile profile = new UserProfile();
-		MediaFiles mediaFiles=new MediaFiles();
+		//MediaFiles mediaFiles=new MediaFiles();
 		Biometric biometric=new Biometric();
 
 		user.setUserName(userName);
@@ -140,8 +146,7 @@ public class UserRegisterController {
 		user.setCreateDate(getDate());
 		user.setLastModifiedDate(getDate());
 		profile.setDisplayName(user.getUserName());
-		
-		profile.getFiles().add(mediaFiles);
+		//profile.getFiles().add(mediaFiles);
 		biometric.setIsActive(true);
 		user.setProfile(profile);
 		user.getBiometric().add(biometric);	
@@ -157,16 +162,19 @@ public class UserRegisterController {
 			userRegisterService.save(user);
 			sms.sendSms(String.valueOf(mobileNumber), "Your CraziApp Registration is successful enter OTP to verify : "+OTP);
 			
-			exceptionHandle.setStatus("success");
+			exceptionHandle.setStatus("Success");
 			exceptionHandle.setMassage("  CraziApp Registration is successful");
-			exceptionHandle.setError_code("false");
+			exceptionHandle.setError_code("");
 			exceptionHandle.setObject(user);
 				return ResponseEntity.ok(exceptionHandle);
 			
+			
+			
+
 		}
 		else {
 
-			exceptionHandle.setStatus("fail");
+			exceptionHandle.setStatus("FAIL");
 			exceptionHandle.setMassage(" user is allready Registered");
 			exceptionHandle.setError_code("1");
 			exceptionHandle.setObject("[]");
@@ -175,6 +183,19 @@ public class UserRegisterController {
 	
 	}
 		
+
+
+	private boolean userNotExists(String userName) {
+		boolean userNotExist = false;
+		
+		List<UserRegister> UserList =(List<UserRegister>) userRegisterService.findByUserName(userName);
+		
+		if(UserList.isEmpty()) {
+			
+			userNotExist = true;
+		}
+		return userNotExist;
+	}
 	private boolean userExists(String userName)
 	{
 		String hql="FROM UserRegister as ur WHERE ur.userName= ?1";

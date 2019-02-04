@@ -133,7 +133,7 @@ public class FileStorageService {
 
 	public Resource loadFileAsResource(int fileId) {
 		try {
-			/* Path filePath = this.fileStorageLocation.resolve(fileName).normalize(); */
+			//Path filePath = this.fileStorageLocation.resolve(fileName).normalize(); /
 			MediaFiles mediaFiles = mediaFileRepo.getOne(fileId);
 			Path filePath = this.fileStorageLocation.resolve(mediaFiles.getFilePath());
 			
