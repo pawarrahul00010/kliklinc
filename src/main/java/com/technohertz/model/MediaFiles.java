@@ -40,7 +40,7 @@ public class MediaFiles implements Serializable {
 	private Long likes;
 	
 	@Column(name = "Total_Rating")
-	private Integer rating;
+	private Long rating;
 	
 	@Column(name = "Bookmarked_Status")
 	private Boolean isBookMarked;
@@ -105,12 +105,12 @@ public class MediaFiles implements Serializable {
 		this.likes = likes;
 	}
 
-	public Integer getRating() {
+	public Long getRating() {
 		return rating;
 	}
 
-	public void setRating(Integer rating) {
-		this.rating = rating;
+	public void setRating(Long rate) {
+		this.rating = rate;
 	}
 
 	public Boolean getIsBookMarked() {

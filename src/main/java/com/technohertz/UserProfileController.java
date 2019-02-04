@@ -59,14 +59,14 @@ public class UserProfileController {
 					profile.get(0).setProfileId(id);
 					 updateDisplayName = userprofilerepo.save(profile.get(0));
 				exceptionHandle.setMassage("your Display name updated successfully");
-				exceptionHandle.setObject(updateDisplayName);
+				exceptionHandle.setData(updateDisplayName);
 				exceptionHandle.setError_code("");
 				exceptionHandle.setStatus("success");
 				return ResponseEntity.ok(exceptionHandle);	
 				}
 					else {
 						exceptionHandle.setMassage("user not available");
-						exceptionHandle.setObject("[]");
+						exceptionHandle.setData("[]");
 						exceptionHandle.setError_code("1");
 						exceptionHandle.setStatus("fail");
 						return ResponseEntity.ok(exceptionHandle);
@@ -74,15 +74,15 @@ public class UserProfileController {
 			}
 			else {
 				exceptionHandle.setMassage("something gone wrong");
-				exceptionHandle.setObject("[]");
+				exceptionHandle.setData("[]");
 				exceptionHandle.setError_code("1");
 				exceptionHandle.setStatus("fail");
 				return ResponseEntity.ok(exceptionHandle);
 			}
 			
 		}
-	  @PostMapping("/likes")
-	    public long totalLikes(@RequestParam("fileid") int fileid,@RequestParam("isLiked") boolean isLiked) {
+	  @PostMapping("/likes/{userId}")
+	    public long totalLikes(@RequestParam("fileid") int fileid,@RequestParam("isLiked") boolean isLiked,@PathVariable(value = "userId") int  userId) {
 			MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
 			//Long totalLikes=mediaFiles.getLikes();
 			long count=0;
@@ -107,7 +107,32 @@ public class UserProfileController {
 			}
 	    
 			}
-
+	  @PostMapping("/rating")
+	    public long totalRating(@RequestParam("fileid") int fileid,@RequestParam("isRated") boolean isRated,@RequestParam("rateCount") int rateCount) {
+			MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
+			//Long totalLikes=mediaFiles.getLikes();
+			long rate=0;
+			System.out.println(mediaFiles.getLikes());
+			if(mediaFiles.getRating() == null) {
+				rate=0;
+			} else{
+				rate=mediaFiles.getRating();
+			}
+			if(isRated==true) {
+				rate = rate+rateCount;
+				mediaFiles.setRating(rate);
+				mediaFileRepo.save(mediaFiles);
+		    	return rate;
+		    	
+			}
+			else {
+			
+				mediaFiles.setRating(rate);
+				mediaFileRepo.save(mediaFiles);
+		    	return rate;
+			}
+	    
+			}
 	  
 		@PutMapping("/user/aboutUs/{id}")
 		public ResponseEntity<ExceptionHandle> updateStatus(@RequestParam("aboutUs") String aboutUs,@PathVariable(value = "id") int  id) throws ResourceNotFoundException {
@@ -122,14 +147,14 @@ public class UserProfileController {
 							profile.get(0).setProfileId(id);
 					 updateDisplayName = userprofilerepo.save(profile.get(0));
 				exceptionHandle.setMassage("your status updated successfully");
-				exceptionHandle.setObject(updateDisplayName);
+				exceptionHandle.setData(updateDisplayName);
 				exceptionHandle.setError_code("");
 				exceptionHandle.setStatus("success");
 				return ResponseEntity.ok(exceptionHandle);	
 				}
 					else {
 						exceptionHandle.setMassage("user not available");
-						exceptionHandle.setObject("[]");
+						exceptionHandle.setData("[]");
 						exceptionHandle.setError_code("1");
 						exceptionHandle.setStatus("fail");
 						return ResponseEntity.ok(exceptionHandle);
@@ -137,7 +162,7 @@ public class UserProfileController {
 			}
 			else {
 				exceptionHandle.setMassage("something gone wrong");
-				exceptionHandle.setObject("[]");
+				exceptionHandle.setData("[]");
 				exceptionHandle.setError_code("1");
 				exceptionHandle.setStatus("fail");
 				return ResponseEntity.ok(exceptionHandle);
