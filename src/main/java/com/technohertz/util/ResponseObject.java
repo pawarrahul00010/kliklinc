@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ResponseObject  implements Serializable{
 
-	private boolean error;
+	private String error;
 	
 	private String message;
 	
@@ -22,14 +22,14 @@ public class ResponseObject  implements Serializable{
 	/**
 	 * @return the error
 	 */
-	public boolean isError() {
+	public String getError() {
 		return error;
 	}
 
 	/**
 	 * @param error the error to set
 	 */
-	public void setError(boolean error) {
+	public void setError(String error) {
 		this.error = error;
 	}
 

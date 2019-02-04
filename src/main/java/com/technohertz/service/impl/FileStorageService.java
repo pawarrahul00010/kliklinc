@@ -78,9 +78,10 @@ public class FileStorageService {
 		}
 	}
 
-	public MediaFiles saveProfile(MultipartFile file, int id) {
+	public UserProfile saveProfile(MultipartFile file, int id) {
 		// Normalize file name
 		String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+		final Path rootLocation = Paths.get(fileStorageProperty.getUploadDir()).toAbsolutePath().normalize();
 		UserProfile userProfile = new UserProfile();
 		try {
 			// Check if the file's name contains invalid characters
@@ -88,24 +89,23 @@ public class FileStorageService {
 				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
 			}
 			List<MediaFiles> mediaFiles = null;
-			MediaFiles mfile = new MediaFiles();
-
 			mediaFiles = mediaFileRepo.findById(id);
-			System.out.println("please give name");
-
+			List<UserProfile> userprofile = null;
+			MediaFiles mfile = new MediaFiles();
+			userprofile = userprofileRepo.findById(id);
 			mfile.setFilePath(fileName);
-
+			//mfile.setFileId(id);
 			mfile.setCreateDate(dateUtil.getDate());
 			mfile.setLastModifiedDate(dateUtil.getDate());
-			mfile.setFileId(id);
-			userProfile.setProfileId(id);
-			userProfile.setCurrentProfile(fileName);
-			userProfile.getFiles().add(mfile);
+			userprofile.get(0).setProfileId(id);
+			
+			userprofile.get(0).setCurrentProfile(fileName);
+			userprofile.get(0).getFiles().add(mfile);
 			// Copy file to the target location (Replacing existing file with the same name)
 			Path targetLocation = this.fileStorageLocation.resolve(fileName);
 			Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-			userprofileRepo.save(userProfile);
-			return mediaFileRepo.save(mfile);
+			
+			return userprofileRepo.save(userprofile.get(0));
 		} catch (IOException ex) {
 			throw new FileStorageException("Could not store file " + fileName + ". Please try again!", ex);
 		}
@@ -131,17 +131,20 @@ public class FileStorageService {
 		FileSystemUtils.deleteRecursively(rootLocation.toFile());
 	}
 
-	public Resource loadFileAsResource(String fileName) {
+	public Resource loadFileAsResource(int fileId) {
 		try {
-			Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+			/* Path filePath = this.fileStorageLocation.resolve(fileName).normalize(); */
+			MediaFiles mediaFiles = mediaFileRepo.getOne(fileId);
+			Path filePath = this.fileStorageLocation.resolve(mediaFiles.getFilePath());
+			
 			Resource resource = new UrlResource(filePath.toUri());
 			if (resource.exists()) {
 				return resource;
 			} else {
-				throw new MyFileNotFoundException("File not found " + fileName);
+				throw new MyFileNotFoundException("File not found " + fileId);
 			}
 		} catch (MalformedURLException ex) {
-			throw new MyFileNotFoundException("File not found " + fileName, ex);
+			throw new MyFileNotFoundException("File not found " + fileId, ex);
 		}
 	}
 }

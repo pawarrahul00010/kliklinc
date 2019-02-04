@@ -36,7 +36,7 @@ public class FileController {
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/downloadFile/")
-                .path(fileName.getFilePath())
+                .path(String.valueOf(fileName.getFileId()))
                 .toUriString();
 
         return new UploadFileResponse(fileName.getFilePath(), fileDownloadUri,
@@ -51,10 +51,11 @@ public class FileController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/downloadFile/{fileName:.+}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) {
+	/* @GetMapping("/downloadFile/{fileName:.+}") */
+    @GetMapping("/downloadFile/{fileId}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable int fileId, HttpServletRequest request) {
         // Load file as Resource
-        Resource resource = fileStorageService.loadFileAsResource(fileName);
+        Resource resource = fileStorageService.loadFileAsResource(fileId);
 
         // Try to determine file's content type
         String contentType = null;
