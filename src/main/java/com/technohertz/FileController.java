@@ -30,27 +30,30 @@ public class FileController {
     @Autowired
     private FileStorageService fileStorageService;
 
-    @PostMapping("/uploadFile")
-    public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file) {
-        MediaFiles fileName = fileStorageService.storeFile(file);
+    @PostMapping("/uploadFile/{userId}")
+    public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file,
+    		@PathVariable(value = "userId") int  userId) {
+     
+    	MediaFiles fileName = fileStorageService.storeFile(file, userId);
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/downloadFile/")
-                .path(String.valueOf(fileName.getFileId()))
+                .path(String.valueOf(fileName.getFilePath()))
                 .toUriString();
 
         return new UploadFileResponse(fileName.getFilePath(), fileDownloadUri,
                 file.getContentType(), file.getSize());
     }
 
-    @PostMapping("/uploadMultipleFiles")
-    public List<UploadFileResponse> uploadMultipleFiles(@RequestParam("files") MultipartFile[] files) {
+    @PostMapping("/uploadMultipleFiles/{userId}")
+    public List<UploadFileResponse> uploadMultipleFiles(@RequestParam("files") MultipartFile[] files,
+    		@PathVariable(value = "userId") int  userId) {
         return Arrays.asList(files)
                 .stream()
-                .map(file -> uploadFile(file))
+                .map(file -> uploadFile(file,userId))
                 .collect(Collectors.toList());
     }
-
+    
 	/* @GetMapping("/downloadFile/{fileName:.+}") */
     @GetMapping("/downloadFile/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable int fileId, HttpServletRequest request) {
