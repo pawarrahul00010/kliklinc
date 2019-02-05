@@ -21,11 +21,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.technohertz.exception.ResourceNotFoundException;
+import com.technohertz.model.LikedUsers;
 import com.technohertz.model.MediaFiles;
 import com.technohertz.model.UserProfile;
+import com.technohertz.model.UserRegister;
 import com.technohertz.payload.UploadFileResponse;
 import com.technohertz.repo.MediaFileRepo;
 import com.technohertz.repo.UserProfileRepository;
+import com.technohertz.repo.UserRegisterRepository;
 import com.technohertz.service.impl.FileStorageService;
 import com.technohertz.util.ResponseObject;
 
@@ -35,6 +38,9 @@ import com.technohertz.util.ResponseObject;
 public class UserProfileController {
 	@Autowired
 	private UserProfileRepository userprofilerepo;
+	
+	@Autowired
+	private UserRegisterRepository registerRepository;
 	
 	@Autowired
 	private MediaFileRepo mediaFileRepo;
@@ -109,8 +115,10 @@ public class UserProfileController {
 	  	@PostMapping("/likes/{userId}")
 	    public ResponseEntity<ResponseObject> totalLikes(@RequestParam("fileid") int fileid,@RequestParam("isLiked") boolean isLiked,@PathVariable(value = "userId") int  userId) {
 			MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
-			//Long totalLikes=mediaFiles.getLikes();
-			
+			UserRegister userRegister =registerRepository.getOne(userId);
+			LikedUsers likedUsers=new LikedUsers();
+			likedUsers.setUserName(userRegister.getUserName());
+			mediaFiles.getLikedUsers().add(likedUsers); 
 			long count=0;
 			
 			if(mediaFiles.getLikes() == null) {
