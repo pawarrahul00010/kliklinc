@@ -30,15 +30,20 @@ import com.technohertz.util.FileStorageProperties;
 public class FileStorageService {
 
 	private final Path fileStorageLocation;
+	
 	@Autowired
 	private DBFileRepository dbFileRepository;
 
 	@Autowired
 	private MediaFileRepo mediaFileRepo;
+	
+	
 	@Autowired
 	private UserProfileRepository userprofileRepo;
+	
 	@Autowired
 	FileStorageProperties fileStorageProperty;
+	
 	@Autowired
 	DateUtil dateUtil = new DateUtil();
 
@@ -54,9 +59,10 @@ public class FileStorageService {
 		}
 	}
 
-	public MediaFiles storeFile(MultipartFile file) {
+	public MediaFiles storeFile(MultipartFile file, int userId) {
 		// Normalize file name
-		String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+		String fileName = StringUtils.cleanPath(String.valueOf(userId)+System.currentTimeMillis()+getFileExtension(file));
+	
 		
 		try {
 			// Check if the file's name contains invalid characters
@@ -78,26 +84,23 @@ public class FileStorageService {
 		}
 	}
 
-	public UserProfile saveProfile(MultipartFile file, int id) {
+	public UserProfile saveProfile(MultipartFile file, int userId) {
 		// Normalize file name
-		String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-		final Path rootLocation = Paths.get(fileStorageProperty.getUploadDir()).toAbsolutePath().normalize();
-		UserProfile userProfile = new UserProfile();
+		String fileName = StringUtils.cleanPath(String.valueOf(userId)+System.currentTimeMillis()+getFileExtension(file));
 		try {
 			// Check if the file's name contains invalid characters
 			if (fileName.contains("..")) {
-				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
+				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + file);
 			}
-			List<MediaFiles> mediaFiles = null;
-			mediaFiles = mediaFileRepo.findById(id);
+//			List<MediaFiles> mediaFiles  = mediaFileRepo.findById(userId);
 			List<UserProfile> userprofile = null;
 			MediaFiles mfile = new MediaFiles();
-			userprofile = userprofileRepo.findById(id);
+			userprofile = userprofileRepo.findById(userId);
 			mfile.setFilePath(fileName);
 			//mfile.setFileId(id);
 			mfile.setCreateDate(dateUtil.getDate());
 			mfile.setLastModifiedDate(dateUtil.getDate());
-			userprofile.get(0).setProfileId(id);
+			userprofile.get(0).setProfileId(userId);
 			
 			userprofile.get(0).setCurrentProfile(fileName);
 			userprofile.get(0).getFiles().add(mfile);
@@ -146,5 +149,15 @@ public class FileStorageService {
 		} catch (MalformedURLException ex) {
 			throw new MyFileNotFoundException("File not found " + fileId, ex);
 		}
+	}
+	
+	
+	private String getFileExtension(MultipartFile file) {
+	    String name = file.getOriginalFilename();
+	    int lastIndexOf = name.lastIndexOf(".");
+	    if (lastIndexOf == -1) {
+	        return ""; // empty extension
+	    }
+	    return name.substring(lastIndexOf);
 	}
 }

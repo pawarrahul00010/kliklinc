@@ -1,5 +1,6 @@
 package com.technohertz;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -299,14 +300,14 @@ public class UserProfileController {
 	}
 
 
-	@PutMapping("/uploadFile/{id}")
-	public UploadFileResponse updateProfile(@RequestParam("file") MultipartFile file,@PathVariable(value = "id") int id) {
-		UserProfile userProfile = fileStorageService.saveProfile(file,id);
+	@PutMapping("/uploadFile/{userId}")
+	public UploadFileResponse updateProfile(@RequestParam("file") MultipartFile file,@PathVariable(value = "userId") int userId) {
+		UserProfile userProfile = fileStorageService.saveProfile(file,userId);
 		MediaFiles files=mediaFileRepo.getOne(Integer.valueOf(String.valueOf(userProfile.getFiles().get(userProfile.getFiles().size()-1).getFileId())));
 		System.out.println(files);
 		String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
 				.path("/downloadFile/")
-				.path(String.valueOf(files.getFileId()))
+				.path(String.valueOf(files.getFilePath()))
 				.toUriString();
 
 		return new UploadFileResponse(userProfile.getCurrentProfile(), fileDownloadUri,
@@ -348,4 +349,13 @@ public class UserProfileController {
 
 	}
 
+	private String getFileExtension(MultipartFile file) {
+	    String name = file.getOriginalFilename();
+	    int lastIndexOf = name.lastIndexOf(".");
+	    if (lastIndexOf == -1) {
+	        return ""; // empty extension
+	    }
+	    return name.substring(lastIndexOf);
+	}
 }
+
