@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.technohertz.model.UserOtp;
-import com.technohertz.model.UserRegister;
 
 
 public interface IUserOtpService {

@@ -1,12 +1,9 @@
 package com.technohertz;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -16,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,17 +27,15 @@ import com.technohertz.model.GroupProfile;
 import com.technohertz.model.LikedUsers;
 import com.technohertz.model.MediaFiles;
 import com.technohertz.model.UserContact;
-import com.technohertz.model.UserOtp;
 import com.technohertz.model.UserProfile;
 import com.technohertz.model.UserRegister;
 import com.technohertz.payload.UploadFileResponse;
 import com.technohertz.repo.GroupProfileRepository;
 import com.technohertz.repo.MediaFileRepo;
-import com.technohertz.repo.UserProfileRepository;
 import com.technohertz.repo.UserRegisterRepository;
 import com.technohertz.service.impl.FileStorageService;
+import com.technohertz.util.DateUtil;
 import com.technohertz.util.ResponseObject;
-
 
 @RestController
 @RequestMapping("/group")
@@ -60,75 +54,75 @@ public class GroupProfileController {
 
 	@Autowired
 	private ResponseObject response;
-	
+
+	@Autowired
+	private DateUtil dateUtil;
+
 	@Autowired
 	private FileStorageService fileStorageService;
 
 	private static String UPLOADED_FOLDER = "F://temp//";
+
 	@SuppressWarnings("unused")
 	@PostMapping("/create")
-	public ResponseEntity<ResponseObject> createGroup(@RequestBody UserContact userContacts) {
+	public ResponseEntity<ResponseObject> createGroup(@RequestParam String mobileNumber) {
 
-		if(userContacts.equals("") && userContacts == null) {
-			
+		if (mobileNumber.equals("") && mobileNumber == null) {
+
 			response.setError("1");
 			response.setMessage("wrong userName please enter correct value");
 			response.setData("[]");
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
-		
-		}else {
-		
-				UserRegister user = new UserRegister();
-		
-				UserProfile profile = new UserProfile();
-				//MediaFiles mediaFiles=new MediaFiles();
-				Biometric biometric=new Biometric();
-		
-				
-				if(!userExists(userContacts.getContactNumber()) ){
-					
-					GroupProfile groupProfile=new GroupProfile();
-					groupProfile.getGroupMember().add(userContacts);
-					userContacts.setCreateDate(getDate());
-					userContacts.setContactNumber(userContacts.getContactNumber());
-					groupProfileRepository.save(groupProfile);
-					
-					response.setStatus("Success");
-					response.setMessage("  CraziApp Registration is successful");
-					response.setError("");
-					response.setData(user);
-					
-					return ResponseEntity.ok(response);
-					
-				}
-				else {
-		
-					response.setStatus("FAIL");
-					response.setMessage(" user is allready Registered");
-					response.setError("1");
-					response.setData("[]");
-						return ResponseEntity.ok(response);
-				}
+
+		} else {
+
+			UserRegister user = new UserRegister();
+
+			UserProfile profile = new UserProfile();
+			// MediaFiles mediaFiles=new MediaFiles();
+			Biometric biometric = new Biometric();
+
+			if (!userExists(Long.parseLong(mobileNumber))) {
+				UserContact userContact = new UserContact();
+				GroupProfile groupProfile = new GroupProfile();
+				userContact.setCreateDate(dateUtil.getDate());
+				userContact.setContactNumber(Long.parseLong(mobileNumber));
+				groupProfile.getGroupMember().add(userContact);
+				groupProfileRepository.save(groupProfile);
+
+				response.setStatus("Success");
+				response.setMessage("  CraziApp Registration is successful");
+				response.setError("");
+				response.setData(user);
+
+				return ResponseEntity.ok(response);
+
+			} else {
+
+				response.setStatus("FAIL");
+				response.setMessage(" user is allready Registered");
+				response.setError("1");
+				response.setData("[]");
+				return ResponseEntity.ok(response);
 			}
 		}
-	private boolean userExists(Long mobileNumber)
-	{
-		String hql="FROM UserContact as ur WHERE ur.contactNumber= ?1";
-		int count=entitymanager.createQuery(hql).setParameter(1, mobileNumber).getResultList().size();
-		
-		return count>0 ? true : false;
-		
 	}
 
+	private boolean userExists(Long mobileNumber) {
+		String hql = "FROM UserContact as ur WHERE ur.contactNumber= ?1";
+		int count = entitymanager.createQuery(hql).setParameter(1, mobileNumber).getResultList().size();
+
+		return count > 0 ? true : false;
+
+	}
 
 	@SuppressWarnings("unused")
 	@PutMapping("/displayName/{id}")
 	public ResponseEntity<ResponseObject> updateDisplayName(@RequestParam("displayName") String displayName,
 			@PathVariable(value = "id") String profileid) throws ResourceNotFoundException {
 
-
-		if(displayName.equals("") && displayName == null && profileid.equals("") && profileid == null) {
+		if (displayName.equals("") && displayName == null && profileid.equals("") && profileid == null) {
 
 			response.setError("1");
 			response.setMessage(" please enter correct value");
@@ -136,8 +130,7 @@ public class GroupProfileController {
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 
-		}
-		else {
+		} else {
 
 			int id = 0;
 			try {
@@ -153,10 +146,10 @@ public class GroupProfileController {
 			}
 
 			List<GroupProfile> profile = null;
-			GroupProfile updateDisplayName =null;
+			GroupProfile updateDisplayName = null;
 
 			profile = groupProfileRepository.findById(id);
-			if(!profile.isEmpty()) {
+			if (!profile.isEmpty()) {
 
 				profile.get(0).setDisplayName(displayName);
 				profile.get(0).setProfileId(id);
@@ -167,9 +160,8 @@ public class GroupProfileController {
 				response.setError("");
 				response.setStatus("success");
 
-				return ResponseEntity.ok(response);	
-			}
-			else {
+				return ResponseEntity.ok(response);
+			} else {
 				response.setMessage("user not available");
 				response.setData("[]");
 				response.setError("1");
@@ -179,26 +171,25 @@ public class GroupProfileController {
 		}
 	}
 
-
 	@PostMapping("/likes/{userId}")
-	public ResponseEntity<ResponseObject> totalLikes(@RequestParam("fileid") int fileid,@RequestParam("isLiked") boolean isLiked,
-			@PathVariable(value = "userId") int  userId) {
-		MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
-		UserRegister userRegister =registerRepository.getOne(userId);
-		LikedUsers likedUsers=new LikedUsers();
+	public ResponseEntity<ResponseObject> totalLikes(@RequestParam("fileid") int fileid,
+			@RequestParam("isLiked") boolean isLiked, @PathVariable(value = "userId") int userId) {
+		MediaFiles mediaFiles = mediaFileRepo.getById(fileid);
+		UserRegister userRegister = registerRepository.getOne(userId);
+		LikedUsers likedUsers = new LikedUsers();
 		likedUsers.setUserName(userRegister.getUserName());
 		likedUsers.setMarkType(Constant.LIKE);
-		mediaFiles.getLikedUsers().add(likedUsers); 
-		long count=0;
+		mediaFiles.getLikedUsers().add(likedUsers);
+		long count = 0;
 
-		if(mediaFiles.getLikes() == null) {
-			count=0;
-		} else{
-			count=mediaFiles.getLikes();
+		if (mediaFiles.getLikes() == null) {
+			count = 0;
+		} else {
+			count = mediaFiles.getLikes();
 		}
-		if(isLiked==true) {
+		if (isLiked == true) {
 
-			count = count+1;
+			count = count + 1;
 			mediaFiles.setLikes(count);
 			mediaFileRepo.save(mediaFiles);
 
@@ -208,10 +199,9 @@ public class GroupProfileController {
 			response.setStatus("SUCCESS");
 			return ResponseEntity.ok(response);
 
-		}
-		else {
+		} else {
 
-			count = count-1;
+			count = count - 1;
 			mediaFiles.setLikes(count);
 			mediaFileRepo.save(mediaFiles);
 
@@ -224,14 +214,15 @@ public class GroupProfileController {
 		}
 
 	}
-	
+
 	@SuppressWarnings("unused")
 	@PostMapping("/rating/{userId}")
 	public ResponseEntity<ResponseObject> totalRating(@RequestParam("fileid") String userfileid,
-			@RequestParam("isRated") String isRated,@RequestParam("rateCount") String rateCounts,
-			@PathVariable(value = "userId") int  userId) {
+			@RequestParam("isRated") String isRated, @RequestParam("rateCount") String rateCounts,
+			@PathVariable(value = "userId") int userId) {
 
-		if(userfileid.equals("") && userfileid == null && isRated.equals("") && isRated == null && rateCounts.equals("") && rateCounts == null) {
+		if (userfileid.equals("") && userfileid == null && isRated.equals("") && isRated == null
+				&& rateCounts.equals("") && rateCounts == null) {
 
 			response.setError("1");
 			response.setMessage("wrong fileid, rateCount and isRated please enter correct value");
@@ -239,8 +230,7 @@ public class GroupProfileController {
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 
-		}
-		else {
+		} else {
 
 			int fileid = 0;
 			int rateCount = 0;
@@ -259,40 +249,38 @@ public class GroupProfileController {
 
 			}
 
-			MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
+			MediaFiles mediaFiles = mediaFileRepo.getById(fileid);
 
-			UserRegister userRegister =registerRepository.getOne(userId);
-			LikedUsers likedUsers=new LikedUsers();
+			UserRegister userRegister = registerRepository.getOne(userId);
+			LikedUsers likedUsers = new LikedUsers();
 			likedUsers.setUserName(userRegister.getUserName());
 			likedUsers.setMarkType(Constant.RATE);
-			mediaFiles.getLikedUsers().add(likedUsers); 
+			mediaFiles.getLikedUsers().add(likedUsers);
 
-			//Long totalLikes=mediaFiles.getLikes();
-			long rate=0;
+			// Long totalLikes=mediaFiles.getLikes();
+			long rate = 0;
 			System.out.println(mediaFiles.getLikes());
-			if(mediaFiles.getRating() == null) {
+			if (mediaFiles.getRating() == null) {
 
-				rate=0;
+				rate = 0;
 
-			} else{
+			} else {
 
-				rate=mediaFiles.getRating();
+				rate = mediaFiles.getRating();
 			}
 
-			if(isRate==true) {
-				rate = rate+rateCount;
+			if (isRate == true) {
+				rate = rate + rateCount;
 				mediaFiles.setRating(rate);
 				mediaFileRepo.save(mediaFiles);
 
 				response.setError("0");
-				response.setMessage("user rated with : "+rateCount);
+				response.setMessage("user rated with : " + rateCount);
 				response.setData(mediaFiles);
 				response.setStatus("SUCCESS");
 				return ResponseEntity.ok(response);
 
-
-			}
-			else {
+			} else {
 
 				mediaFiles.setRating(rate);
 				mediaFileRepo.save(mediaFiles);
@@ -310,7 +298,7 @@ public class GroupProfileController {
 	public ResponseEntity<ResponseObject> updateStatus(@RequestParam("aboutUs") String aboutUs,
 			@PathVariable(value = "id") String userid) throws ResourceNotFoundException {
 
-		if(aboutUs.equals("") && aboutUs == null && userid.equals("") && userid == null ) {
+		if (aboutUs.equals("") && aboutUs == null && userid.equals("") && userid == null) {
 
 			response.setError("1");
 			response.setMessage("wrong aboutUs and userid please enter correct value");
@@ -318,8 +306,7 @@ public class GroupProfileController {
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 
-		}
-		else {
+		} else {
 
 			int id = 0;
 			int rateCount = 0;
@@ -337,11 +324,10 @@ public class GroupProfileController {
 			}
 
 			List<GroupProfile> profile = null;
-			GroupProfile updateDisplayName =null;
-
+			GroupProfile updateDisplayName = null;
 
 			profile = groupProfileRepository.findById(id);
-			if(!profile.isEmpty()) {
+			if (!profile.isEmpty()) {
 				profile.get(0).setAboutUser(aboutUs);
 				profile.get(0).setProfileId(id);
 				updateDisplayName = groupProfileRepository.save(profile.get(0));
@@ -351,10 +337,9 @@ public class GroupProfileController {
 				response.setError("");
 				response.setStatus("success");
 
-				return ResponseEntity.ok(response);	
+				return ResponseEntity.ok(response);
 
-			}
-			else {
+			} else {
 
 				response.setMessage("user not available");
 				response.setData("[]");
@@ -365,24 +350,38 @@ public class GroupProfileController {
 		}
 	}
 
-
 	@PutMapping("/uploadFile/{userId}")
-	public UploadFileResponse updateProfile(@RequestParam("file") MultipartFile file,@PathVariable(value = "userId") int userId) {
-		GroupProfile groupProfile = fileStorageService.savegroupProfile(file,userId);
-		MediaFiles files=mediaFileRepo.getOne(Integer.valueOf(String.valueOf(groupProfile.getFiles().get(groupProfile.getFiles().size()-1).getFileId())));
+	public ResponseEntity<ResponseObject> updateProfile(@RequestParam("file") MultipartFile file,
+			@PathVariable(value = "userId") Integer userId) {
+		GroupProfile groupProfile = fileStorageService.savegroupProfile(file, userId);
+		MediaFiles files = mediaFileRepo.getOne(Integer
+				.valueOf(String.valueOf(groupProfile.getFiles().get(groupProfile.getFiles().size() - 1).getFileId())));
 		System.out.println(files);
-		String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-				.path("/downloadFile/")
-				.path(String.valueOf(files.getFilePath()))
-				.toUriString();
+		String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/downloadFile/")
+				.path(String.valueOf(files.getFilePath())).toUriString();
+		Object obj = new UploadFileResponse(groupProfile.getCurrentProfile(), fileDownloadUri, file.getContentType(),
+				file.getSize());
+		if (!file.isEmpty()||userId!=null) {
+			response.setMessage("your Profile Image updated successfully");
 
-		return new UploadFileResponse(groupProfile.getCurrentProfile(), fileDownloadUri,
-				file.getContentType(), file.getSize());
+			response.setData(obj);
+			response.setError("");
+			response.setStatus("success");
+
+			return ResponseEntity.ok(response);
+		} else {
+			response.setMessage("your Profile Image not updated");
+
+			response.setData("[]");
+			response.setError("");
+			response.setStatus("success");
+
+			return ResponseEntity.ok(response);
+		}
 	}
 
 	@PostMapping("/upload") // //new annotation since 4.3
-	public String singleFileUpload(@RequestParam("file") MultipartFile file,
-			RedirectAttributes redirectAttributes) {
+	public String singleFileUpload(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
 
 		if (file.isEmpty()) {
 			redirectAttributes.addFlashAttribute("message", "Please select a file to upload");
@@ -406,22 +405,4 @@ public class GroupProfileController {
 		return "redirect:/uploadStatus";
 	}
 
-	private LocalDateTime getDate() {
-
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-		LocalDateTime now = LocalDateTime.now();
-
-		return now;
-
-	}
-
-	private String getFileExtension(MultipartFile file) {
-	    String name = file.getOriginalFilename();
-	    int lastIndexOf = name.lastIndexOf(".");
-	    if (lastIndexOf == -1) {
-	        return ""; // empty extension
-	    }
-	    return name.substring(lastIndexOf);
-	}
 }
-

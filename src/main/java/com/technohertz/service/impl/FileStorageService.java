@@ -65,12 +65,10 @@ public class FileStorageService {
 	}
 
 	public MediaFiles storeFile(MultipartFile file, int userId) {
-		// Normalize file name
 		String fileName = StringUtils.cleanPath(String.valueOf(userId)+System.currentTimeMillis()+getFileExtension(file));
 	
 		
 		try {
-			// Check if the file's name contains invalid characters
 			if (fileName.contains("..")) {
 				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
 			}
@@ -79,7 +77,6 @@ public class FileStorageService {
 			mediaFile.setFilePath(fileName);
 			mediaFile.setCreateDate(dateUtil.getDate());
 			mediaFile.setLastModifiedDate(dateUtil.getDate());
-			// Copy file to the target location (Replacing existing file with the same name)
 			Path targetLocation = this.fileStorageLocation.resolve(fileName);
 			Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
@@ -90,26 +87,25 @@ public class FileStorageService {
 	}
 
 	public UserProfile saveProfile(MultipartFile file, int userId) {
-		// Normalize file name
 		String fileName = StringUtils.cleanPath(String.valueOf(userId)+System.currentTimeMillis()+getFileExtension(file));
 		try {
-			// Check if the file's name contains invalid characters
 			if (fileName.contains("..")) {
 				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + file);
 			}
-//			List<MediaFiles> mediaFiles  = mediaFileRepo.findById(userId);
 			List<UserProfile> userprofile = null;
 			MediaFiles mfile = new MediaFiles();
+			
 			userprofile = userprofileRepo.findById(userId);
 			mfile.setFilePath(fileName);
-			//mfile.setFileId(id);
+			mfile.setIsLiked(false);
+			mfile.setIsRated(false);
 			mfile.setCreateDate(dateUtil.getDate());
 			mfile.setLastModifiedDate(dateUtil.getDate());
+			
 			userprofile.get(0).setProfileId(userId);
 			
 			userprofile.get(0).setCurrentProfile(fileName);
 			userprofile.get(0).getFiles().add(mfile);
-			// Copy file to the target location (Replacing existing file with the same name)
 			Path targetLocation = this.fileStorageLocation.resolve(fileName);
 			Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 			
@@ -119,14 +115,11 @@ public class FileStorageService {
 		}
 	}
 	public GroupProfile savegroupProfile(MultipartFile file, int userId) {
-		// Normalize file name
 		String fileName = StringUtils.cleanPath(String.valueOf(userId)+System.currentTimeMillis()+getFileExtension(file));
 		try {
-			// Check if the file's name contains invalid characters
 			if (fileName.contains("..")) {
 				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + file);
 			}
-//			List<MediaFiles> mediaFiles  = mediaFileRepo.findById(userId);
 			List<GroupProfile> groupProfile = null;
 			MediaFiles mfile = new MediaFiles();
 			groupProfile = groupProfileRepository.findById(userId);
@@ -134,6 +127,8 @@ public class FileStorageService {
 			//mfile.setFileId(id);
 			mfile.setCreateDate(dateUtil.getDate());
 			mfile.setLastModifiedDate(dateUtil.getDate());
+			mfile.setIsLiked(false);
+			mfile.setIsRated(false);
 			groupProfile.get(0).setProfileId(userId);
 			
 			groupProfile.get(0).setCurrentProfile(fileName);

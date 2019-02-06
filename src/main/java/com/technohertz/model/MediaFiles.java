@@ -2,28 +2,22 @@ package com.technohertz.model;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.DynamicUpdate;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "Media_Files")
 @DynamicUpdate
@@ -58,6 +52,12 @@ public class MediaFiles implements Serializable {
 	@Column(name = "Shared_Status")
 	private Boolean isShared;
 
+
+	@Column(name = "is_Liked")
+	private Boolean isLiked;
+	@Column(name = "is_Rated")
+	private Boolean isRated;
+	
 	@ManyToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name ="USR_DET_ID")
 	private UserProfile profile;
@@ -163,6 +163,34 @@ public class MediaFiles implements Serializable {
 	 * @see java.lang.Object#toString()
 	 */
 
+
+	/**
+	 * @return the isLiked
+	 */
+	public Boolean getIsLiked() {
+		return isLiked;
+	}
+
+	/**
+	 * @param isLiked the isLiked to set
+	 */
+	public void setIsLiked(Boolean isLiked) {
+		this.isLiked = isLiked;
+	}
+
+	/**
+	 * @return the isRated
+	 */
+	public Boolean getIsRated() {
+		return isRated;
+	}
+
+	/**
+	 * @param isRated the isRated to set
+	 */
+	public void setIsRated(Boolean isRated) {
+		this.isRated = isRated;
+	}
 
 	@Override
 	public String toString() {

@@ -1,13 +1,12 @@
 package com.technohertz;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import javax.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +42,9 @@ public class UserProfileController {
 
 	@Autowired
 	private UserRegisterRepository registerRepository;
+
+	@Autowired
+	private EntityManager entityManager;
 
 	@Autowired
 	private MediaFileRepo mediaFileRepo;
@@ -114,14 +116,18 @@ public class UserProfileController {
 	}
 
 
+
 	@PostMapping("/likes/{userId}")
 	public ResponseEntity<ResponseObject> totalLikes(@RequestParam("fileid") int fileid,@RequestParam("isLiked") boolean isLiked,
 			@PathVariable(value = "userId") int  userId) {
 		MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
+		
+
 		UserRegister userRegister =registerRepository.getOne(userId);
-		LikedUsers likedUsers=new LikedUsers();
+	    LikedUsers likedUsers=new LikedUsers();
 		likedUsers.setUserName(userRegister.getUserName());
 		likedUsers.setMarkType(Constant.LIKE);
+		likedUsers.setFileID(fileid);
 		mediaFiles.getLikedUsers().add(likedUsers); 
 		long count=0;
 
@@ -130,10 +136,10 @@ public class UserProfileController {
 		} else{
 			count=mediaFiles.getLikes();
 		}
-		if(isLiked==true) {
-
-			count = count+1;
+		if(isLiked==true && mediaFiles.getIsLiked()==false ) {
+		count = count+1;
 			mediaFiles.setLikes(count);
+			mediaFiles.setIsLiked(isLiked);
 			mediaFileRepo.save(mediaFiles);
 
 			response.setError("0");
@@ -144,11 +150,15 @@ public class UserProfileController {
 
 		}
 		else {
-
-			count = count-1;
+	
+		long totalcount=	mediaFiles.getLikes();
+		count = totalcount-1;
 			mediaFiles.setLikes(count);
+			if(count>=0) {
+			mediaFiles.setIsLiked(false);
+			likedUsers.setMarkType("UNLIKED");
 			mediaFileRepo.save(mediaFiles);
-
+			}
 			response.setError("1");
 			response.setMessage("user unliked successfully");
 			response.setData("[]");
@@ -156,6 +166,7 @@ public class UserProfileController {
 			return ResponseEntity.ok(response);
 
 		}
+		
 
 	}
 	
@@ -213,11 +224,12 @@ public class UserProfileController {
 				rate=mediaFiles.getRating();
 			}
 
-			if(isRate==true) {
+			if(isRate==true&&  mediaFiles.getIsRated()==false ) {
 				rate = rate+rateCount;
 				mediaFiles.setRating(rate);
+				mediaFiles.setIsRated(isRate);
 				mediaFileRepo.save(mediaFiles);
-
+			
 				response.setError("0");
 				response.setMessage("user rated with : "+rateCount);
 				response.setData(mediaFiles);
@@ -227,9 +239,15 @@ public class UserProfileController {
 
 			}
 			else {
-
-				mediaFiles.setRating(rate);
-				mediaFileRepo.save(mediaFiles);
+				long totalcount=	mediaFiles.getRating();
+				rate = totalcount-Long.parseLong(rateCounts);
+					mediaFiles.setLikes(rate);
+					if(rate>=0) {
+					mediaFiles.setIsRated(false);
+					likedUsers.setMarkType("UNLIKED");
+					mediaFiles.setRating(rate);
+				    mediaFileRepo.save(mediaFiles);
+			}
 				response.setError("1");
 				response.setMessage("rating on image is not done");
 				response.setData("[]");
@@ -340,22 +358,7 @@ public class UserProfileController {
 		return "redirect:/uploadStatus";
 	}
 
-	private LocalDateTime getDate() {
-
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-		LocalDateTime now = LocalDateTime.now();
-
-		return now;
-
-	}
-
-	private String getFileExtension(MultipartFile file) {
-	    String name = file.getOriginalFilename();
-	    int lastIndexOf = name.lastIndexOf(".");
-	    if (lastIndexOf == -1) {
-	        return ""; // empty extension
-	    }
-	    return name.substring(lastIndexOf);
-	}
+	
+	
 }
 

@@ -7,8 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.technohertz.model.GroupProfile;
-import com.technohertz.model.UserProfile;
-import com.technohertz.model.UserRegister;
 
 @Repository
 public interface GroupProfileRepository extends JpaRepository<GroupProfile, Integer>{
