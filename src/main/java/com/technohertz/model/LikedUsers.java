@@ -19,8 +19,10 @@ public class LikedUsers implements Serializable {
 	@Column(name = "type")
 	private String markType;
 
+
 	@Column(name = "fileID")
 	private int fileID;
+
 	public String getUserName() {
 		return userName;
 	}
@@ -30,6 +32,7 @@ public class LikedUsers implements Serializable {
 	
 	
 	/**
+
 	 * @return the fileID
 	 */
 	public int getFileID() {

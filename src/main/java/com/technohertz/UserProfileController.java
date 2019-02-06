@@ -1,5 +1,6 @@
 package com.technohertz;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -164,12 +165,9 @@ public class UserProfileController {
 			response.setData("[]");
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
-
 		}
-		
+		}
 
-	}
-	
 	@SuppressWarnings("unused")
 	@PostMapping("/rating/{userId}")
 	public ResponseEntity<ResponseObject> totalRating(@RequestParam("fileid") String userfileid,
@@ -224,12 +222,15 @@ public class UserProfileController {
 				rate=mediaFiles.getRating();
 			}
 
+
 			if(isRate==true&&  mediaFiles.getIsRated()==false ) {
+
+			
 				rate = rate+rateCount;
 				mediaFiles.setRating(rate);
 				mediaFiles.setIsRated(isRate);
 				mediaFileRepo.save(mediaFiles);
-			
+
 				response.setError("0");
 				response.setMessage("user rated with : "+rateCount);
 				response.setData(mediaFiles);
@@ -239,6 +240,7 @@ public class UserProfileController {
 
 			}
 			else {
+
 				long totalcount=	mediaFiles.getRating();
 				rate = totalcount-Long.parseLong(rateCounts);
 					mediaFiles.setLikes(rate);
@@ -248,6 +250,11 @@ public class UserProfileController {
 					mediaFiles.setRating(rate);
 				    mediaFileRepo.save(mediaFiles);
 			}
+
+
+				mediaFiles.setRating(rate);
+				mediaFileRepo.save(mediaFiles);
+
 				response.setError("1");
 				response.setMessage("rating on image is not done");
 				response.setData("[]");
@@ -315,6 +322,7 @@ public class UserProfileController {
 				return ResponseEntity.ok(response);
 			}
 		}
+
 	}
 
 
@@ -358,7 +366,19 @@ public class UserProfileController {
 		return "redirect:/uploadStatus";
 	}
 
-	
-	
+
+
+
+
+
+	private String getFileExtension(MultipartFile file) {
+	    String name = file.getOriginalFilename();
+	    int lastIndexOf = name.lastIndexOf(".");
+	    if (lastIndexOf == -1) {
+	        return ""; // empty extension
+	    }
+	    return name.substring(lastIndexOf);
+	}
+
 }
 

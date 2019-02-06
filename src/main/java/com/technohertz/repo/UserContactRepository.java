@@ -8,5 +8,6 @@ import com.technohertz.model.UserOtp;
 
 @EnableJpaRepositories("com.technohertz.repo")
 public interface UserContactRepository extends JpaRepository<UserOtp, Integer>,JpaSpecificationExecutor<UserOtp>{
+	
 
 }

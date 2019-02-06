@@ -42,6 +42,7 @@ public class FileStorageService {
 	
 	@Autowired
 	private UserProfileRepository userprofileRepo;
+	
 	@Autowired
 	private GroupProfileRepository groupProfileRepository;
 	
@@ -65,6 +66,7 @@ public class FileStorageService {
 	}
 
 	public MediaFiles storeFile(MultipartFile file, int userId) {
+		// Normalize file name
 		String fileName = StringUtils.cleanPath(String.valueOf(userId)+System.currentTimeMillis()+getFileExtension(file));
 	
 		
@@ -87,21 +89,24 @@ public class FileStorageService {
 	}
 
 	public UserProfile saveProfile(MultipartFile file, int userId) {
+		// Normalize file name
+
 		String fileName = StringUtils.cleanPath(String.valueOf(userId)+System.currentTimeMillis()+getFileExtension(file));
 		try {
 			if (fileName.contains("..")) {
 				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + file);
 			}
+
 			List<UserProfile> userprofile = null;
 			MediaFiles mfile = new MediaFiles();
-			
+
 			userprofile = userprofileRepo.findById(userId);
 			mfile.setFilePath(fileName);
 			mfile.setIsLiked(false);
 			mfile.setIsRated(false);
 			mfile.setCreateDate(dateUtil.getDate());
 			mfile.setLastModifiedDate(dateUtil.getDate());
-			
+
 			userprofile.get(0).setProfileId(userId);
 			
 			userprofile.get(0).setCurrentProfile(fileName);
