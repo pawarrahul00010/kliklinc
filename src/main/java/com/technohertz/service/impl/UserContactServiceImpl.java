@@ -4,11 +4,14 @@ package com.technohertz.service.impl;
 
 import java.util.List;
 
+import javax.persistence.EntityManager;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.technohertz.model.UserOtp;
 import com.technohertz.repo.UserOtpRepository;
@@ -23,6 +26,10 @@ public class UserContactServiceImpl implements IUserContactService {
 	
 	@Autowired
 	private UserRegisterRepository userRegisterRepo;
+	
+	@Autowired
+	public EntityManager entityManager;
+
 
 
 	@Override 
@@ -74,6 +81,35 @@ public class UserContactServiceImpl implements IUserContactService {
 			
 			return page; 
 		}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Long> getContactsByUserId(int userId) {
+		// TODO Auto-generated method stub
+		
+	/*	return entityManager.createQuery("SELECT r.userContactList from UserRegister r WHERE "+
+				"(:userId is null or r.userId=:userId)")
+				.setParameter("userId", userId)
+				.getResultList();
+*/		
+		return entityManager.createQuery("select ven.contactNumber from UserRegister itm inner join itm.userContactList ven where " +
+				"(:userId is null or itm.userId=:userId)")
+				.setParameter("userId", userId)
+				.getResultList();
+				
+		
+	}
+	
+	
+	@Transactional
+	@Override
+	public void deleteByUserId(int userId, List<Integer> contList) {
+		
+		
+		 entityManager.createNativeQuery("DELETE from user_contact where userId=:userId")
+		 .setParameter("userId", userId).executeUpdate();
+		 
+	}
 
 
 	/*

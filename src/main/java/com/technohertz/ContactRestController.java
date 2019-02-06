@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +27,7 @@ import com.technohertz.model.UserRegister;
 import com.technohertz.service.IUserContactService;
 import com.technohertz.service.IUserRegisterService;
 import com.technohertz.util.DateUtil;
+import com.technohertz.util.ResponseObject;
 
 @RestController
 @RequestMapping("/contactRest")
@@ -38,7 +40,13 @@ public class ContactRestController {
 	private IUserRegisterService userRegisterService;
 	
 	@Autowired
+	private IUserContactService userContactService;
+	
+	@Autowired
 	private DateUtil dateUtil;
+	
+	@Autowired
+	private ResponseObject response;
 	
 	/**
 	 * 2. Save Otp
@@ -49,61 +57,131 @@ public class ContactRestController {
 	 */
 	@SuppressWarnings("unlikely-arg-type")
 	@RequestMapping(value = "/contact", method = RequestMethod.POST)
-	public void saveContact( @Valid @RequestBody UserRegister user,ModelMap map){
+	public ResponseEntity<ResponseObject> saveContact( @RequestParam("contactList") String userContactList,
+			@RequestParam("userId") String userid, ModelMap map){
 		
-		List<UserContact> contactList = new ArrayList<UserContact>();
 		
-		List<UserRegister> retrivedUserList =(List<UserRegister>) userRegisterService.getAll();
-		
-		List<Long> retrievedContactList = userRegisterService.getAllMobile();
-		
-		for(UserContact userContact : user.getUserContactList()){
-			
-			if(retrievedContactList.contains(userContact.getContactNumber())) {//check user registered or not
+				List<Long> contactlist = getContactList(userContactList);//convert from string to array
 				
-				for(UserRegister userRegister: retrivedUserList) {//
+				List<UserContact> contactList = new ArrayList<UserContact>();
+				
+				List<UserRegister> retrivedUserList =(List<UserRegister>) userRegisterService.getAll();//get all user from database
+				
+				List<Long> retrievedContactList = userRegisterService.getAllMobile();//get all mobile no from database
+				
+				List<Long> craziContact = new ArrayList<Long>();
+				
+				
+				Map<Long, UserRegister> userList = new TreeMap<Long, UserRegister>();
+				
+				for(long contactNumber : contactlist){
 					
-					if( userRegister.getMobilNumber() == userContact.getContactNumber()) {
+					for(UserRegister userRegister : retrivedUserList) {
+						
+						if(retrievedContactList.contains(contactNumber)) {//check user is craziapp user or not
+							
+							if(contactNumber == userRegister.getMobilNumber()) {
+								
+								userList.put(contactNumber, userRegister);
+								craziContact.add(contactNumber);
+							}
+						}
+					}
+				}
+					
+				
+				List<UserRegister> retrievedUserRegister = new ArrayList<UserRegister> ();
+				
+				UserRegister tosaveuserRegister = new UserRegister();
+				
+				int userId = 0;
+				try {
+					userId = Integer.parseInt(userid);
+				} catch (NumberFormatException e) {
+					
+					response.setError("1");
+					response.setMessage("wrong userId please enter numeric value");
+					response.setData("[]");
+					response.setStatus("FAIL");
+					return ResponseEntity.ok(response);
+					
+				}
+				
+				try {
+					 retrievedUserRegister = userRegisterService.getById(userId);
+					  tosaveuserRegister = retrievedUserRegister.get(0);
+						
+					}catch (Exception e) {
+						response.setError("1");
+						response.setMessage("wrong userId please enter numeric value");
+						response.setData("[]");
+						response.setStatus("FAIL");
+						return ResponseEntity.ok(response);
+					}
+
+				
+				 List<UserContact>  delContactList= tosaveuserRegister.getUserContactList();
+				 
+				 List<Integer> contList = new ArrayList<Integer>();
+				 
+				 for(UserContact userContact: delContactList) {
+					 
+					 contList.add(userContact.getContactId());
+					 
+				 }
+				 userContactService.deleteByUserId(userId, contList);
+				
+				for(long contactNumber : craziContact){	
+					
+						UserRegister userRegister = userList.get(contactNumber);
 						
 						UserContact contact = new UserContact();
-						contact.setContactNumber(userContact.getContactNumber());
-						contact.setContactName(userContact.getContactName());
+						
+						contact.setContactNumber(contactNumber);
+						contact.setContactName(userRegister.getUserName());
 						contact.setProfilePic(userRegister.getProfile().getCurrentProfile());
 						contact.setCreateDate(dateUtil.getDate());
 						contactList.add(contact);
-					}
-				}
-			}
+					
+				}		
+								
+				tosaveuserRegister.setUserContactList(contactList);
+				
+	//		 retrievedUserRegister.get(0).getUserContactList().add(contactList.iterator().next());
+			 
+			userRegisterService.save(tosaveuserRegister);
+			
+			String message = "Your CraziApp contacts are searched successfully";
+			response.setError("0");
+			response.setMessage(message);
+			response.setData(tosaveuserRegister);
+			response.setStatus("SUCCESS");
+			return ResponseEntity.ok(response);
+				
 		}
 		
+	
+	
+	private List<Long> getContactList(String userContactList) {
+		// TODO Auto-generated method stub
+		List<Long> contactList = new ArrayList<Long>();
+		String sContact[] = userContactList.split(",");
 		
-		String userName = user.getUserName();
+		for(String userContact : sContact ) {
 		
-		UserRegister retrievedUserRegister = new UserRegister ();
-		
-		if(userName != null) {
 			try {
-			Long mobilNumber = Long.parseLong(userName);
-			 retrievedUserRegister = userRegisterService.findByMobileOrUserName(mobilNumber, null).get(0);
-			}catch (Exception e) {
-				
-				 try {
-					retrievedUserRegister = userRegisterService.findByMobileOrUserName(null, userName).get(0);
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				long contact = Long.parseLong(userContact);
+				contactList.add(contact);
+			} catch (NumberFormatException e) {
+				continue;
 			}
-		}	
 		
-		retrievedUserRegister.setUserContactList(contactList);
-		userRegisterService.save(retrievedUserRegister);
-		
-			
+		}
+		return contactList;
 	}
-	
-	
-	
+
+
+
 	@RequestMapping(value = "/contact", method = RequestMethod.GET)
 	public String getOTP(@RequestParam("mobilNumber") String userData, ModelMap map){
 		

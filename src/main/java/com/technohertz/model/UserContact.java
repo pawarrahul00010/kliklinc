@@ -41,9 +41,12 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 	@Column(name = "CREATE_DATE", nullable = false, length = 200)
 	private LocalDateTime createDate;
 	
+
+	
 	public UserContact() {
 		super();
 	}
+
 
 
 	/**
@@ -54,10 +57,10 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 	 * @param isBlocked
 	 * @param isActive
 	 * @param createDate
-	 * @param lastModifiedDate
+	 * @param userId
 	 */
 	public UserContact(int contactId, String contactName, long contactNumber, String profilePic, boolean isBlocked,
-			boolean isActive, LocalDateTime createDate, LocalDateTime lastModifiedDate) {
+			boolean isActive, LocalDateTime createDate) {
 		super();
 		this.contactId = contactId;
 		this.contactName = contactName;
@@ -67,6 +70,8 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 		this.isActive = isActive;
 		this.createDate = createDate;
 	}
+
+
 
 
 
@@ -180,6 +185,7 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 	}
 
 
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -189,6 +195,7 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 				+ contactNumber + ", profilePic=" + profilePic + ", isBlocked=" + isBlocked + ", isActive=" + isActive
 				+ ", createDate=" + createDate + "]";
 	}
+
 
 
 	public int compareTo(UserContact o) {
