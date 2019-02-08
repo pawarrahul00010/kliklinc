@@ -4,6 +4,6 @@ import java.util.List;
 
 import com.technohertz.model.UserRegister;
 
-public interface UserProfileService {
+public interface IUserProfileService {
 	List<UserRegister> findByUserName(String userName);
 }

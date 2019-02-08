@@ -1,12 +1,8 @@
 package com.technohertz;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
-
-import javax.persistence.EntityManager;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,35 +13,38 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.technohertz.common.Constant;
 import com.technohertz.exception.ResourceNotFoundException;
-import com.technohertz.model.Biometric;
 import com.technohertz.model.GroupProfile;
 import com.technohertz.model.LikedUsers;
 import com.technohertz.model.MediaFiles;
 import com.technohertz.model.UserContact;
-import com.technohertz.model.UserProfile;
 import com.technohertz.model.UserRegister;
 import com.technohertz.payload.UploadFileResponse;
-import com.technohertz.repo.GroupProfileRepository;
 import com.technohertz.repo.MediaFileRepo;
 import com.technohertz.repo.UserRegisterRepository;
+import com.technohertz.service.IGroupProfileService;
+import com.technohertz.service.IUserRegisterService;
 import com.technohertz.service.impl.FileStorageService;
+import com.technohertz.util.CommonUtil;
 import com.technohertz.util.DateUtil;
 import com.technohertz.util.ResponseObject;
 
 @RestController
-@RequestMapping("/group")
+@RequestMapping("/groupRest")
 public class GroupProfileController {
+	
 	@Autowired
-	private GroupProfileRepository groupProfileRepository;
+	private IGroupProfileService groupProfileService;
 
 	@Autowired
-	private EntityManager entitymanager;
+	private FileController fileController;
 
+	@Autowired
+	private IUserRegisterService userRegisterService;
+	
 	@Autowired
 	private UserRegisterRepository registerRepository;
 
@@ -57,17 +56,19 @@ public class GroupProfileController {
 
 	@Autowired
 	private DateUtil dateUtil;
+	@Autowired
+	private CommonUtil commonUtil;
 
 	@Autowired
 	private FileStorageService fileStorageService;
 
-	private static String UPLOADED_FOLDER = "F://temp//";
-
 	@SuppressWarnings("unused")
-	@PostMapping("/create")
-	public ResponseEntity<ResponseObject> createGroup(@RequestParam String mobileNumber) {
+	@PostMapping("/create/{userId}")
+	public ResponseEntity<ResponseObject> createGroup(@RequestParam("contacts") String contacts,
+			@RequestParam("file") MultipartFile file,@RequestParam("groupName") String groupName,
+			@PathVariable("userId") int userId) {
 
-		if (mobileNumber.equals("") && mobileNumber == null) {
+		if (contacts.equals("") || contacts == null) {
 
 			response.setError("1");
 			response.setMessage("wrong userName please enter correct value");
@@ -76,47 +77,109 @@ public class GroupProfileController {
 			return ResponseEntity.ok(response);
 
 		} else {
+			
+			List<UserRegister> retrivedUserList =(List<UserRegister>) userRegisterService.getAll();//get all user from database
+			
+			List<UserContact> contactlist = new ArrayList<UserContact>();
+			
+			List<String> contactList = getContactList(contacts);
+			
+			Map<String, UserRegister> userList = commonUtil.getContactWithDetails(contactList, retrivedUserList);
+			
+			UploadFileResponse uploadFileResponse= fileController.uploadFile(file, userId);
+			
+			
+			
+			
+			for(String contact  : contactList) {
+			
+			List<GroupProfile> userCon = groupProfileService.getUserGroupdetailByUserId(contact);
+			
+			List<Integer> userContains = groupProfileService.getUserGroupsByUserId(contact);
+			
+			
+			GroupProfile groupProfile = new GroupProfile();
 
-			UserRegister user = new UserRegister();
-
-			UserProfile profile = new UserProfile();
-			// MediaFiles mediaFiles=new MediaFiles();
-			Biometric biometric = new Biometric();
-
-			if (!userExists(Long.parseLong(mobileNumber))) {
+			if(!userContains.contains(contact)) {
+				UserRegister userRegister = userList.get(contact);
+				
 				UserContact userContact = new UserContact();
-				GroupProfile groupProfile = new GroupProfile();
+				
+				userContact.setContactNumber(contact);
+				userContact.setContactName(userRegister.getUserName());
+				userContact.setProfilePic(userRegister.getProfile().getCurrentProfile());
 				userContact.setCreateDate(dateUtil.getDate());
-				userContact.setContactNumber(Long.parseLong(mobileNumber));
-				groupProfile.getGroupMember().add(userContact);
-				groupProfileRepository.save(groupProfile);
+				contactlist.add(userContact);
+				
+			
+			
+			
+			
+			
+			System.out.println(userCon);
+			System.out.println(userContains);
+			}
+			
+			
+//			
+//			for(String contactNumber : craziContact){	
+//				
+//				UserContact contact = new UserContact();
+//				
+//				if(!userContains.contains(contactNumber)) {
+//					UserRegister userRegister = userList.get(contactNumber);
+//					
+//					contact.setContactNumber(contactNumber);
+//					contact.setContactName(userRegister.getUserName());
+//					contact.setProfilePic(userRegister.getProfile().getCurrentProfile());
+//					contact.setCreateDate(dateUtil.getDate());
+//					tosaveuserRegister.getUserContactList().add(contact);
+//					}
+//				else {
+//					for(UserContact userContact : userCon) {
+//					tosaveuserRegister.getUserContactList().add(userContact);
+//					}
+//				}
+//			}		
+//			
+//			
+			}
+		
+			
+			GroupProfile groupProfile = new GroupProfile();
+
+			/*for(String contact  : contactList) {
+			
+				UserRegister userRegister = userList.get(contact);
+				
+				UserContact userContact = new UserContact();
+				
+				userContact.setContactNumber(contact);
+				userContact.setContactName(userRegister.getUserName());
+				userContact.setProfilePic(userRegister.getProfile().getCurrentProfile());
+				userContact.setCreateDate(dateUtil.getDate());
+				contactlist.add(userContact);
+				
+				}*/
+			
+				groupProfile.setGroupMember(contactlist);
+				groupProfile.setCurrentProfile(uploadFileResponse.getFileDownloadUri());
+				groupProfile.setDisplayName(groupName);
+				groupProfile.setCreatedBy(userId);
+				groupProfileService.save(groupProfile);
 
 				response.setStatus("Success");
-				response.setMessage("  CraziApp Registration is successful");
-				response.setError("");
-				response.setData(user);
+				response.setMessage("Group Created successfully");
+				response.setError("0");
+				response.setData(groupProfile);
 
 				return ResponseEntity.ok(response);
 
-			} else {
-
-				response.setStatus("FAIL");
-				response.setMessage(" user is allready Registered");
-				response.setError("1");
-				response.setData("[]");
-				return ResponseEntity.ok(response);
 			}
+		
 		}
-	}
 
-	private boolean userExists(Long mobileNumber) {
-		String hql = "FROM UserContact as ur WHERE ur.contactNumber= ?1";
-		int count = entitymanager.createQuery(hql).setParameter(1, mobileNumber).getResultList().size();
-
-		return count > 0 ? true : false;
-
-	}
-
+	
 	@SuppressWarnings("unused")
 	@PutMapping("/displayName/{id}")
 	public ResponseEntity<ResponseObject> updateDisplayName(@RequestParam("displayName") String displayName,
@@ -148,12 +211,12 @@ public class GroupProfileController {
 			List<GroupProfile> profile = null;
 			GroupProfile updateDisplayName = null;
 
-			profile = groupProfileRepository.findById(id);
+			profile = groupProfileService.findById(id);
 			if (!profile.isEmpty()) {
 
 				profile.get(0).setDisplayName(displayName);
-				profile.get(0).setProfileId(id);
-				updateDisplayName = groupProfileRepository.save(profile.get(0));
+				profile.get(0).setGroupId(id);
+				updateDisplayName = groupProfileService.save(profile.get(0));
 
 				response.setMessage("your Display name updated successfully");
 				response.setData(updateDisplayName);
@@ -326,11 +389,11 @@ public class GroupProfileController {
 			List<GroupProfile> profile = null;
 			GroupProfile updateDisplayName = null;
 
-			profile = groupProfileRepository.findById(id);
+			profile = groupProfileService.findById(id);
 			if (!profile.isEmpty()) {
 				profile.get(0).setAboutUser(aboutUs);
-				profile.get(0).setProfileId(id);
-				updateDisplayName = groupProfileRepository.save(profile.get(0));
+				profile.get(0).setGroupId(id);
+				updateDisplayName = groupProfileService.save(profile.get(0));
 
 				response.setMessage("your status updated successfully");
 				response.setData(updateDisplayName);
@@ -380,29 +443,21 @@ public class GroupProfileController {
 		}
 	}
 
-	@PostMapping("/upload") // //new annotation since 4.3
-	public String singleFileUpload(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
-
-		if (file.isEmpty()) {
-			redirectAttributes.addFlashAttribute("message", "Please select a file to upload");
-			return "redirect:uploadStatus";
+	private List<String> getContactList(String userContactList) {
+		
+		List<String> contactList = new ArrayList<String>();
+		String sContact[] = userContactList.split(",");
+		
+		for(String userContact : sContact ) {
+		
+			try {
+				contactList.add(userContact);
+			} catch (NumberFormatException e) {
+				continue;
+			}
+		
 		}
-
-		try {
-
-			// Get the file and save it somewhere
-			byte[] bytes = file.getBytes();
-			Path path = Paths.get(UPLOADED_FOLDER + file.getOriginalFilename());
-			Files.write(path, bytes);
-
-			redirectAttributes.addFlashAttribute("message",
-					"You successfully uploaded '" + file.getOriginalFilename() + "'");
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return "redirect:/uploadStatus";
+		return contactList;
 	}
 
 }

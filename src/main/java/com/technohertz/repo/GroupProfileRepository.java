@@ -11,9 +11,7 @@ import com.technohertz.model.GroupProfile;
 @Repository
 public interface GroupProfileRepository extends JpaRepository<GroupProfile, Integer>{
 
-	Object findBydisplayName(String displayName);
-	List<GroupProfile> getByDisplayName(String userName);
-	@Query(value="SELECT  r from GroupProfile r WHERE r.profileId=?1")
+	@Query(value="SELECT  r from GroupProfile r WHERE r.groupId=?1")
 	List<GroupProfile> findById(int id);
 
 }

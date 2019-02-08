@@ -46,6 +46,9 @@ public class MediaFiles implements Serializable {
 	@Column(name = "Total_Rating")
 	private Long rating;
 	
+	@Column(name = "File_Type")
+	private String fileType;
+	
 	@Column(name = "Bookmarked_Status")
 	private Boolean isBookMarked;
 
@@ -190,6 +193,22 @@ public class MediaFiles implements Serializable {
 	 */
 	public void setIsRated(Boolean isRated) {
 		this.isRated = isRated;
+	}
+	
+	
+
+	/**
+	 * @return the fileType
+	 */
+	public String getFileType() {
+		return fileType;
+	}
+
+	/**
+	 * @param fileType the fileType to set
+	 */
+	public void setFileType(String fileType) {
+		this.fileType = fileType;
 	}
 
 	@Override

@@ -1,13 +1,10 @@
 package com.technohertz;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
-import javax.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -43,9 +40,6 @@ public class UserProfileController {
 
 	@Autowired
 	private UserRegisterRepository registerRepository;
-
-	@Autowired
-	private EntityManager entityManager;
 
 	@Autowired
 	private MediaFileRepo mediaFileRepo;
@@ -270,7 +264,7 @@ public class UserProfileController {
 			@PathVariable(value = "id") String userid) throws ResourceNotFoundException {
 
 		if(aboutUs.equals("") && aboutUs == null && userid.equals("") && userid == null ) {
-
+ 
 			response.setError("1");
 			response.setMessage("wrong aboutUs and userid please enter correct value");
 			response.setData("[]");
@@ -324,20 +318,64 @@ public class UserProfileController {
 		}
 
 	}
+    @PostMapping("/profile/{userId}")
+    public  ResponseEntity<ResponseObject> saveProfile(@RequestParam("file") MultipartFile file,@RequestParam("DisplayName") String DisplayName,
+    		@PathVariable(value = "userId") Integer  userId) {
+     
+    	UserProfile userProfile = fileStorageService.saveAllProfile(file,userId,DisplayName);
+    	MediaFiles files=mediaFileRepo.getOne(Integer.valueOf(String.valueOf(userProfile.getFiles().get(userProfile.getFiles().size()-1).getFileId())));
+        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/downloadFile/")
+                .path(String.valueOf(String.valueOf(files.getFilePath())))
+                .toUriString();
 
+       Object obj=new UploadFileResponse(files.getFilePath(), fileDownloadUri,
+                file.getContentType(), file.getSize());
+       if (!file.isEmpty()||userId!=null) {
+			response.setMessage("your Profile Image updated successfully");
+
+			response.setData(obj);
+			response.setError("0");
+			response.setStatus("SUCCESS");
+
+			return ResponseEntity.ok(response);
+		} else {
+			response.setMessage("your Profile Image not updated");
+
+			response.setData("[]");
+			response.setError("1");
+			response.setStatus("FAIL");
+
+			return ResponseEntity.ok(response);
+		}
+    }
 
 	@PutMapping("/uploadFile/{userId}")
-	public UploadFileResponse updateProfile(@RequestParam("file") MultipartFile file,@PathVariable(value = "userId") int userId) {
+	public ResponseEntity<ResponseObject> updateProfile(@RequestParam("file") MultipartFile file,@PathVariable(value = "userId") Integer userId) {
 		UserProfile userProfile = fileStorageService.saveProfile(file,userId);
 		MediaFiles files=mediaFileRepo.getOne(Integer.valueOf(String.valueOf(userProfile.getFiles().get(userProfile.getFiles().size()-1).getFileId())));
-		System.out.println(files);
-		String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-				.path("/downloadFile/")
-				.path(String.valueOf(files.getFilePath()))
-				.toUriString();
+		
+	
 
-		return new UploadFileResponse(userProfile.getCurrentProfile(), fileDownloadUri,
+		Object obj= new UploadFileResponse(userProfile.getCurrentProfile(),userProfile.getCurrentProfile(),
 				file.getContentType(), file.getSize());
+		if (!file.isEmpty()||userId!=null) {
+			response.setMessage("your Profile Image updated successfully");
+
+			response.setData(obj);
+			response.setError("0");
+			response.setStatus("SUCCESS");
+
+			return ResponseEntity.ok(response);
+		} else {
+			response.setMessage("your Profile Image not updated");
+
+			response.setData("[]");
+			response.setError("1");
+			response.setStatus("FAIL");
+
+			return ResponseEntity.ok(response);
+		}
 	}
 
 	@PostMapping("/upload") // //new annotation since 4.3
@@ -371,14 +409,6 @@ public class UserProfileController {
 
 
 
-	private String getFileExtension(MultipartFile file) {
-	    String name = file.getOriginalFilename();
-	    int lastIndexOf = name.lastIndexOf(".");
-	    if (lastIndexOf == -1) {
-	        return ""; // empty extension
-	    }
-	    return name.substring(lastIndexOf);
-	}
 
 }
 

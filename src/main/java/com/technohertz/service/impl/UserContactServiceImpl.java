@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.technohertz.model.UserContact;
 import com.technohertz.model.UserOtp;
 import com.technohertz.repo.UserOtpRepository;
 import com.technohertz.repo.UserRegisterRepository;
@@ -103,12 +104,29 @@ public class UserContactServiceImpl implements IUserContactService {
 	
 	@Transactional
 	@Override
-	public void deleteByUserId(int userId, List<Integer> contList) {
-		
+	public void deleteByUserId(int userId) {
 		
 		 entityManager.createNativeQuery("DELETE from user_contact where userId=:userId")
 		 .setParameter("userId", userId).executeUpdate();
 		 
+	}
+	
+	@Transactional
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<UserContact> getUserContactdetailByUserId(int userId) {
+		
+		return entityManager.createNativeQuery("select * from user_contact where userId=:userId", UserContact.class)
+				 .setParameter("userId", userId).getResultList();
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<String> getUserContactsByUserId(int userId) {
+		// TODO Auto-generated method stub
+		return entityManager.createNativeQuery("select contact_number from user_contact where userId=:userId")
+				 .setParameter("userId", userId).getResultList();
 	}
 
 

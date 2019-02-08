@@ -20,14 +20,15 @@ public interface IUserRegisterService {
 	public UserRegister getOneById(int userId);
 	public List<UserRegister> getAll();
 	public Page<UserRegister> getAll(Specification<UserRegister> s,Pageable pageable);
-//	public UserRegister findByUserNameAndPassword(String userName, String password);
 	List<UserRegister> findByUserName(String userName);
 
 	public List<UserRegister> getById(Integer userId);
 
 	public List<UserRegister> findByMobileOrUserName(Long mobilNumber, String userName);
 	
-	List<Long> getAllMobile();
+	List<String> getAllMobile();
+	
+	List<UserRegister> findByMobileNumber(String user);
 
 
 	

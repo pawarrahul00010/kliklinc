@@ -1,5 +1,6 @@
 package com.technohertz.model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,19 +18,19 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.DynamicUpdate;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 @Entity
 @Table(name = "User_Register")
 @DynamicUpdate
-public class UserRegister {
+public class UserRegister implements Serializable {
 
 	
 
+	/**
+	 * 
+	 */
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -48,7 +49,7 @@ public class UserRegister {
 
 
 	@Column(name = "mobil_number", nullable = false, length = 200)
-	private Long mobilNumber;
+	private String mobilNumber;
 	
 	@Column(name = "token", nullable = false, length = 200)
 	private long Token;
@@ -70,17 +71,6 @@ public class UserRegister {
 	@JoinColumn(name="USR_DET_ID")
 	private UserProfile profile = new UserProfile();
 
-	 @JsonIgnore
-	@OneToOne(cascade=javax.persistence.CascadeType.ALL)
-	@JoinColumn(name="POST_CARD_ID")
-	private PostCard postCard = new PostCard();
-
-
-	 
-	 @JsonIgnore
-	@OneToOne(cascade=javax.persistence.CascadeType.ALL)
-	@JoinColumn(name="GREATING_CARD_ID")
-	private GreatingCard greatingCard = new GreatingCard();
 
 	
 	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -141,11 +131,11 @@ public class UserRegister {
 		Token = token;
 	}
 
-	public Long getMobilNumber() {
+	public String getMobilNumber() {
 		return mobilNumber;
 	}
 
-	public void setMobilNumber(Long mobilNumber) {
+	public void setMobilNumber(String mobilNumber) {
 		this.mobilNumber = mobilNumber;
 	}
 
@@ -215,21 +205,6 @@ public class UserRegister {
 		this.userContactList = userContactList;
 	}
 
-	public PostCard getPostCard() {
-		return postCard;
-	}
-
-	public void setPostCard(PostCard postCard) {
-		this.postCard = postCard;
-	}
-
-	public GreatingCard getGreatingCard() {
-		return greatingCard;
-	}
-
-	public void setGreatingCard(GreatingCard greatingCard) {
-		this.greatingCard = greatingCard;
-	}
 
 	public List<Biometric> getBiometric() {
 		return biometric;
@@ -239,20 +214,17 @@ public class UserRegister {
 		this.biometric = biometric;
 	}
 
-	
-	
-	
-
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
-
 	@Override
 	public String toString() {
 		return "UserRegister [userId=" + userId + ", userName=" + userName + ", sourceFrom=" + sourceFrom
 				+ ", password=" + password + ", mobilNumber=" + mobilNumber + ", Token=" + Token + ", isActive="
 				+ isActive + ", createDate=" + createDate + ", lastModifiedDate=" + lastModifiedDate + ", profile="
-				+ profile + ", postCard=" + postCard + ", greatingCard=" + greatingCard + ", userOtp=" + userOtp
-				+ ", userContactList=" + userContactList + ", biometric=" + biometric + "]";
+				+ profile + ", userOtp=" + userOtp + ", userContactList=" + userContactList + ", biometric=" + biometric
+				+ "]";
 	}
+
+
 }

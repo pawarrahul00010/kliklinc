@@ -8,11 +8,6 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -21,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.technohertz.model.UserOtp;
 import com.technohertz.model.UserRegister;
-import com.technohertz.service.IUserOtpService;
 import com.technohertz.service.IUserRegisterService;
 import com.technohertz.util.JsonUtil;
 import com.technohertz.util.OtpUtil;
@@ -58,7 +52,18 @@ public class OtpRestController {
 	 * @return
 	 */
 	@RequestMapping(value = "/otp", method = RequestMethod.POST)
-	public ResponseEntity<String> saveOTP(@Valid @RequestBody UserRegister userRegister){
+	public ResponseEntity<ResponseObject> saveOTP(@Valid @RequestBody UserRegister userRegister){
+		
+		if(userRegister.equals("") || userRegister == null ) {
+			
+			response.setError("1");
+			response.setMessage("wrong userRegister data please enter correct value");
+			response.setData("[]");
+			response.setStatus("FAIL");
+			return ResponseEntity.ok(response);
+		
+		}
+		else {
 		
 			int userId = userRegister.getUserId();
 			
@@ -72,7 +77,7 @@ public class OtpRestController {
 				response.setData(retrievedUserRegister);
 				response.setStatus("FAIL");
 				jsonUtil.objToJson(response);
-				return ResponseEntity.ok(jsonUtil.objToJson(response));
+				return ResponseEntity.ok(response);
 			}
 			
 			if(retrievedUserRegister != null) {
@@ -93,7 +98,7 @@ public class OtpRestController {
 				response.setData(retrievedUserRegister);
 				response.setStatus("SUCCESS");
 				jsonUtil.objToJson(response);
-				return ResponseEntity.ok(jsonUtil.objToJson(response));
+				return ResponseEntity.ok(response);
 			}
 			else {
 				
@@ -102,35 +107,34 @@ public class OtpRestController {
 				response.setData(retrievedUserRegister);
 				response.setStatus("FAIL");
 				jsonUtil.objToJson(response);
-				return ResponseEntity.ok(jsonUtil.objToJson(response));
+				return ResponseEntity.ok(response);
 			}
+		}
 	}
-	
 		@RequestMapping(value = {"/forget/otp","/otp/resend"}, method = RequestMethod.POST)
-		public ResponseEntity<ResponseObject> saveForgetOTP(@RequestParam("userId") String forgetuserId){
+		public ResponseEntity<ResponseObject> saveForgetOTP(@RequestParam("mobilNumber") String mobilNumber){
 			
-			List<UserRegister> retrievedUserRegister = new ArrayList<UserRegister> ();
-			
-			int userId = 0;
-			try {
-				userId = Integer.parseInt(forgetuserId);
-			} catch (NumberFormatException e) {
+			if(mobilNumber.equals("") || mobilNumber == null ) {
 				
 				response.setError("1");
-				response.setMessage("wrong userId please enter numeric value");
+				response.setMessage("wrong userRegister data please enter correct value");
 				response.setData("[]");
 				response.setStatus("FAIL");
 				return ResponseEntity.ok(response);
-				
-			}
 			
-			if(String.valueOf(userId) != null) {
+			}
+			else {
+			
+			List<UserRegister> retrievedUserRegister = new ArrayList<UserRegister> ();
+			
 				
-					 retrievedUserRegister = userRegisterService.getById(userId);
+					 retrievedUserRegister = userRegisterService.findByMobileNumber(mobilNumber);
 					 
 					 if(!retrievedUserRegister.isEmpty()) {
 						 
-						 if((retrievedUserRegister.get(0).getUserOtp().getOtp() == 0) || (String.valueOf(retrievedUserRegister.get(0).getUserOtp().getOtp()) == null) || (String.valueOf(retrievedUserRegister.get(0).getUserOtp().getOtp()) == "")){
+						 if((retrievedUserRegister.get(0).getUserOtp().getOtp() == 0) || 
+								 (String.valueOf(retrievedUserRegister.get(0).getUserOtp().getOtp()) == null) || 
+								 (String.valueOf(retrievedUserRegister.get(0).getUserOtp().getOtp()) == "")){
 							 
 							 UserOtp userOtp = new UserOtp();
 								int otp = util.getOTP();
@@ -165,22 +169,23 @@ public class OtpRestController {
 						response.setStatus("FAIL");
 						return ResponseEntity.ok(response);
 					}
-				 }else {
-					 
-					response.setError("1");
-					response.setMessage("wrong userId please enter numeric value");
-					response.setData("[]");
-					response.setStatus("FAIL");
-					return ResponseEntity.ok(response);
-			
-				 }
 			}
 	
-	
+		}
+		
 	@RequestMapping(value = "/otp/verify", method = RequestMethod.POST)
 	public ResponseEntity<ResponseObject> verifyOTP(@RequestParam("userId") String userid,@RequestParam("otp") String OTP){
 		
+		if(userid.equals("") || userid == null || OTP.equals("") || OTP == null ) {
 			
+			response.setError("1");
+			response.setMessage("wrong userRegister data please enter correct value");
+			response.setData("[]");
+			response.setStatus("FAIL");
+			return ResponseEntity.ok(response);
+		
+		}
+		else {
 			List<UserRegister> retrievedUserRegister = new ArrayList<UserRegister> ();
 			
 			int userId = 0;
@@ -258,6 +263,8 @@ public class OtpRestController {
 			}
 		}
 
+	}
+	
 	public LocalDateTime getDate() {
 		
 	    LocalDateTime now = LocalDateTime.now();  

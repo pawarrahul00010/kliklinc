@@ -82,6 +82,11 @@ public class UserRegisterServiceImpl implements IUserRegisterService {
 		List<UserRegister> userList=userRegisterRepo.findByUserName(userName);
 		return userList;
 	}
+	@Override
+	public List<UserRegister> findByMobileNumber(String user) {
+		List<UserRegister> userList=userRegisterRepo.findByMobileNumber(user);
+		return userList;
+	}
 
 
 	@Override
@@ -104,7 +109,7 @@ public class UserRegisterServiceImpl implements IUserRegisterService {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Long> getAllMobile() {
+	public List<String> getAllMobile() {
 		
 		return entityManager.createQuery("SELECT r.mobilNumber from UserRegister r ")
 				.getResultList();

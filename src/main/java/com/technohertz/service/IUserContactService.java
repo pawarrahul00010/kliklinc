@@ -26,7 +26,11 @@ public interface IUserContactService {
 	
 	public List<Long> getContactsByUserId(int userId);
 	
-	public void deleteByUserId(int userId , List<Integer> contList);
+	public void deleteByUserId(int userId);
+	
+	public List<UserContact> getUserContactdetailByUserId(int userId);
+	
+	public List<String> getUserContactsByUserId(int userId);
 	
 
 }

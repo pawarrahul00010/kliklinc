@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -29,11 +30,14 @@ public class GroupProfile implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "GROUP_PROFILE_ID")
-	private Integer profileId;
+	@Column(name = "GROUP_ID")
+	private Integer groupId;
 
 	@Column(name = "Display_Name")
 	private String displayName;
+	
+	@Column(name = "created_By")
+	private Integer createdBy;
 
 	@Column(name = "current_Profile")
 	private String currentProfile;
@@ -47,16 +51,22 @@ public class GroupProfile implements Serializable {
 	private List<MediaFiles> files = new ArrayList<MediaFiles>();
 
 	@JsonIgnore
-	@OneToMany(cascade = javax.persistence.CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "GROUP_PROFILE_ID")
+	@ManyToMany(cascade = javax.persistence.CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<UserContact> groupMember = new ArrayList<UserContact>();
 
-	public Integer getProfileId() {
-		return profileId;
+
+	/**
+	 * @return the groupId
+	 */
+	public Integer getGroupId() {
+		return groupId;
 	}
 
-	public void setProfileId(Integer profileId) {
-		this.profileId = profileId;
+	/**
+	 * @param groupId the groupId to set
+	 */
+	public void setGroupId(Integer groupId) {
+		this.groupId = groupId;
 	}
 
 	public List<MediaFiles> getFiles() {
@@ -124,17 +134,33 @@ public class GroupProfile implements Serializable {
 	public void setGroupMember(List<UserContact> groupMember) {
 		this.groupMember = groupMember;
 	}
+	
+	
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/**
+	 * @return the createdBy
+	 */
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	/**
+	 * @param createdBy the createdBy to set
+	 */
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "GroupProfile [profileId=" + profileId + ", displayName=" + displayName + ", currentProfile="
-				+ currentProfile + ", aboutGroup=" + aboutGroup + ", files=" + files + ", groupMember=" + groupMember
-				+ "]";
+		return "GroupProfile [groupId=" + groupId + ", displayName=" + displayName + ", createdBy=" + createdBy
+				+ ", currentProfile=" + currentProfile + ", aboutGroup=" + aboutGroup + ", files=" + files
+				+ ", groupMember=" + groupMember + "]";
 	}
+
+
 
 }

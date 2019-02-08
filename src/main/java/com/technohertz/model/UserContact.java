@@ -10,6 +10,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.springframework.transaction.annotation.Transactional;
+
+@Transactional
 @Entity
 @Table(name = "USER_CONTACT")
 public class UserContact implements Comparable<UserContact>, Serializable{
@@ -27,7 +30,7 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 	private String contactName;
 
 	@Column(name = "CONTACT_NUMBER")
-	private long contactNumber;
+	private String contactNumber;
 	
 	@Column(name = "profile_Pic")
 	private String profilePic;
@@ -59,7 +62,7 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 	 * @param createDate
 	 * @param userId
 	 */
-	public UserContact(int contactId, String contactName, long contactNumber, String profilePic, boolean isBlocked,
+	public UserContact(int contactId, String contactName, String contactNumber, String profilePic, boolean isBlocked,
 			boolean isActive, LocalDateTime createDate) {
 		super();
 		this.contactId = contactId;
@@ -70,12 +73,6 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 		this.isActive = isActive;
 		this.createDate = createDate;
 	}
-
-
-
-
-
-
 
 	/**
 	 * @return the contactId
@@ -108,14 +105,14 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 	/**
 	 * @return the contactNumber
 	 */
-	public long isContactNumber() {
+	public String isContactNumber() {
 		return contactNumber;
 	}
 
 	/**
 	 * @param contactNumber the contactNumber to set
 	 */
-	public void setContactNumber(long contactNumber) {
+	public void setContactNumber(String contactNumber) {
 		this.contactNumber = contactNumber;
 	}
 
@@ -180,7 +177,7 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 	/**
 	 * @return the contactNumber
 	 */
-	public long getContactNumber() {
+	public String getContactNumber() {
 		return contactNumber;
 	}
 

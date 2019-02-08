@@ -32,7 +32,7 @@ public class UserRegisterController {
 
 	@Autowired
 	private IUserRegisterService userRegisterService;
-	
+
 	@Autowired
 
 	private EntityManager entitymanager;
@@ -89,9 +89,7 @@ public class UserRegisterController {
 		}
 		
 	}
-	
-//
-	
+
 	@SuppressWarnings("unused")
 	@PostMapping("/login")
 	public ResponseEntity<ResponseObject> loginCredential(@RequestParam String user,@RequestParam String pass)
@@ -109,10 +107,16 @@ public class UserRegisterController {
 			else {
 				UserRegister userRegister=null;
 				List<UserRegister> userRegisterList = userRegisterService.findByUserName(user);
+				List<UserRegister> userList = userRegisterService.findByMobileNumber(user);
 				/*get from database*/
 				
 					if(userRegisterList.isEmpty())
 					{
+						
+						if(userList.isEmpty())
+						{
+							
+						
 						response.setMessage("user not found please try again");
 						response.setError("1");
 						response.setStatus("FAIL");
@@ -120,14 +124,38 @@ public class UserRegisterController {
 						return ResponseEntity.ok(response);
 					}
 					else {
+						userRegister = userList.get(0);
+						String name = userRegister.getUserName();
+						String mobileNumber=userRegister.getMobilNumber();
+						String password = userRegister.getPassword();
+						Boolean userStatus=userRegister.getIsActive();
+			
+					
+					if (mobileNumber.equals(user)  && password.equals(pass) && userStatus==true) 
+					{
+						response.setStatus("true");
+						response.setMessage("Logged in successfully");
+						response.setError("");
+						response.setData(userList);
+						return ResponseEntity.ok(response);
+						
+					}else {
+						 response.setStatus("false");
+						response.setMessage("please check username or password");
+						response.setError("1");
+						response.setData("[]");
+						return ResponseEntity.ok(response);
+					}
+				}
+		}
+					else {
 						userRegister = userRegisterList.get(0);
-				
 						String name = userRegister.getUserName();
 						String password = userRegister.getPassword();
 						Boolean userStatus=userRegister.getIsActive();
 			
 					
-					if (name.equals(user) && password.equals(pass) && userStatus==true) 
+					if (name.equals(user)  && password.equals(pass) && userStatus==true) 
 					{
 						response.setStatus("true");
 						response.setMessage("Logged in successfully");
@@ -147,15 +175,15 @@ public class UserRegisterController {
 		}
 
 
-	@SuppressWarnings("unused")
+	
 	@PostMapping("/saveall")
 	public ResponseEntity<ResponseObject> addUser(@RequestParam String userName,
 												@RequestParam String password,
 												@RequestParam String mobileNumber) {
 		
-		if(userName.equals("") && userName == null &&
-				password.equals("") && password == null &&
-				mobileNumber.equals("") && mobileNumber == null) {
+		if(userName.equals("")|| userName == null ||
+				password.equals("") || password == null ||
+				mobileNumber.equals("") || mobileNumber == null) {
 			
 			response.setError("1");
 			response.setMessage("wrong userName, password, mobileNumber please enter correct value");
@@ -173,7 +201,7 @@ public class UserRegisterController {
 		
 				user.setUserName(userName);
 				user.setPassword(password);
-				user.setMobilNumber(Long.parseLong(mobileNumber));
+				user.setMobilNumber(mobileNumber);
 				user.setIsActive(true);
 				user.setSourceFrom("Laptop");
 				user.setToken(getRandomNumber());
@@ -186,7 +214,7 @@ public class UserRegisterController {
 				user.getBiometric().add(biometric);	
 				UserOtp userOtp = new UserOtp();
 				
-				if(!userExists(userName) ){
+				if(!userExists(mobileNumber) ){
 					userOtp.setIs_active(true);
 					userOtp.setCreateDate(getDate());
 					userOtp.setLastModifiedDate(getDate());
@@ -219,10 +247,10 @@ public class UserRegisterController {
 		
 
 
-	private boolean userExists(String userName)
+	private boolean userExists(String mobileNumber)
 	{
-		String hql="FROM UserRegister as ur WHERE ur.userName= ?1";
-		int count=entitymanager.createQuery(hql).setParameter(1, userName).getResultList().size();
+		String hql="FROM UserRegister as ur WHERE ur.mobilNumber= ?1";
+		int count=entitymanager.createQuery(hql).setParameter(1, mobileNumber).getResultList().size();
 		
 		return count>0 ? true : false;
 		
