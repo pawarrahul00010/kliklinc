@@ -54,7 +54,7 @@ public class UserProfileController {
 
 
 	@SuppressWarnings("unused")
-	@PutMapping("/displayName/{id}")
+	@PostMapping("/displayName/{id}")
 	public ResponseEntity<ResponseObject> updateDisplayName(@RequestParam("displayName") String displayName,
 			@PathVariable(value = "id") String profileid) throws ResourceNotFoundException {
 
@@ -154,10 +154,10 @@ public class UserProfileController {
 			likedUsers.setMarkType("UNLIKED");
 			mediaFileRepo.save(mediaFiles);
 			}
-			response.setError("1");
+			response.setError("0");
 			response.setMessage("user unliked successfully");
-			response.setData("[]");
-			response.setStatus("FAIL");
+			response.setData(mediaFiles);
+			response.setStatus("SUCCESS");
 			return ResponseEntity.ok(response);
 		}
 		}
@@ -202,6 +202,7 @@ public class UserProfileController {
 			LikedUsers likedUsers=new LikedUsers();
 			likedUsers.setUserName(userRegister.getUserName());
 			likedUsers.setMarkType(Constant.RATE);
+			likedUsers.setFileID(fileid);
 			mediaFiles.getLikedUsers().add(likedUsers); 
 
 			//Long totalLikes=mediaFiles.getLikes();
@@ -240,7 +241,8 @@ public class UserProfileController {
 					mediaFiles.setLikes(rate);
 					if(rate>=0) {
 					mediaFiles.setIsRated(false);
-					likedUsers.setMarkType("UNLIKED");
+					likedUsers.setMarkType(Constant.RATE);
+					likedUsers.setFileID(fileid);
 					mediaFiles.setRating(rate);
 				    mediaFileRepo.save(mediaFiles);
 			}
@@ -249,17 +251,17 @@ public class UserProfileController {
 				mediaFiles.setRating(rate);
 				mediaFileRepo.save(mediaFiles);
 
-				response.setError("1");
-				response.setMessage("rating on image is not done");
-				response.setData("[]");
-				response.setStatus("FAIL");
+				response.setError("0");
+				response.setMessage("rating updated");
+				response.setData(mediaFiles);
+				response.setStatus("SUCCESS");
 				return ResponseEntity.ok(response);
 			}
 		}
 	}
 
 	@SuppressWarnings("unused")
-	@PutMapping("/aboutUs/{id}")
+	@PostMapping("/aboutUs/{id}")
 	public ResponseEntity<ResponseObject> updateStatus(@RequestParam("aboutUs") String aboutUs,
 			@PathVariable(value = "id") String userid) throws ResourceNotFoundException {
 
@@ -324,12 +326,8 @@ public class UserProfileController {
      
     	UserProfile userProfile = fileStorageService.saveAllProfile(file,userId,DisplayName);
     	MediaFiles files=mediaFileRepo.getOne(Integer.valueOf(String.valueOf(userProfile.getFiles().get(userProfile.getFiles().size()-1).getFileId())));
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/downloadFile/")
-                .path(String.valueOf(String.valueOf(files.getFilePath())))
-                .toUriString();
-
-       Object obj=new UploadFileResponse(files.getFilePath(), fileDownloadUri,
+       
+       Object obj=new UploadFileResponse(files.getFilePath(), userProfile.getCurrentProfile(),
                 file.getContentType(), file.getSize());
        if (!file.isEmpty()||userId!=null) {
 			response.setMessage("your Profile Image updated successfully");
@@ -350,7 +348,7 @@ public class UserProfileController {
 		}
     }
 
-	@PutMapping("/uploadFile/{userId}")
+    @PostMapping("/uploadFile/{userId}")
 	public ResponseEntity<ResponseObject> updateProfile(@RequestParam("file") MultipartFile file,@PathVariable(value = "userId") Integer userId) {
 		UserProfile userProfile = fileStorageService.saveProfile(file,userId);
 		MediaFiles files=mediaFileRepo.getOne(Integer.valueOf(String.valueOf(userProfile.getFiles().get(userProfile.getFiles().size()-1).getFileId())));

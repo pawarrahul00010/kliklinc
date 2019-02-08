@@ -92,7 +92,7 @@ public class UserRegisterController {
 
 	@SuppressWarnings("unused")
 	@PostMapping("/login")
-	public ResponseEntity<ResponseObject> loginCredential(@RequestParam String user,@RequestParam String pass)
+	public ResponseEntity<ResponseObject> loginCredential(@RequestParam("user") String user,@RequestParam("pass") String pass)
 			throws ResourceNotFoundException {
 		
 			if(user.equals("") && user == null && pass.equals("") && pass == null) {

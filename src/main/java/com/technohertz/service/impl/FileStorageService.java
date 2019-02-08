@@ -64,32 +64,15 @@ public class FileStorageService {
 					ex);
 		}
 	}
-	public MediaFiles storeGreatingCard(MultipartFile file, int userId,String text) {
-
-		String fileName = StringUtils
-				.cleanPath(String.valueOf(userId) + System.currentTimeMillis() + getFileExtension(file));
-		try {
-			if (fileName.contains("..")) {
-				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + file);
-			}
-			MediaFiles mfile = new MediaFiles();
-			mfile.setFilePath(fileName);
-			mfile.setIsLiked(false);
-			mfile.setIsRated(false);
-			mfile.setCreateDate(dateUtil.getDate());
-			mfile.setLastModifiedDate(dateUtil.getDate());
-			mfile.setFileType("GREATINGCARD");
-			Path targetLocation = this.fileStorageLocation.resolve(fileName);
-			Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-			return mediaFileRepo.save(mfile);
-		} catch (IOException ex) {
-			throw new FileStorageException("Could not store file " + fileName + ". Please try again!", ex);
-		}
-	}
+	
 	
 
-	public MediaFiles storeFile(MultipartFile file, int userId) {
+	public MediaFiles storeFile(MultipartFile file, int userId,String fileType) {
 		String fileName = StringUtils.cleanPath(String.valueOf(userId)+System.currentTimeMillis()+getFileExtension(file));
+		   String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+	                .path("/downloadFile/")
+	                .path(String.valueOf(fileName))
+	                .toUriString();
 		
 		try {
 			if (fileName.contains("..")) {
@@ -97,7 +80,10 @@ public class FileStorageService {
 			}
 
 			MediaFiles mediaFile = new MediaFiles();
-			mediaFile.setFilePath(fileName);
+			mediaFile.setFilePath(fileDownloadUri);
+			mediaFile.setFileType(fileType);
+			mediaFile.setIsLiked(false);
+			mediaFile.setIsRated(false);
 			mediaFile.setCreateDate(dateUtil.getDate());
 			mediaFile.setLastModifiedDate(dateUtil.getDate());
 			Path targetLocation = this.fileStorageLocation.resolve(fileName);
@@ -109,54 +95,6 @@ public class FileStorageService {
 		}
 	}
 	
-	
-	public MediaFiles storeVideos(MultipartFile file, int userId) {
-
-		String fileName = StringUtils
-				.cleanPath(String.valueOf(userId) + System.currentTimeMillis() + getFileExtension(file));
-		try {
-			if (fileName.contains("..")) {
-				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + file);
-			}
-			MediaFiles mfile = new MediaFiles();
-			mfile.setFilePath(fileName);
-			mfile.setIsLiked(false);
-			mfile.setIsRated(false);
-			mfile.setCreateDate(dateUtil.getDate());
-			mfile.setLastModifiedDate(dateUtil.getDate());
-			mfile.setFileType("VIDEO");
-			Path targetLocation = this.fileStorageLocation.resolve(fileName);
-			Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-			return mediaFileRepo.save(mfile);
-		} catch (IOException ex) {
-			throw new FileStorageException("Could not store file " + fileName + ". Please try again!", ex);
-		}
-	}
-
-	public MediaFiles storePostCard(MultipartFile file, int userId,String text) {
-
-		String fileName = StringUtils
-				.cleanPath(String.valueOf(userId) + System.currentTimeMillis() + getFileExtension(file));
-		try {
-			if (fileName.contains("..")) {
-				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + file);
-			}
-			MediaFiles mfile = new MediaFiles();
-			mfile.setFilePath(fileName);
-			mfile.setIsLiked(false);
-			mfile.setIsRated(false);
-			mfile.setCreateDate(dateUtil.getDate());
-			mfile.setLastModifiedDate(dateUtil.getDate());
-			mfile.setFileType("POSTCARD");
-			Path targetLocation = this.fileStorageLocation.resolve(fileName);
-			Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-			return mediaFileRepo.save(mfile);
-		} catch (IOException ex) {
-			throw new FileStorageException("Could not store file " + fileName + ". Please try again!", ex);
-		}
-	}
-
 	public UserProfile saveProfile(MultipartFile file, int userId) {
 
 		String fileName = StringUtils
@@ -192,8 +130,16 @@ public class FileStorageService {
 	public UserProfile saveAllProfile(MultipartFile file, int userId,String DisplayName) {
 		// Normalize file name
 
+		
+		
 		String fileName = StringUtils
 				.cleanPath(String.valueOf(userId) + System.currentTimeMillis() + getFileExtension(file));
+		
+		 String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+	                .path("/downloadFile/")
+	                .path(String.valueOf(String.valueOf(fileName)))
+	                .toUriString();
+
 		try {
 			if (fileName.contains("..")) {
 				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + file);
@@ -201,14 +147,14 @@ public class FileStorageService {
 			List<UserProfile> userprofile = null;
 			MediaFiles mfile = new MediaFiles();
 			userprofile = userprofileRepo.findById(userId);
-			mfile.setFilePath(fileName);
+			mfile.setFilePath(fileDownloadUri);
 			mfile.setIsLiked(false);
 			mfile.setIsRated(false);
 			mfile.setCreateDate(dateUtil.getDate());
 			mfile.setLastModifiedDate(dateUtil.getDate());
 			mfile.setFileType("PROFILE");
 			userprofile.get(0).setProfileId(userId);
-			userprofile.get(0).setCurrentProfile(fileName);
+			userprofile.get(0).setCurrentProfile(fileDownloadUri);
 			userprofile.get(0).setDisplayName(DisplayName);
 			userprofile.get(0).getFiles().add(mfile);
 			Path targetLocation = this.fileStorageLocation.resolve(fileName);
@@ -222,6 +168,12 @@ public class FileStorageService {
 	public GroupProfile savegroupProfile(MultipartFile file, int userId) {
 		String fileName = StringUtils
 				.cleanPath(String.valueOf(userId) + System.currentTimeMillis() + getFileExtension(file));
+		
+		 String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+	                .path("/downloadFile/")
+	                .path(String.valueOf(fileName))
+	                .toUriString();
+		
 		try {
 			if (fileName.contains("..")) {
 				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + file);
@@ -229,14 +181,14 @@ public class FileStorageService {
 			List<GroupProfile> groupProfile = null;
 			MediaFiles mfile = new MediaFiles();
 			groupProfile = groupProfileRepository.findById(userId);
-			mfile.setFilePath(fileName);
+			mfile.setFilePath(fileDownloadUri);
 			// mfile.setFileId(id);
 			mfile.setCreateDate(dateUtil.getDate());
 			mfile.setLastModifiedDate(dateUtil.getDate());
 			mfile.setIsLiked(false);
 			mfile.setIsRated(false);
 			groupProfile.get(0).setGroupId(userId);
-			groupProfile.get(0).setCurrentProfile(fileName);
+			groupProfile.get(0).setCurrentProfile(fileDownloadUri);
 			groupProfile.get(0).getFiles().add(mfile);
 			// Copy file to the target location (Replacing existing file with the same name)
 			Path targetLocation = this.fileStorageLocation.resolve(fileName);

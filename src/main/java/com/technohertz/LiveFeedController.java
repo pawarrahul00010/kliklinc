@@ -2,9 +2,7 @@ package com.technohertz;
 
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -18,9 +16,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.technohertz.common.Constant;
 import com.technohertz.model.LikedUsers;
@@ -33,9 +33,10 @@ import com.technohertz.service.impl.FileStorageService;
 import com.technohertz.util.ResponseObject;
 
 @RestController
-public class FileController {
+@RequestMapping("/livefeed")
+public class LiveFeedController {
 
-    private static final Logger logger = LoggerFactory.getLogger(FileController.class);
+    private static final Logger logger = LoggerFactory.getLogger(LiveFeedController.class);
 	@Autowired
 	private MediaFileRepo mediaFileRepo;
     @Autowired
@@ -45,17 +46,24 @@ public class FileController {
     @Autowired
 	private ResponseObject response;
     
-    
-    @PostMapping("/uploadFile/{userId}")
-    public ResponseEntity<ResponseObject> uploadFile(@RequestParam("file") MultipartFile file,@RequestParam("fileType")String fileType,
+    @Autowired
+	private Constant constant;
+
+    @PostMapping("/video/{userId}")
+    public  ResponseEntity<ResponseObject> uploadVideos(@RequestParam("file") MultipartFile file,
     		@PathVariable(value = "userId") Integer  userId) {
      
-    	MediaFiles fileName = fileStorageService.storeFile(file, userId,fileType);
+    	@SuppressWarnings("static-access")
+		MediaFiles mediaFiles = fileStorageService.storeFile(file, userId, constant.VIDEO);
+    	MediaFiles files=mediaFileRepo.getOne(mediaFiles.getFileId());
+        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/downloadFile/")
+                .path(String.valueOf(String.valueOf(files.getFilePath())))
+                .toUriString();
 
-     
-        Object obj=new UploadFileResponse(fileName.getFilePath(), fileName.getFilePath(),
+       Object obj=new UploadFileResponse(files.getFilePath(), fileDownloadUri,
                 file.getContentType(), file.getSize());
-        if (!file.isEmpty()||userId!=null) {
+       if (!file.isEmpty()||userId!=null) {
 			response.setMessage("your Profile Image updated successfully");
 
 			response.setData(obj);
@@ -73,19 +81,14 @@ public class FileController {
 			return ResponseEntity.ok(response);
 		}
     }
-    
-    @PostMapping("/uploadMultipleFiles/{userId}")
-    public List<ResponseEntity<ResponseObject>> uploadMultipleFile(@RequestParam("files") MultipartFile[] files,@RequestParam("fileType")String fileType,
-    		@PathVariable(value = "userId") int  userId) {
-        return Arrays.asList(files)
-                .stream()
-                .map(file -> uploadFile(file,fileType,userId))
-                .collect(Collectors.toList());
-    }
- 
+	@GetMapping("/listViewrs/{fileid}")
+	public List<LikedUsers> getAllViewers(@PathVariable(value = "fileid") int  fileid) {
+		return fileStorageService.getAll(fileid);
+	}
+
 	/* @GetMapping("/downloadFile/{fileName:.+}") */
     @GetMapping("/downloadFile/{fileName:.+}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) {
+    public ResponseEntity<Resource> downloadFile(@PathVariable String fileName , HttpServletRequest request) {
         // Load file as Resource
         Resource resource = fileStorageService.loadFileAsResource(fileName);
 
@@ -219,6 +222,7 @@ public class FileController {
 				rate = rate+rateCount;
 				mediaFiles.setRating(rate);
 				mediaFiles.setIsRated(isRate);
+				mediaFiles.setFileType("VIDEO");
 				mediaFileRepo.save(mediaFiles);
 
 				response.setError("0");

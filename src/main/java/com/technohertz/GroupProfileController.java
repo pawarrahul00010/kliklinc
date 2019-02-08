@@ -40,9 +40,6 @@ public class GroupProfileController {
 	private IGroupProfileService groupProfileService;
 
 	@Autowired
-	private FileController fileController;
-
-	@Autowired
 	private IUserRegisterService userRegisterService;
 	
 	@Autowired
@@ -56,13 +53,17 @@ public class GroupProfileController {
 
 	@Autowired
 	private DateUtil dateUtil;
+	
 	@Autowired
 	private CommonUtil commonUtil;
+	
+	@Autowired
+	private Constant constant;
 
 	@Autowired
 	private FileStorageService fileStorageService;
 
-	@SuppressWarnings("unused")
+	@SuppressWarnings({ "unused", "unlikely-arg-type" })
 	@PostMapping("/create/{userId}")
 	public ResponseEntity<ResponseObject> createGroup(@RequestParam("contacts") String contacts,
 			@RequestParam("file") MultipartFile file,@RequestParam("groupName") String groupName,
@@ -86,7 +87,8 @@ public class GroupProfileController {
 			
 			Map<String, UserRegister> userList = commonUtil.getContactWithDetails(contactList, retrivedUserList);
 			
-			UploadFileResponse uploadFileResponse= fileController.uploadFile(file, userId);
+			@SuppressWarnings("static-access")
+			MediaFiles mediaFiles= fileStorageService.storeFile(file, userId, constant.GROUPPROFILE);
 			
 			
 			
@@ -163,7 +165,7 @@ public class GroupProfileController {
 				}*/
 			
 				groupProfile.setGroupMember(contactlist);
-				groupProfile.setCurrentProfile(uploadFileResponse.getFileDownloadUri());
+				groupProfile.setCurrentProfile(mediaFiles.getFilePath());
 				groupProfile.setDisplayName(groupName);
 				groupProfile.setCreatedBy(userId);
 				groupProfileService.save(groupProfile);
