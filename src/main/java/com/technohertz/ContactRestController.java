@@ -168,4 +168,19 @@ public class ContactRestController {
 		return contactList;
 	}
 
+	
+	@RequestMapping(value = "/contactList", method = RequestMethod.POST)
+	public ResponseEntity<ResponseObject> saveContact(){
+		
+		List<UserContact> userContactList = userContactService.getAll();
+		
+			String message = "CraziApp all contacts are fetched successfully";
+			response.setError("0");
+			response.setMessage(message);
+			response.setData(userContactList);
+			response.setStatus("SUCCESS");
+			return ResponseEntity.ok(response);
+				
+		}
+		
 }

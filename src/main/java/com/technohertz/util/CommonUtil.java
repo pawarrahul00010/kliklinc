@@ -4,13 +4,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.technohertz.model.UserContact;
 import com.technohertz.model.UserRegister;
+import com.technohertz.service.IUserRegisterService;
 
 @Component
 public class CommonUtil {
+
+
+	@Autowired
+	private IUserRegisterService userRegisterService;
 
 	
 	public Map<String, UserRegister> getContactWithDetails(List<String> contactList, List<UserRegister> retrivedUserList){
@@ -36,11 +42,15 @@ public class CommonUtil {
 			
 			Map<String, UserContact> userContactList = new TreeMap<String, UserContact>();
 			
+			Map<String, String> profileList = updateProfilePics(contactList);
+			
 				for(String contact : contactList) {
 					
 					for(UserContact userContact : retrivedContactList) {
 						
 						if(contact == userContact.getContactNumber() || userContact.getContactNumber().equals(contact)) {
+							
+							userContact.setProfilePic(profileList.get(contact));
 							
 							userContactList.put(contact, userContact);
 					}
@@ -51,4 +61,20 @@ public class CommonUtil {
 			return userContactList;
 		}
 
+		public Map<String, String> updateProfilePics(List<String> contactList){
+			
+			List<UserRegister> retrivedUserList= userRegisterService.getAll();
+			
+			Map<String, UserRegister> userList = getContactWithDetails(contactList, retrivedUserList);
+			
+			Map<String, String> userCurrentProfileList = new TreeMap<String, String>();
+		
+			for(String contact : contactList) {
+				
+						userCurrentProfileList.put(contact, userList.get(contact).getProfile().getCurrentProfile());
+				}
+				
+			return userCurrentProfileList;
+		}
+		
 	}

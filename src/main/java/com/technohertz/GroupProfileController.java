@@ -35,10 +35,14 @@ import com.technohertz.util.ResponseObject;
 @RestController
 @RequestMapping("/groupRest")
 public class GroupProfileController {
+	
+	
 	@Autowired
 	private Empty empty;
+	
 	@Autowired
 	private IGroupProfileService groupProfileService;
+	
 	@Autowired
 	private IUserContactService	userContactService;
 
@@ -61,6 +65,8 @@ public class GroupProfileController {
 
 	@Autowired
 	private FileStorageService fileStorageService;
+	
+	
 	@PostMapping("/create/{userId}")
 	public ResponseEntity<ResponseObject> createGroup(@RequestParam("contactList") String contacts,
 			@RequestParam("file") MultipartFile file,@RequestParam("groupName") String groupName,
@@ -104,6 +110,113 @@ public class GroupProfileController {
 				groupProfile.setCreatedBy(userId);
 				groupProfileService.save(groupProfile);
 
+				response.setStatus("Success");
+				response.setMessage("Group Created successfully");
+				response.setError("0");
+				response.setData(groupProfile);
+
+				return ResponseEntity.ok(response);
+				
+				}	
+			
+		}
+
+	@PostMapping("/update/contact")
+	public ResponseEntity<ResponseObject> updateGroup(@RequestParam("contactList") String contacts,@RequestParam("groupId") Integer groupId) {
+
+		if (contacts.equals("") || contacts == null 
+				|| String.valueOf(groupId).equals("") || String.valueOf(groupId) == null) {
+
+			response.setError("1");
+			response.setMessage("wrong contactList and groupId please enter correct value");
+			response.setData(empty);
+			response.setStatus("FAIL");
+			return ResponseEntity.ok(response);
+
+		} else {
+			
+			List<UserContact> retrivedContactList = userContactService.getAll();//get all user from database
+			
+			List<String> contactList = getContactList(contacts);
+			
+			Map<String, UserContact> contactProfileList = commonUtil.getContactProfileDetails(contactList, retrivedContactList);
+			
+			List<GroupProfile> getGroupUserList = groupProfileService.findById(groupId);
+			
+			
+			
+			List<String> conlist = groupProfileService.getGroupContactListById(groupId);
+			
+			GroupProfile groupProfile = getGroupUserList.get(0);
+			
+			List<UserContact> contactlist = getContactListTosave(contactList, conlist, contactProfileList, groupProfile );
+			
+				groupProfile.setGroupMember(contactlist);
+				groupProfile.setGroupId(groupId);
+				groupProfileService.save(groupProfile);
+
+				response.setStatus("Success");
+				response.setMessage("Group Created successfully");
+				response.setError("0");
+				response.setData(groupProfile);
+
+				return ResponseEntity.ok(response);
+				
+				}	
+			
+		}
+
+	
+	private List<UserContact> getContactListTosave(List<String> contactList, List<String> conlist,
+			Map<String, UserContact> contactProfileList, GroupProfile groupProfile) {
+		
+			for(String contact : contactList) {
+				
+				if(!conlist.contains(contact)) {
+					
+					UserContact userContact = contactProfileList.get(contact); 	
+					
+					groupProfile.getGroupMember().add(userContact);
+				}
+			}
+			
+		return groupProfile.getGroupMember();
+	}
+
+	@PostMapping("/delete/contact")
+	public ResponseEntity<ResponseObject> deleteContactFromGroup(@RequestParam("contactidList") String contacts,
+																 @RequestParam("groupId") String groupId) {
+
+		if (contacts.equals("") || contacts == null 
+				|| groupId.equals("") || groupId == null) {
+
+			response.setError("1");
+			response.setMessage("wrong contactList and groupId please enter correct value");
+			response.setData(empty);
+			response.setStatus("FAIL");
+			return ResponseEntity.ok(response);
+
+		} else {
+			int groupid;
+			try {
+				 groupid = Integer.parseInt(groupId);
+			} catch (NumberFormatException e) {
+				
+				response.setError("1");
+				response.setMessage("wrong contactList and groupId please enter correct value");
+				response.setData(empty);
+				response.setStatus("FAIL");
+				return ResponseEntity.ok(response);
+			}
+			
+			List<Integer> contactList = getContactIdList(contacts);
+			
+			 groupProfileService.deleteContactsById(groupid, contacts);
+			
+			 List<GroupProfile> getGroupUserList = groupProfileService.findById(groupid);
+			 
+			GroupProfile groupProfile = getGroupUserList.get(0);
+			
 				response.setStatus("Success");
 				response.setMessage("Group Created successfully");
 				response.setError("0");
@@ -327,7 +440,7 @@ public class GroupProfileController {
 
 			profile = groupProfileService.findById(id);
 			if (!profile.isEmpty()) {
-				profile.get(0).setAboutUser(aboutUs);
+				profile.get(0).setAboutGroup(aboutUs);
 				profile.get(0).setGroupId(id);
 				updateDisplayName = groupProfileService.save(profile.get(0));
 
@@ -388,6 +501,23 @@ public class GroupProfileController {
 		
 			try {
 				contactList.add(userContact);
+			} catch (NumberFormatException e) {
+				continue;
+			}
+		
+		}
+		return contactList;
+	}
+	
+	private List<Integer> getContactIdList(String userContactList) {
+		
+		List<Integer> contactList = new ArrayList<Integer>();
+		String sContact[] = userContactList.split(",");
+		
+		for(String userContact : sContact ) {
+		
+			try {
+				contactList.add(Integer.parseInt(userContact));
 			} catch (NumberFormatException e) {
 				continue;
 			}

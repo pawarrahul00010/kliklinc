@@ -35,10 +35,13 @@ import com.technohertz.util.ResponseObject;
 @RestController
 @RequestMapping("/profile")
 public class UserProfileController {
+	
 	@Autowired
 	private UserProfileRepository userprofilerepo;
+	
 	@Autowired
 	private Empty empty;
+	
 	@Autowired
 	private UserRegisterRepository registerRepository;
 

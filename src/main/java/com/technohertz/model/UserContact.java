@@ -2,12 +2,16 @@ package com.technohertz.model;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -44,12 +48,12 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 	@Column(name = "CREATE_DATE", nullable = false, length = 200)
 	private LocalDateTime createDate;
 	
-
+	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    private List<GroupProfile> groupList = new ArrayList<>();
 	
 	public UserContact() {
 		super();
 	}
-
 
 
 	/**
@@ -60,7 +64,7 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 	 * @param isBlocked
 	 * @param isActive
 	 * @param createDate
-	 * @param userId
+	 * @param groupList
 	 */
 	public UserContact(int contactId, String contactName, String contactNumber, String profilePic, boolean isBlocked,
 			boolean isActive, LocalDateTime createDate) {
@@ -73,6 +77,7 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 		this.isActive = isActive;
 		this.createDate = createDate;
 	}
+
 
 	/**
 	 * @return the contactId
@@ -182,7 +187,6 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 	}
 
 
-
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -190,9 +194,8 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 	public String toString() {
 		return "UserContact [contactId=" + contactId + ", contactName=" + contactName + ", contactNumber="
 				+ contactNumber + ", profilePic=" + profilePic + ", isBlocked=" + isBlocked + ", isActive=" + isActive
-				+ ", createDate=" + createDate + "]";
+				+ ", createDate=" + createDate + ", groupList=" + groupList + "]";
 	}
-
 
 
 	public int compareTo(UserContact o) {

@@ -1,5 +1,6 @@
 package com.technohertz.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.technohertz.model.GroupProfile;
+import com.technohertz.model.UserContact;
 import com.technohertz.repo.GroupProfileRepository;
 import com.technohertz.service.IGroupProfileService;
 
@@ -77,4 +79,37 @@ public class GroupProfileServiceImpl implements IGroupProfileService{
 				.setParameter("userId", userId).getResultList();
 
 	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<String> getGroupContactListById(Integer groupId) {
+		
+		List<UserContact> userContactList = entityManager.createQuery(" SELECT g.groupMember FROM GroupProfile g WHERE "+
+				"(:groupId is null or g.groupId=:groupId)")
+				.setParameter("groupId", groupId).getResultList();
+		List<String> contactList = new ArrayList<String>();
+		
+		for(UserContact userContact : userContactList) {
+			
+			String contact = userContact.getContactNumber();
+			
+			contactList.add(contact);
+		}
+		return contactList;
+	}
+
+	@Transactional
+	@Override
+	public void deleteContactsById(Integer groupId, String contactList) {
+		
+		contactList.replace("[", "(");
+		contactList.replace("]", ")");
+		System.out.println(contactList);
+		entityManager.createNativeQuery(" DELETE FROM " + 
+				" group_profile_group_member WHERE group_id=:group_id AND contact_id IN (:contactList)")
+				.setParameter("group_id", groupId)
+				.setParameter("contactList", contactList).executeUpdate();
+
+	}
+
 }

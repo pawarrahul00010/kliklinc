@@ -17,4 +17,8 @@ public interface IGroupProfileService {
 
 	public List<String> getUserGroupsByUserId(int userId);
 
+	public List<String> getGroupContactListById(Integer groupId);
+
+	public void deleteContactsById(Integer groupId, String contacts);
+
 }

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -42,18 +44,19 @@ public class GroupProfile implements Serializable {
 	@Column(name = "current_Profile")
 	private String currentProfile;
 
-	@Column(name = "About_User")
+	@Column(name = "About_Group")
 	private String aboutGroup;
 
 	@JsonIgnore
 	@OneToMany(cascade = javax.persistence.CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "GROUP_PROFILE_ID")
+	@JoinColumn(name = "GROUP_ID")
 	private List<MediaFiles> files = new ArrayList<MediaFiles>();
 
 	@JsonIgnore
-	@ManyToMany(cascade = javax.persistence.CascadeType.ALL, fetch = FetchType.LAZY)
+	 @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+	@JoinTable(name = "group_profile_group_member", joinColumns = {@JoinColumn(name="groupId")},
+													inverseJoinColumns = {@JoinColumn(name="contactId")})
 	private List<UserContact> groupMember = new ArrayList<UserContact>();
-
 
 	/**
 	 * @return the groupId
@@ -69,28 +72,32 @@ public class GroupProfile implements Serializable {
 		this.groupId = groupId;
 	}
 
-	public List<MediaFiles> getFiles() {
-		return files;
-	}
-
-	public void setFiles(List<MediaFiles> files) {
-		this.files = files;
-	}
-
+	/**
+	 * @return the displayName
+	 */
 	public String getDisplayName() {
 		return displayName;
 	}
 
+	/**
+	 * @param displayName the displayName to set
+	 */
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
 	}
 
-	public String getAboutUser() {
-		return aboutGroup;
+	/**
+	 * @return the createdBy
+	 */
+	public Integer getCreatedBy() {
+		return createdBy;
 	}
 
-	public void setAboutUser(String aboutGroup) {
-		this.aboutGroup = aboutGroup;
+	/**
+	 * @param createdBy the createdBy to set
+	 */
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
 	}
 
 	/**
@@ -122,6 +129,20 @@ public class GroupProfile implements Serializable {
 	}
 
 	/**
+	 * @return the files
+	 */
+	public List<MediaFiles> getFiles() {
+		return files;
+	}
+
+	/**
+	 * @param files the files to set
+	 */
+	public void setFiles(List<MediaFiles> files) {
+		this.files = files;
+	}
+
+	/**
 	 * @return the groupMember
 	 */
 	public List<UserContact> getGroupMember() {
@@ -134,22 +155,6 @@ public class GroupProfile implements Serializable {
 	public void setGroupMember(List<UserContact> groupMember) {
 		this.groupMember = groupMember;
 	}
-	
-	
-
-	/**
-	 * @return the createdBy
-	 */
-	public Integer getCreatedBy() {
-		return createdBy;
-	}
-
-	/**
-	 * @param createdBy the createdBy to set
-	 */
-	public void setCreatedBy(Integer createdBy) {
-		this.createdBy = createdBy;
-	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -160,7 +165,5 @@ public class GroupProfile implements Serializable {
 				+ ", currentProfile=" + currentProfile + ", aboutGroup=" + aboutGroup + ", files=" + files
 				+ ", groupMember=" + groupMember + "]";
 	}
-
-
 
 }
