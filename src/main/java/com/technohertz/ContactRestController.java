@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.technohertz.model.Empty;
 import com.technohertz.model.UserContact;
 import com.technohertz.model.UserRegister;
 import com.technohertz.service.IUserContactService;
@@ -23,7 +24,8 @@ import com.technohertz.util.ResponseObject;
 @RestController
 @RequestMapping("/contactRest")
 public class ContactRestController {
-	
+	@Autowired
+	private Empty empty;
 	@Autowired
 	private IUserRegisterService userRegisterService;
 	
@@ -51,7 +53,7 @@ public class ContactRestController {
 			
 			response.setError("1");
 			response.setMessage("wrong userId and contactList please enter correct value");
-			response.setData("[]");
+			response.setData(empty);
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 		
@@ -96,7 +98,7 @@ public class ContactRestController {
 					
 					response.setError("1");
 					response.setMessage("wrong userId please enter numeric value");
-					response.setData("[]");
+					response.setData(empty);
 					response.setStatus("FAIL");
 					return ResponseEntity.ok(response);
 					
@@ -109,7 +111,7 @@ public class ContactRestController {
 					}catch (Exception e) {
 						response.setError("1");
 						response.setMessage("wrong userId please enter numeric value");
-						response.setData("[]");
+						response.setData(empty);
 						response.setStatus("FAIL");
 						return ResponseEntity.ok(response);
 					}

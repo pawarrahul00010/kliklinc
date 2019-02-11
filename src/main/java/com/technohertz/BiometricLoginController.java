@@ -15,11 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.technohertz.exception.ResourceNotFoundException;
 import com.technohertz.model.Biometric;
+import com.technohertz.model.Empty;
 import com.technohertz.repo.BiometricRepository;
 
 @RestController
 @RequestMapping("/biometric")
 public class BiometricLoginController {
+	@Autowired
+	private Empty empty;
 	@Autowired
 	private BiometricRepository biometricrepo;
 

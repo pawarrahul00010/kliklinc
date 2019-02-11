@@ -64,10 +64,7 @@ public class FileStorageService {
 					ex);
 		}
 	}
-	
-	
-
-	public MediaFiles storeFile(MultipartFile file, int userId,String fileType) {
+	public GroupProfile saveGroupProfile(MultipartFile file, int userId,String fileType) {
 		String fileName = StringUtils.cleanPath(String.valueOf(userId)+System.currentTimeMillis()+getFileExtension(file));
 		   String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
 	                .path("/downloadFile/")
@@ -78,7 +75,8 @@ public class FileStorageService {
 			if (fileName.contains("..")) {
 				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
 			}
-
+			List<GroupProfile> groupProfile = null;
+			groupProfile = groupProfileRepository.findById(userId);
 			MediaFiles mediaFile = new MediaFiles();
 			mediaFile.setFilePath(fileDownloadUri);
 			mediaFile.setFileType(fileType);
@@ -86,10 +84,42 @@ public class FileStorageService {
 			mediaFile.setIsRated(false);
 			mediaFile.setCreateDate(dateUtil.getDate());
 			mediaFile.setLastModifiedDate(dateUtil.getDate());
+			groupProfile.get(0).getFiles().add(mediaFile);
 			Path targetLocation = this.fileStorageLocation.resolve(fileName);
 			Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+			
+			return groupProfileRepository.save(groupProfile.get(0));
+		} catch (IOException ex) {
+			throw new FileStorageException("Could not store file " + fileName + ". Please try again!", ex);
+		}
+	}
+	
 
-			return mediaFileRepo.save(mediaFile);
+	public UserProfile storeFile(MultipartFile file, int userId,String fileType) {
+		String fileName = StringUtils.cleanPath(String.valueOf(userId)+System.currentTimeMillis()+getFileExtension(file));
+		   String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+	                .path("/downloadFile/")
+	                .path(String.valueOf(fileName))
+	                .toUriString();
+		
+		try {
+			if (fileName.contains("..")) {
+				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
+			}
+			List<UserProfile> userprofile = null;
+			userprofile = userprofileRepo.findById(userId);
+			MediaFiles mediaFile = new MediaFiles();
+			mediaFile.setFilePath(fileDownloadUri);
+			mediaFile.setFileType(fileType);
+			mediaFile.setIsLiked(false);
+			mediaFile.setIsRated(false);
+			mediaFile.setCreateDate(dateUtil.getDate());
+			mediaFile.setLastModifiedDate(dateUtil.getDate());
+			userprofile.get(0).getFiles().add(mediaFile);
+			Path targetLocation = this.fileStorageLocation.resolve(fileName);
+			Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+			
+			return userprofileRepo.save(userprofile.get(0));
 		} catch (IOException ex) {
 			throw new FileStorageException("Could not store file " + fileName + ". Please try again!", ex);
 		}
@@ -247,5 +277,19 @@ public class FileStorageService {
 						.setParameter("fileid", fileid)
 						.getResultList();
 	
+	}
+	@SuppressWarnings("unchecked")
+	public List<LikedUsers> getAllProfileById(Integer userId) {
+		return entityManager.createNativeQuery("select l.File_Path from Media_Files l where l.USR_DET_ID=:userId AND File_Type=:PROFILE")
+				.setParameter("userId", userId)	.setParameter("PROFILE", "PROFILE")
+				.getResultList();
+	}
+
+
+	@SuppressWarnings("unchecked")
+	public List<LikedUsers> getAllVideoById(Integer userId) {
+		return entityManager.createNativeQuery("select l.File_Path from Media_Files l where l.USR_DET_ID=:userId AND File_Type=:VIDEO")
+				.setParameter("userId", userId)	.setParameter("VIDEO", "VIDEO")
+				.getResultList();
 	}
 }

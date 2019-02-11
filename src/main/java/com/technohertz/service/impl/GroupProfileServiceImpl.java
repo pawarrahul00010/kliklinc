@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.technohertz.model.GroupProfile;
-import com.technohertz.model.UserContact;
 import com.technohertz.repo.GroupProfileRepository;
 import com.technohertz.service.IGroupProfileService;
 
@@ -57,7 +56,7 @@ public class GroupProfileServiceImpl implements IGroupProfileService{
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Integer> getUserGroupsByUserId(String contactNumber) {
+	public List<Integer> getUserGroupsByContact(String contactNumber) {
 		// TODO Auto-generated method stub
 		return entityManager.createNativeQuery(" SELECT " + 
 													"	g.group_profile_group_id FROM " + 
@@ -68,5 +67,14 @@ public class GroupProfileServiceImpl implements IGroupProfileService{
 															+ ")"
 													+ "GROUP BY g.group_profile_group_id")
 				.setParameter("contactNumber", contactNumber).getResultList();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<String> getUserGroupsByUserId(int userId) {
+		
+		return entityManager.createNativeQuery(" SELECT display_name FROM group_profile WHERE userid=:userId")
+				.setParameter("userId", userId).getResultList();
+
 	}
 }

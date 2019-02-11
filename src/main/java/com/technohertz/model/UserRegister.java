@@ -87,8 +87,12 @@ public class UserRegister implements Serializable {
 	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	@OneToMany(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)		
 	@JoinColumn(name="BIOMETRIC_ID")
-	
 	private List<Biometric> biometric=new ArrayList<Biometric>();
+
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+	@OneToMany(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)		
+	@JoinColumn(name="userid")
+	private List<GroupProfile> groupList=new ArrayList<GroupProfile>();
 	
 	public int getUserId() {
 		return userId;

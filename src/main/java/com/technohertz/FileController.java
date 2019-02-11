@@ -23,8 +23,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.technohertz.common.Constant;
+import com.technohertz.model.Empty;
 import com.technohertz.model.LikedUsers;
 import com.technohertz.model.MediaFiles;
+import com.technohertz.model.UserProfile;
 import com.technohertz.model.UserRegister;
 import com.technohertz.payload.UploadFileResponse;
 import com.technohertz.repo.MediaFileRepo;
@@ -34,7 +36,8 @@ import com.technohertz.util.ResponseObject;
 
 @RestController
 public class FileController {
-
+	@Autowired
+	private Empty empty;
     private static final Logger logger = LoggerFactory.getLogger(FileController.class);
 	@Autowired
 	private MediaFileRepo mediaFileRepo;
@@ -50,10 +53,10 @@ public class FileController {
     public ResponseEntity<ResponseObject> uploadFile(@RequestParam("file") MultipartFile file,@RequestParam("fileType")String fileType,
     		@PathVariable(value = "userId") Integer  userId) {
      
-    	MediaFiles fileName = fileStorageService.storeFile(file, userId,fileType);
+    	UserProfile fileName = fileStorageService.storeFile(file, userId,fileType);
 
      
-        Object obj=new UploadFileResponse(fileName.getFilePath(), fileName.getFilePath(),
+        Object obj=new UploadFileResponse(fileName.getFiles().get(0).getFilePath(),fileName.getFiles().get(0).getFilePath(),
                 file.getContentType(), file.getSize());
         if (!file.isEmpty()||userId!=null) {
 			response.setMessage("your Profile Image updated successfully");
@@ -66,7 +69,7 @@ public class FileController {
 		} else {
 			response.setMessage("your Profile Image not updated");
 
-			response.setData("[]");
+			response.setData(empty);
 			response.setError("1");
 			response.setStatus("FAIL");
 
@@ -152,7 +155,7 @@ public class FileController {
 			}
 			response.setError("1");
 			response.setMessage("user unliked successfully");
-			response.setData("[]");
+			response.setData(empty);
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 		}
@@ -168,7 +171,7 @@ public class FileController {
 
 			response.setError("1");
 			response.setMessage("wrong fileid, rateCount and isRated please enter correct value");
-			response.setData("[]");
+			response.setData(empty);
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 
@@ -186,7 +189,7 @@ public class FileController {
 
 				response.setError("1");
 				response.setMessage("wrong fileid and rateCount please enter numeric value");
-				response.setData("[]");
+				response.setData(empty);
 				response.setStatus("FAIL");
 				return ResponseEntity.ok(response);
 
@@ -247,7 +250,7 @@ public class FileController {
 
 				response.setError("1");
 				response.setMessage("rating on image is not done");
-				response.setData("[]");
+				response.setData(empty);
 				response.setStatus("FAIL");
 				return ResponseEntity.ok(response);
 			}

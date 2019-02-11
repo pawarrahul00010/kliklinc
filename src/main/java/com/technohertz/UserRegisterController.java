@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.technohertz.exception.ResourceNotFoundException;
 import com.technohertz.model.Biometric;
+import com.technohertz.model.Empty;
+import com.technohertz.model.UserContact;
 import com.technohertz.model.UserOtp;
 import com.technohertz.model.UserProfile;
 import com.technohertz.model.UserRegister;
@@ -32,7 +34,9 @@ public class UserRegisterController {
 
 	@Autowired
 	private IUserRegisterService userRegisterService;
-
+	
+	@Autowired
+	private Empty empty;
 	@Autowired
 
 	private EntityManager entitymanager;
@@ -67,7 +71,7 @@ public class UserRegisterController {
 			
 			response.setError("1");
 			response.setMessage("wrong userId please enter numeric value");
-			response.setData("[]");
+			response.setData(empty);
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 			
@@ -82,7 +86,7 @@ public class UserRegisterController {
 		}
 		else {
 			response.setMessage("no data found");
-			response.setData("[]");
+			response.setData(empty);
 			response.setError("0");
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);		
@@ -99,7 +103,7 @@ public class UserRegisterController {
 				
 				response.setError("1");
 				response.setMessage("wrong username and password please enter correct value");
-				response.setData("[]");
+				response.setData(empty);
 				response.setStatus("FAIL");
 				return ResponseEntity.ok(response);
 			
@@ -120,7 +124,7 @@ public class UserRegisterController {
 						response.setMessage("user not found please try again");
 						response.setError("1");
 						response.setStatus("FAIL");
-						response.setData(userRegisterList);
+						response.setData(empty);
 						return ResponseEntity.ok(response);
 					}
 					else {
@@ -133,17 +137,17 @@ public class UserRegisterController {
 					
 					if (mobileNumber.equals(user)  && password.equals(pass) && userStatus==true) 
 					{
-						response.setStatus("true");
+						response.setStatus("SUCCESS");
 						response.setMessage("Logged in successfully");
-						response.setError("");
+						response.setError("0");
 						response.setData(userList);
 						return ResponseEntity.ok(response);
 						
 					}else {
-						 response.setStatus("false");
+						 response.setStatus("FAIL");
 						response.setMessage("please check username or password");
 						response.setError("1");
-						response.setData("[]");
+						response.setData(empty);
 						return ResponseEntity.ok(response);
 					}
 				}
@@ -157,17 +161,17 @@ public class UserRegisterController {
 					
 					if (name.equals(user)  && password.equals(pass) && userStatus==true) 
 					{
-						response.setStatus("true");
+						response.setStatus("SUCCESS");
 						response.setMessage("Logged in successfully");
-						response.setError("");
+						response.setError("0");
 						response.setData(userRegisterList);
 						return ResponseEntity.ok(response);
 						
 					}else {
-						 response.setStatus("false");
+						 response.setStatus("FAIL");
 						response.setMessage("please check username or password");
 						response.setError("1");
-						response.setData("[]");
+						response.setData(empty);
 						return ResponseEntity.ok(response);
 					}
 				}
@@ -187,14 +191,14 @@ public class UserRegisterController {
 			
 			response.setError("1");
 			response.setMessage("wrong userName, password, mobileNumber please enter correct value");
-			response.setData("[]");
+			response.setData(empty);
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 		
 		}else {
 		
 				UserRegister user = new UserRegister();
-		
+				UserContact userContact = new UserContact();
 				UserProfile profile = new UserProfile();
 				//MediaFiles mediaFiles=new MediaFiles();
 				Biometric biometric=new Biometric();
@@ -204,17 +208,27 @@ public class UserRegisterController {
 				user.setMobilNumber(mobileNumber);
 				user.setIsActive(true);
 				user.setSourceFrom("Laptop");
+				List<UserContact> userContactList=new ArrayList<>();
+				
+				userContact.setContactNumber(mobileNumber);
+				userContact.setContactName(userName);
+				userContact.setCreateDate(getDate());
+	
+				userContactList.add(userContact);
+				user.setUserContactList(userContactList);
 				user.setToken(getRandomNumber());
 				user.setCreateDate(getDate());
 				user.setLastModifiedDate(getDate());
 				profile.setDisplayName(user.getUserName());
+				
 				//profile.getFiles().add(mediaFiles);
 				biometric.setIsActive(true);
 				user.setProfile(profile);
 				user.getBiometric().add(biometric);	
 				UserOtp userOtp = new UserOtp();
 				
-				if(!userExists(mobileNumber) ){
+				if(!userExists(mobileNumber) && !userNameExists(userName)){
+					
 					userOtp.setIs_active(true);
 					userOtp.setCreateDate(getDate());
 					userOtp.setLastModifiedDate(getDate());
@@ -228,18 +242,18 @@ public class UserRegisterController {
 					
 					response.setStatus("Success");
 					response.setMessage("  CraziApp Registration is successful");
-					response.setError("");
+					response.setError("0");
 					response.setData(user);
 					
 					return ResponseEntity.ok(response);
 					
 				}
 				else {
-		
+					
 					response.setStatus("FAIL");
 					response.setMessage(" user is allready Registered");
 					response.setError("1");
-					response.setData("[]");
+					response.setData(empty);
 						return ResponseEntity.ok(response);
 				}
 			}
@@ -255,7 +269,14 @@ public class UserRegisterController {
 		return count>0 ? true : false;
 		
 	}
-
+	private boolean userNameExists(String userName)
+	{
+		String hql="FROM UserRegister as ur WHERE ur.userName= ?1";
+		int count=entitymanager.createQuery(hql).setParameter(1, userName).getResultList().size();
+		
+		return count>0 ? true : false;
+		
+	}
 	private LocalDateTime getDate() {
 
 		LocalDateTime now = LocalDateTime.now();

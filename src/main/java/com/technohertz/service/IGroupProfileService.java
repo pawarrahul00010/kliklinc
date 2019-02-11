@@ -13,6 +13,8 @@ public interface IGroupProfileService {
 	
 	List<GroupProfile> getUserGroupdetailByUserId(String userId);
 
-	List<Integer> getUserGroupsByUserId(String userId);
+	List<Integer> getUserGroupsByContact(String userId);
+
+	public List<String> getUserGroupsByUserId(int userId);
 
 }

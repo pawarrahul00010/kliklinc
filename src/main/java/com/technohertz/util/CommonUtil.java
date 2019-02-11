@@ -6,6 +6,7 @@ import java.util.TreeMap;
 
 import org.springframework.stereotype.Component;
 
+import com.technohertz.model.UserContact;
 import com.technohertz.model.UserRegister;
 
 @Component
@@ -30,4 +31,24 @@ public class CommonUtil {
 		return userList;
 	}
 
-}
+		public Map<String, UserContact> getContactProfileDetails(List<String> contactList,
+				List<UserContact> retrivedContactList) {
+			
+			Map<String, UserContact> userContactList = new TreeMap<String, UserContact>();
+			
+				for(String contact : contactList) {
+					
+					for(UserContact userContact : retrivedContactList) {
+						
+						if(contact == userContact.getContactNumber() || userContact.getContactNumber().equals(contact)) {
+							
+							userContactList.put(contact, userContact);
+					}
+					
+				}
+			
+			}
+			return userContactList;
+		}
+
+	}

@@ -8,18 +8,18 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.technohertz.common.Constant;
 import com.technohertz.exception.ResourceNotFoundException;
+import com.technohertz.model.Empty;
 import com.technohertz.model.LikedUsers;
 import com.technohertz.model.MediaFiles;
 import com.technohertz.model.UserProfile;
@@ -37,7 +37,8 @@ import com.technohertz.util.ResponseObject;
 public class UserProfileController {
 	@Autowired
 	private UserProfileRepository userprofilerepo;
-
+	@Autowired
+	private Empty empty;
 	@Autowired
 	private UserRegisterRepository registerRepository;
 
@@ -51,19 +52,23 @@ public class UserProfileController {
 	private FileStorageService fileStorageService;
 
 	private static String UPLOADED_FOLDER = "F://temp//";
+	@GetMapping("/getAllProfiles/{userId}")
+	public List<LikedUsers> getAllProfilesById(@PathVariable(value = "userId") Integer  userId) {
+		return fileStorageService.getAllProfileById(userId);
+	}
 
 
 	@SuppressWarnings("unused")
-	@PostMapping("/displayName/{id}")
+	@PostMapping("/displayName")
 	public ResponseEntity<ResponseObject> updateDisplayName(@RequestParam("displayName") String displayName,
-			@PathVariable(value = "id") String profileid) throws ResourceNotFoundException {
+			@RequestParam("profileid") String profileid) throws ResourceNotFoundException {
 
 
 		if(displayName.equals("") && displayName == null && profileid.equals("") && profileid == null) {
 
-			response.setError("1");
+			response.setError("1");	
 			response.setMessage("wrong username and profileid please enter correct value");
-			response.setData("[]");
+			response.setData(empty);
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 
@@ -77,7 +82,7 @@ public class UserProfileController {
 
 				response.setError("1");
 				response.setMessage("wrong profileId please enter numeric value");
-				response.setData("[]");
+				response.setData(empty);
 				response.setStatus("FAIL");
 				return ResponseEntity.ok(response);
 
@@ -102,7 +107,7 @@ public class UserProfileController {
 			}
 			else {
 				response.setMessage("user not available");
-				response.setData("[]");
+				response.setData(empty);
 				response.setError("1");
 				response.setStatus("fail");
 				return ResponseEntity.ok(response);
@@ -172,7 +177,7 @@ public class UserProfileController {
 
 			response.setError("1");
 			response.setMessage("wrong fileid, rateCount and isRated please enter correct value");
-			response.setData("[]");
+			response.setData(empty);
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 
@@ -190,7 +195,7 @@ public class UserProfileController {
 
 				response.setError("1");
 				response.setMessage("wrong fileid and rateCount please enter numeric value");
-				response.setData("[]");
+				response.setData(empty);
 				response.setStatus("FAIL");
 				return ResponseEntity.ok(response);
 
@@ -269,7 +274,7 @@ public class UserProfileController {
  
 			response.setError("1");
 			response.setMessage("wrong aboutUs and userid please enter correct value");
-			response.setData("[]");
+			response.setData(empty);
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 
@@ -285,7 +290,7 @@ public class UserProfileController {
 
 				response.setError("1");
 				response.setMessage("wrong fileid and rateCount please enter numeric value");
-				response.setData("[]");
+				response.setData(empty);
 				response.setStatus("FAIL");
 				return ResponseEntity.ok(response);
 
@@ -312,7 +317,7 @@ public class UserProfileController {
 			else {
 
 				response.setMessage("user not available");
-				response.setData("[]");
+				response.setData(empty);
 				response.setError("1");
 				response.setStatus("fail");
 				return ResponseEntity.ok(response);
@@ -340,7 +345,7 @@ public class UserProfileController {
 		} else {
 			response.setMessage("your Profile Image not updated");
 
-			response.setData("[]");
+			response.setData(empty);
 			response.setError("1");
 			response.setStatus("FAIL");
 
@@ -368,7 +373,7 @@ public class UserProfileController {
 		} else {
 			response.setMessage("your Profile Image not updated");
 
-			response.setData("[]");
+			response.setData(empty);
 			response.setError("1");
 			response.setStatus("FAIL");
 

@@ -14,19 +14,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.technohertz.model.UserContact;
-import com.technohertz.model.UserOtp;
-import com.technohertz.repo.UserOtpRepository;
-import com.technohertz.repo.UserRegisterRepository;
+import com.technohertz.repo.UserContactRepository;
 import com.technohertz.service.IUserContactService;
 
 @Service
 public class UserContactServiceImpl implements IUserContactService {
 
 	@Autowired
-	private UserOtpRepository userOtpRepo;
-	
-	@Autowired
-	private UserRegisterRepository userRegisterRepo;
+	private UserContactRepository userContactRepo;
 	
 	@Autowired
 	public EntityManager entityManager;
@@ -34,51 +29,33 @@ public class UserContactServiceImpl implements IUserContactService {
 
 
 	@Override 
-	public UserOtp save(UserOtp userOtp) { 
-		userOtp.setCreateDate(userOtp.getLastModifiedDate()); 
-		return userOtpRepo.save(userOtp); 
+	public UserContact save(UserContact userContact) { 
+		userContact.setCreateDate(userContact.getCreateDate()); 
+		return userContactRepo.save(userContact); 
 	}
 
 	@Override 
-	public List<UserOtp> saveMultiple(List<UserOtp> list) {
-		return userOtpRepo.saveAll(list);
+	public List<UserContact> saveMultiple(List<UserContact> list) {
+		return userContactRepo.saveAll(list);
 		}
 
 	@Override 
-	public void update(UserOtp userOtp) { 
-		userOtp.setLastModifiedDate(userOtp.getLastModifiedDate());
-		userOtp.setCreateDate(userOtp.getCreateDate());
-		userOtpRepo.save(userOtp);
-	}
-	
-
-
-	@Override 
-	public void deleteById(int reg_Id) {
-		if(userOtpRepo.existsById(userRegisterRepo.getOne(reg_Id).getUserOtp().getOtpId()))
-			{ 
-			userOtpRepo.deleteById(userRegisterRepo.getOne(reg_Id).getUserOtp().getOtpId()); 
-			} 
-		}
-
-	@Override 
-	public UserOtp getOneById(int reg_Id) {
-		
-		return userOtpRepo.getOne(userRegisterRepo.getOne(reg_Id).getUserOtp().getOtpId());
-		
+	public void update(UserContact userContact) { 
+		userContact.setCreateDate(userContact.getCreateDate());
+		userContactRepo.save(userContact);
 	}
 
 	@Override 
-	public List<UserOtp> getAll() { 
-		List<UserOtp> list=userOtpRepo.findAll(); 
+	public List<UserContact> getAll() { 
+		List<UserContact> list=userContactRepo.findAll(); 
 
 		return list; 
 	}
 
 	@Override 
-	public Page<UserOtp> getAll(Specification<UserOtp> s, Pageable pageable)
+	public Page<UserContact> getAll(Specification<UserContact> s, Pageable pageable)
 		{ 
-			Page<UserOtp> page=userOtpRepo.findAll(s, pageable); 
+			Page<UserContact> page=userContactRepo.findAll(s, pageable); 
 			
 			return page; 
 		}
@@ -128,17 +105,6 @@ public class UserContactServiceImpl implements IUserContactService {
 		return entityManager.createNativeQuery("select contact_number from user_contact where userId=:userId")
 				 .setParameter("userId", userId).getResultList();
 	}
-
-
-	/*
-	 * @Override public void updateOTPByUserId(UserOtp userOtp) {
-	 * 
-	 * userOtpRepo.updateOTPByUserId(userOtp.getOtp(),
-	 * userOtp.getLastModifiedDate(), userOtp.getReg_Id());
-	 * 
-	 * }
-	 */
-
 	
 
 

@@ -17,6 +17,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.technohertz.common.Constant;
 import com.technohertz.exception.ResourceNotFoundException;
+import com.technohertz.model.Empty;
 import com.technohertz.model.GroupProfile;
 import com.technohertz.model.LikedUsers;
 import com.technohertz.model.MediaFiles;
@@ -26,21 +27,21 @@ import com.technohertz.payload.UploadFileResponse;
 import com.technohertz.repo.MediaFileRepo;
 import com.technohertz.repo.UserRegisterRepository;
 import com.technohertz.service.IGroupProfileService;
-import com.technohertz.service.IUserRegisterService;
+import com.technohertz.service.IUserContactService;
 import com.technohertz.service.impl.FileStorageService;
 import com.technohertz.util.CommonUtil;
-import com.technohertz.util.DateUtil;
 import com.technohertz.util.ResponseObject;
 
 @RestController
 @RequestMapping("/groupRest")
 public class GroupProfileController {
-	
+	@Autowired
+	private Empty empty;
 	@Autowired
 	private IGroupProfileService groupProfileService;
-
 	@Autowired
-	private IUserRegisterService userRegisterService;
+	private IUserContactService	userContactService;
+
 	
 	@Autowired
 	private UserRegisterRepository registerRepository;
@@ -51,8 +52,6 @@ public class GroupProfileController {
 	@Autowired
 	private ResponseObject response;
 
-	@Autowired
-	private DateUtil dateUtil;
 	
 	@Autowired
 	private CommonUtil commonUtil;
@@ -62,110 +61,45 @@ public class GroupProfileController {
 
 	@Autowired
 	private FileStorageService fileStorageService;
-
-	@SuppressWarnings({ "unused", "unlikely-arg-type" })
 	@PostMapping("/create/{userId}")
-	public ResponseEntity<ResponseObject> createGroup(@RequestParam("contacts") String contacts,
+	public ResponseEntity<ResponseObject> createGroup(@RequestParam("contactList") String contacts,
 			@RequestParam("file") MultipartFile file,@RequestParam("groupName") String groupName,
-			@PathVariable("userId") int userId) {
+			@PathVariable("userId") Integer userId) {
 
-		if (contacts.equals("") || contacts == null) {
+		if (contacts.equals("") || contacts == null || String.valueOf(userId).equals("") || String.valueOf(userId) == null
+				|| String.valueOf(file).equals("") || String.valueOf(file) == null
+				|| String.valueOf(groupName).equals("") || String.valueOf(groupName) == null) {
 
 			response.setError("1");
-			response.setMessage("wrong userName please enter correct value");
-			response.setData("[]");
+			response.setMessage("wrong userId, file, contactList and groupName please enter correct value");
+			response.setData(empty);
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 
 		} else {
 			
-			List<UserRegister> retrivedUserList =(List<UserRegister>) userRegisterService.getAll();//get all user from database
+			List<UserContact> retrivedContactList = userContactService.getAll();//get all user from database
 			
 			List<UserContact> contactlist = new ArrayList<UserContact>();
 			
 			List<String> contactList = getContactList(contacts);
 			
-			Map<String, UserRegister> userList = commonUtil.getContactWithDetails(contactList, retrivedUserList);
-			
-			@SuppressWarnings("static-access")
-			MediaFiles mediaFiles= fileStorageService.storeFile(file, userId, constant.GROUPPROFILE);
-			
-			
-			
-			
-			for(String contact  : contactList) {
-			
-			List<GroupProfile> userCon = groupProfileService.getUserGroupdetailByUserId(contact);
-			
-			List<Integer> userContains = groupProfileService.getUserGroupsByUserId(contact);
-			
+			Map<String, UserContact> contactProfileList = commonUtil.getContactProfileDetails(contactList, retrivedContactList);
 			
 			GroupProfile groupProfile = new GroupProfile();
+			
+				for(String contact : contactList) {
+					
+					UserContact userContact = contactProfileList.get(contact); 	
+				
+					contactlist.add(userContact);
+				}
+				
+				@SuppressWarnings("static-access")
+				GroupProfile mediaFiles= fileStorageService.saveGroupProfile(file, userId, constant.GROUPPROFILE);
 
-			if(!userContains.contains(contact)) {
-				UserRegister userRegister = userList.get(contact);
-				
-				UserContact userContact = new UserContact();
-				
-				userContact.setContactNumber(contact);
-				userContact.setContactName(userRegister.getUserName());
-				userContact.setProfilePic(userRegister.getProfile().getCurrentProfile());
-				userContact.setCreateDate(dateUtil.getDate());
-				contactlist.add(userContact);
-				
-			
-			
-			
-			
-			
-			System.out.println(userCon);
-			System.out.println(userContains);
-			}
-			
-			
-//			
-//			for(String contactNumber : craziContact){	
-//				
-//				UserContact contact = new UserContact();
-//				
-//				if(!userContains.contains(contactNumber)) {
-//					UserRegister userRegister = userList.get(contactNumber);
-//					
-//					contact.setContactNumber(contactNumber);
-//					contact.setContactName(userRegister.getUserName());
-//					contact.setProfilePic(userRegister.getProfile().getCurrentProfile());
-//					contact.setCreateDate(dateUtil.getDate());
-//					tosaveuserRegister.getUserContactList().add(contact);
-//					}
-//				else {
-//					for(UserContact userContact : userCon) {
-//					tosaveuserRegister.getUserContactList().add(userContact);
-//					}
-//				}
-//			}		
-//			
-//			
-			}
-		
-			
-			GroupProfile groupProfile = new GroupProfile();
-
-			/*for(String contact  : contactList) {
-			
-				UserRegister userRegister = userList.get(contact);
-				
-				UserContact userContact = new UserContact();
-				
-				userContact.setContactNumber(contact);
-				userContact.setContactName(userRegister.getUserName());
-				userContact.setProfilePic(userRegister.getProfile().getCurrentProfile());
-				userContact.setCreateDate(dateUtil.getDate());
-				contactlist.add(userContact);
-				
-				}*/
-			
 				groupProfile.setGroupMember(contactlist);
-				groupProfile.setCurrentProfile(mediaFiles.getFilePath());
+				groupProfile.setCurrentProfile(mediaFiles.getFiles().get(0).getFilePath());
 				groupProfile.setDisplayName(groupName);
 				groupProfile.setCreatedBy(userId);
 				groupProfileService.save(groupProfile);
@@ -176,9 +110,9 @@ public class GroupProfileController {
 				response.setData(groupProfile);
 
 				return ResponseEntity.ok(response);
-
-			}
-		
+				
+				}	
+			
 		}
 
 	
@@ -191,7 +125,7 @@ public class GroupProfileController {
 
 			response.setError("1");
 			response.setMessage(" please enter correct value");
-			response.setData("[]");
+			response.setData(empty);
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 
@@ -204,7 +138,7 @@ public class GroupProfileController {
 
 				response.setError("1");
 				response.setMessage("wrong profileId please enter numeric value");
-				response.setData("[]");
+				response.setData(empty);
 				response.setStatus("FAIL");
 				return ResponseEntity.ok(response);
 
@@ -228,7 +162,7 @@ public class GroupProfileController {
 				return ResponseEntity.ok(response);
 			} else {
 				response.setMessage("user not available");
-				response.setData("[]");
+				response.setData(empty);
 				response.setError("1");
 				response.setStatus("fail");
 				return ResponseEntity.ok(response);
@@ -272,7 +206,7 @@ public class GroupProfileController {
 
 			response.setError("1");
 			response.setMessage("user unliked successfully");
-			response.setData("[]");
+			response.setData(empty);
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 
@@ -291,7 +225,7 @@ public class GroupProfileController {
 
 			response.setError("1");
 			response.setMessage("wrong fileid, rateCount and isRated please enter correct value");
-			response.setData("[]");
+			response.setData(empty);
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 
@@ -308,7 +242,7 @@ public class GroupProfileController {
 
 				response.setError("1");
 				response.setMessage("wrong fileid and rateCount please enter numeric value");
-				response.setData("[]");
+				response.setData(empty);
 				response.setStatus("FAIL");
 				return ResponseEntity.ok(response);
 
@@ -351,7 +285,7 @@ public class GroupProfileController {
 				mediaFileRepo.save(mediaFiles);
 				response.setError("1");
 				response.setMessage("rating on image is not done");
-				response.setData("[]");
+				response.setData(empty);
 				response.setStatus("FAIL");
 				return ResponseEntity.ok(response);
 			}
@@ -367,7 +301,7 @@ public class GroupProfileController {
 
 			response.setError("1");
 			response.setMessage("wrong aboutUs and userid please enter correct value");
-			response.setData("[]");
+			response.setData(empty);
 			response.setStatus("FAIL");
 			return ResponseEntity.ok(response);
 
@@ -382,7 +316,7 @@ public class GroupProfileController {
 
 				response.setError("1");
 				response.setMessage("wrong fileid and rateCount please enter numeric value");
-				response.setData("[]");
+				response.setData(empty);
 				response.setStatus("FAIL");
 				return ResponseEntity.ok(response);
 
@@ -407,7 +341,7 @@ public class GroupProfileController {
 			} else {
 
 				response.setMessage("user not available");
-				response.setData("[]");
+				response.setData(empty);
 				response.setError("1");
 				response.setStatus("fail");
 				return ResponseEntity.ok(response);
@@ -437,7 +371,7 @@ public class GroupProfileController {
 		} else {
 			response.setMessage("your Profile Image not updated");
 
-			response.setData("[]");
+			response.setData(empty);
 			response.setError("");
 			response.setStatus("success");
 
