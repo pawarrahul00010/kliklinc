@@ -49,9 +49,9 @@ public class FileController {
 	private ResponseObject response;
     
     
-    @PostMapping("/uploadFile/{userId}")
+    @PostMapping("/uploadFile")
     public ResponseEntity<ResponseObject> uploadFile(@RequestParam("file") MultipartFile file,@RequestParam("fileType")String fileType,
-    		@PathVariable(value = "userId") Integer  userId) {
+    		@RequestParam(value = "userId") Integer  userId) {
      
     	UserProfile fileName = fileStorageService.storeFile(file, userId,fileType);
 
@@ -77,9 +77,9 @@ public class FileController {
 		}
     }
     
-    @PostMapping("/uploadMultipleFiles/{userId}")
+    @PostMapping("/uploadMultipleFiles")
     public List<ResponseEntity<ResponseObject>> uploadMultipleFile(@RequestParam("files") MultipartFile[] files,@RequestParam("fileType")String fileType,
-    		@PathVariable(value = "userId") int  userId) {
+    		@RequestParam(value = "userId") int  userId) {
         return Arrays.asList(files)
                 .stream()
                 .map(file -> uploadFile(file,fileType,userId))
@@ -111,9 +111,9 @@ public class FileController {
                 .body(resource);
     }
 
-	@PostMapping("/likes/{userId}")
+	@PostMapping("/likes")
 	public ResponseEntity<ResponseObject> totalLikes(@RequestParam("fileid") int fileid,@RequestParam("isLiked") boolean isLiked,
-			@PathVariable(value = "userId") int  userId) {
+			@RequestParam(value = "userId") int  userId) {
 		MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
 		
 
@@ -162,10 +162,10 @@ public class FileController {
 		}
 
 	@SuppressWarnings("unused")
-	@PostMapping("/rating/{userId}")
+	@PostMapping("/rating")
 	public ResponseEntity<ResponseObject> totalRating(@RequestParam("fileid") String userfileid,
 			@RequestParam("isRated") String isRated,@RequestParam("rateCount") String rateCounts,
-			@PathVariable(value = "userId") int  userId) {
+			@RequestParam(value = "userId") int  userId) {
 
 		if(userfileid.equals("") && userfileid == null && isRated.equals("") && isRated == null && rateCounts.equals("") && rateCounts == null) {
 

@@ -52,9 +52,9 @@ public class LiveFeedController {
     @Autowired
 	private Constant constant;
 
-    @PostMapping("/video/{userId}")
+    @PostMapping("/video")
     public  ResponseEntity<ResponseObject> uploadVideos(@RequestParam("file") MultipartFile file,
-    		@PathVariable(value = "userId") Integer  userId) {
+    		@RequestParam(value = "userId") Integer  userId) {
      
     	@SuppressWarnings("static-access")
 		UserProfile mediaFiles = fileStorageService.storeFile(file, userId, constant.VIDEO);
@@ -80,13 +80,13 @@ public class LiveFeedController {
 			return ResponseEntity.ok(response);
 		}
     }
-	@GetMapping("/listViewrs/{fileid}")
-	public List<LikedUsers> getAllViewers(@PathVariable(value = "fileid") int  fileid) {
+	@GetMapping("/listViewrs")
+	public List<LikedUsers> getAllViewers(@RequestParam(value = "fileid") int  fileid) {
 		return fileStorageService.getAll(fileid);
 	}
 	
-	@GetMapping("/getAllVideos/{userId}")
-	public List<LikedUsers> getAllVideoById(@PathVariable(value = "userId") Integer  userId) {
+	@GetMapping("/getAllVideos")
+	public List<LikedUsers> getAllVideoById(@RequestParam(value = "userId") Integer  userId) {
 		return fileStorageService.getAllVideoById(userId);
 	}
 
@@ -115,9 +115,9 @@ public class LiveFeedController {
                 .body(resource);
     }
 
-	@PostMapping("/likes/{userId}")
+	@PostMapping("/likes")
 	public ResponseEntity<ResponseObject> totalLikes(@RequestParam("fileid") int fileid,@RequestParam("isLiked") boolean isLiked,
-			@PathVariable(value = "userId") int  userId) {
+			@RequestParam(value = "userId") int  userId) {
 		MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
 		
 
@@ -166,10 +166,10 @@ public class LiveFeedController {
 		}
 
 	@SuppressWarnings("unused")
-	@PostMapping("/rating/{userId}")
+	@PostMapping("/rating")
 	public ResponseEntity<ResponseObject> totalRating(@RequestParam("fileid") String userfileid,
 			@RequestParam("isRated") String isRated,@RequestParam("rateCount") String rateCounts,
-			@PathVariable(value = "userId") int  userId) {
+			@RequestParam(value = "userId") int  userId) {
 
 		if(userfileid.equals("") && userfileid == null && isRated.equals("") && isRated == null && rateCounts.equals("") && rateCounts == null) {
 

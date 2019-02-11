@@ -52,8 +52,8 @@ public class UserProfileController {
 	private FileStorageService fileStorageService;
 
 	private static String UPLOADED_FOLDER = "F://temp//";
-	@GetMapping("/getAllProfiles/{userId}")
-	public List<LikedUsers> getAllProfilesById(@PathVariable(value = "userId") Integer  userId) {
+	@GetMapping("/getAllProfiles")
+	public List<LikedUsers> getAllProfilesById(@RequestParam("userId") Integer userId) {
 		return fileStorageService.getAllProfileById(userId);
 	}
 
@@ -117,7 +117,7 @@ public class UserProfileController {
 
 
 
-	@PostMapping("/likes/{userId}")
+	@PostMapping("/likes")
 	public ResponseEntity<ResponseObject> totalLikes(@RequestParam("fileid") int fileid,@RequestParam("isLiked") boolean isLiked,
 			@PathVariable(value = "userId") int  userId) {
 		MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
@@ -168,10 +168,10 @@ public class UserProfileController {
 		}
 
 	@SuppressWarnings("unused")
-	@PostMapping("/rating/{userId}")
+	@PostMapping("/rating")
 	public ResponseEntity<ResponseObject> totalRating(@RequestParam("fileid") String userfileid,
 			@RequestParam("isRated") String isRated,@RequestParam("rateCount") String rateCounts,
-			@PathVariable(value = "userId") int  userId) {
+			@RequestParam(value = "userId") int  userId) {
 
 		if(userfileid.equals("") && userfileid == null && isRated.equals("") && isRated == null && rateCounts.equals("") && rateCounts == null) {
 
@@ -266,9 +266,9 @@ public class UserProfileController {
 	}
 
 	@SuppressWarnings("unused")
-	@PostMapping("/aboutUs/{id}")
+	@PostMapping("/aboutUs")
 	public ResponseEntity<ResponseObject> updateStatus(@RequestParam("aboutUs") String aboutUs,
-			@PathVariable(value = "id") String userid) throws ResourceNotFoundException {
+			@RequestParam(value = "userid") String userid) throws ResourceNotFoundException {
 
 		if(aboutUs.equals("") && aboutUs == null && userid.equals("") && userid == null ) {
  
@@ -325,9 +325,9 @@ public class UserProfileController {
 		}
 
 	}
-    @PostMapping("/profile/{userId}")
+    @PostMapping("/profile")
     public  ResponseEntity<ResponseObject> saveProfile(@RequestParam("file") MultipartFile file,@RequestParam("DisplayName") String DisplayName,
-    		@PathVariable(value = "userId") Integer  userId) {
+    		@RequestParam(value = "userId") Integer  userId) {
      
     	UserProfile userProfile = fileStorageService.saveAllProfile(file,userId,DisplayName);
     	MediaFiles files=mediaFileRepo.getOne(Integer.valueOf(String.valueOf(userProfile.getFiles().get(userProfile.getFiles().size()-1).getFileId())));
@@ -353,8 +353,8 @@ public class UserProfileController {
 		}
     }
 
-    @PostMapping("/uploadFile/{userId}")
-	public ResponseEntity<ResponseObject> updateProfile(@RequestParam("file") MultipartFile file,@PathVariable(value = "userId") Integer userId) {
+    @PostMapping("/uploadFile")
+	public ResponseEntity<ResponseObject> updateProfile(@RequestParam("file") MultipartFile file,@RequestParam(value = "userId") Integer userId) {
 		UserProfile userProfile = fileStorageService.saveProfile(file,userId);
 		MediaFiles files=mediaFileRepo.getOne(Integer.valueOf(String.valueOf(userProfile.getFiles().get(userProfile.getFiles().size()-1).getFileId())));
 		
