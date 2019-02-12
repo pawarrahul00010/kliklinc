@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.technohertz.common.Constant;
 import com.technohertz.exception.ResourceNotFoundException;
 import com.technohertz.model.Empty;
+import com.technohertz.model.GetImage;
 import com.technohertz.model.LikedUsers;
 import com.technohertz.model.MediaFiles;
 import com.technohertz.model.UserProfile;
@@ -55,9 +57,32 @@ public class UserProfileController {
 	private FileStorageService fileStorageService;
 
 	private static String UPLOADED_FOLDER = "F://temp//";
-	@GetMapping("/getAllProfiles")
-	public List<LikedUsers> getAllProfilesById(@RequestParam("userId") Integer userId) {
-		return fileStorageService.getAllProfileById(userId);
+	@PostMapping("/getAllProfiles")
+	public ResponseEntity<ResponseObject> getAllProfilesById(@RequestParam("userId") Integer userId) {
+		
+		List<MediaFiles> likedUsers=fileStorageService.getAllProfileById(userId);
+//		List<Integer> fileid= fileStorageService.getFileId(userId);
+		List<GetImage> image=new ArrayList<GetImage>();
+
+		for(MediaFiles mediaFiles :likedUsers) {
+			GetImage img = new GetImage();
+			img.setUser(mediaFiles.getFilePath());
+			img.setfileId(mediaFiles.getFileId());
+			image.add(img);
+		}
+//		for(Integer fileId :fileid)
+//		{
+//			GetImage img = new GetImage();
+//			img.setfileId(fileId);
+//			image.add(img);
+//		}
+////		
+		response.setError("0");	
+		response.setMessage("successfully fetched");
+		response.setData(image);
+		response.setStatus("SUCCESS");
+		return ResponseEntity.ok(response);
+		
 	}
 
 

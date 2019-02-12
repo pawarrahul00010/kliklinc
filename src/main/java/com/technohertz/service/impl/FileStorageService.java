@@ -9,6 +9,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -278,13 +279,22 @@ public class FileStorageService {
 						.getResultList();
 	
 	}
+	
+	@Transactional
 	@SuppressWarnings("unchecked")
-	public List<LikedUsers> getAllProfileById(Integer userId) {
-		return entityManager.createNativeQuery("select l.File_Path from Media_Files l where l.USR_DET_ID=:userId AND File_Type=:PROFILE")
+	public List<MediaFiles> getAllProfileById(Integer userId) {
+		return entityManager.createNativeQuery("select l.File_Path,l.file_id from media_files l where l.usr_det_id=:userId AND File_Type=:PROFILE",MediaFiles.class)
 				.setParameter("userId", userId)	.setParameter("PROFILE", "PROFILE")
 				.getResultList();
 	}
-
+//	@SuppressWarnings("unchecked")
+//	public List<Integer> getFileId(int userId) {
+//	return entityManager.createNativeQuery("select l.file_id from media_files l where l.usr_det_id=:userId AND File_Type=:PROFILE")
+//						.setParameter("userId", userId).setParameter("PROFILE", "PROFILE")
+//						.getResultList();
+//	
+//	}
+	
 
 	@SuppressWarnings("unchecked")
 	public List<LikedUsers> getAllVideoById(Integer userId) {
