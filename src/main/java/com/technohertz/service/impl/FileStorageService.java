@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.technohertz.common.Constant;
 import com.technohertz.exception.FileStorageException;
 import com.technohertz.exception.MyFileNotFoundException;
 import com.technohertz.model.GroupProfile;
@@ -72,12 +73,14 @@ public class FileStorageService {
 	                .path(String.valueOf(fileName))
 	                .toUriString();
 		
+		   List<GroupProfile> groupProfileList = null;
 		try {
 			if (fileName.contains("..")) {
 				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
 			}
-			List<GroupProfile> groupProfile = null;
-			groupProfile = groupProfileRepository.findById(userId);
+			groupProfileList = groupProfileRepository.findById(userId);
+			if(groupProfileList.isEmpty()) {
+				GroupProfile groupProfile = new GroupProfile();
 			MediaFiles mediaFile = new MediaFiles();
 			mediaFile.setFilePath(fileDownloadUri);
 			mediaFile.setFileType(fileType);
@@ -85,11 +88,13 @@ public class FileStorageService {
 			mediaFile.setIsRated(false);
 			mediaFile.setCreateDate(dateUtil.getDate());
 			mediaFile.setLastModifiedDate(dateUtil.getDate());
-			groupProfile.get(0).getFiles().add(mediaFile);
+			groupProfile.getFiles().add(mediaFile);
 			Path targetLocation = this.fileStorageLocation.resolve(fileName);
 			Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-			
-			return groupProfileRepository.save(groupProfile.get(0));
+			return groupProfileRepository.save(groupProfile);
+			}else {
+				return  groupProfileList.get(0);
+			}
 		} catch (IOException ex) {
 			throw new FileStorageException("Could not store file " + fileName + ". Please try again!", ex);
 		}
@@ -274,8 +279,9 @@ public class FileStorageService {
 	}
 	@SuppressWarnings("unchecked")
 	public List<LikedUsers> getAll(int fileid) {
-	return entityManager.createNativeQuery("select l.user_name from liked_users l where l.fileid=:fileid")
+	return entityManager.createNativeQuery("select l.user_name from liked_users l where l.file_id=:fileid and type=:type")
 						.setParameter("fileid", fileid)
+						.setParameter("type", Constant.LIKE)
 						.getResultList();
 	
 	}
@@ -283,18 +289,19 @@ public class FileStorageService {
 	@Transactional
 	@SuppressWarnings("unchecked")
 	public List<MediaFiles> getAllProfileById(Integer userId) {
-		return entityManager.createNativeQuery("select l.File_Path,l.file_id from media_files l where l.usr_det_id=:userId AND File_Type=:PROFILE",MediaFiles.class)
+		return entityManager.createNativeQuery("select * from media_files  where usr_det_id=:userId AND File_Type=:PROFILE ORDER BY file_id  DESC",MediaFiles.class)
 				.setParameter("userId", userId)	.setParameter("PROFILE", "PROFILE")
 				.getResultList();
 	}
-//	@SuppressWarnings("unchecked")
-//	public List<Integer> getFileId(int userId) {
-//	return entityManager.createNativeQuery("select l.file_id from media_files l where l.usr_det_id=:userId AND File_Type=:PROFILE")
-//						.setParameter("userId", userId).setParameter("PROFILE", "PROFILE")
-//						.getResultList();
-//	
-//	}
 	
+	   @SuppressWarnings("unchecked")  
+	   public List<Integer> getFileId(int userId) { 
+		   return entityManager.
+			  createNativeQuery("select l.file_id from media_files l where l.usr_det_id=:userId AND File_Type=:PROFILE"
+			  )  .setParameter("userId", userId).setParameter("PROFILE", "PROFILE") 
+			  .getResultList(); 
+		   }
+	 	
 
 	@SuppressWarnings("unchecked")
 	public List<LikedUsers> getAllVideoById(Integer userId) {

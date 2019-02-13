@@ -59,7 +59,7 @@ public class FileController {
         Object obj=new UploadFileResponse(fileName.getFiles().get(0).getFilePath(),fileName.getFiles().get(0).getFilePath(),
                 file.getContentType(), file.getSize());
         if (!file.isEmpty()||userId!=null) {
-			response.setMessage("your Profile Image updated successfully");
+			response.setMessage("your File is uploaded successfully");
 
 			response.setData(obj);
 			response.setError("0");
@@ -67,7 +67,7 @@ public class FileController {
 
 			return ResponseEntity.ok(response);
 		} else {
-			response.setMessage("your Profile Image not updated");
+			response.setMessage("your File is not uploaded");
 
 			response.setData(empty);
 			response.setError("1");
@@ -121,7 +121,6 @@ public class FileController {
 	    LikedUsers likedUsers=new LikedUsers();
 		likedUsers.setUserName(userRegister.getUserName());
 		likedUsers.setMarkType(Constant.LIKE);
-		likedUsers.setFileID(fileid);
 		mediaFiles.getLikedUsers().add(likedUsers); 
 		long count=0;
 

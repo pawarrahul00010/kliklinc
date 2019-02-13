@@ -75,7 +75,7 @@ public class GroupProfileServiceImpl implements IGroupProfileService{
 	@Override
 	public List<String> getUserGroupsByUserId(int userId) {
 		
-		return entityManager.createNativeQuery(" SELECT display_name FROM group_profile WHERE userid=:userId")
+		return entityManager.createNativeQuery(" SELECT display_name FROM group_profile WHERE created_by=:userId")
 				.setParameter("userId", userId).getResultList();
 
 	}

@@ -3,25 +3,40 @@ package com.technohertz.model;
 import java.io.Serializable;
 
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
-@Embeddable
-public class LikedUsers implements Serializable {
+import org.hibernate.annotations.DynamicUpdate;
+
+@Entity
+@Table(name = "Liked_Users")
+@DynamicUpdate
+public class LikedUsers {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "typeId")
+	private Integer typeId;
+	
 	@Column(name = "user_Name")
 	private String userName;
 
 	@Column(name = "type")
 	private String markType;
 
-
-	@Column(name = "fileID")
-	private int fileID;
+	@Column(name = "userId")
+	private int userId;
+	
+	@Column(name = "rating")
+	private Integer rating;
 
 	public String getUserName() {
 		return userName;
@@ -30,20 +45,6 @@ public class LikedUsers implements Serializable {
 		this.userName = userName;
 	}
 	
-	
-	/**
-
-	 * @return the fileID
-	 */
-	public int getFileID() {
-		return fileID;
-	}
-	/**
-	 * @param fileID the fileID to set
-	 */
-	public void setFileID(int fileID) {
-		this.fileID = fileID;
-	}
 	/**
 	 * @return the markType
 	 */
@@ -56,12 +57,53 @@ public class LikedUsers implements Serializable {
 	public void setMarkType(String markType) {
 		this.markType = markType;
 	}
+	
+	/**
+	 * @return the typeId
+	 */
+	public Integer getTypeId() {
+		return typeId;
+	}
+	/**
+	 * @param typeId the typeId to set
+	 */
+	public void setTypeId(Integer typeId) {
+		this.typeId = typeId;
+	}
+	
+	/**
+	 * @return the userId
+	 */
+	public int getUserId() {
+		return userId;
+	}
+	/**
+	 * @param userId the userId to set
+	 */
+	public void setUserId(int userId) {
+		this.userId = userId;
+	}
+	
+	
+	/**
+	 * @return the rating
+	 */
+	public Integer getRating() {
+		return rating;
+	}
+	/**
+	 * @param rating the rating to set
+	 */
+	public void setRating(Integer rating) {
+		this.rating = rating;
+	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "LikedUsers [userName=" + userName + ", markType=" + markType + "]";
+		return "LikedUsers [typeId=" + typeId + ", userName=" + userName + ", markType=" + markType + ", userId="
+				+ userId + ", rating=" + rating + "]";
 	}
-	
+
 }

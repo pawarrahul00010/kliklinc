@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+
+import org.hibernate.Hibernate;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.proxy.HibernateProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +32,7 @@ import com.technohertz.payload.UploadFileResponse;
 import com.technohertz.repo.MediaFileRepo;
 import com.technohertz.repo.UserRegisterRepository;
 import com.technohertz.service.IGroupProfileService;
+import com.technohertz.service.IMediaFileService;
 import com.technohertz.service.IUserContactService;
 import com.technohertz.service.impl.FileStorageService;
 import com.technohertz.util.CommonUtil;
@@ -46,6 +52,8 @@ public class GroupProfileController {
 	@Autowired
 	private IUserContactService	userContactService;
 
+	@Autowired
+	private IMediaFileService mediaFileService;
 	
 	@Autowired
 	private UserRegisterRepository registerRepository;
@@ -56,6 +64,8 @@ public class GroupProfileController {
 	@Autowired
 	private ResponseObject response;
 
+	@Autowired
+	private EntityManager entityManager;
 	
 	@Autowired
 	private CommonUtil commonUtil;
@@ -67,10 +77,10 @@ public class GroupProfileController {
 	private FileStorageService fileStorageService;
 	
 	
-	@PostMapping("/create/{userId}")
+	@PostMapping("/create")
 	public ResponseEntity<ResponseObject> createGroup(@RequestParam("contactList") String contacts,
 			@RequestParam("file") MultipartFile file,@RequestParam("groupName") String groupName,
-			@PathVariable("userId") Integer userId) {
+			@RequestParam("userId") Integer userId) {
 
 		if (contacts.equals("") || contacts == null || String.valueOf(userId).equals("") || String.valueOf(userId) == null
 				|| String.valueOf(file).equals("") || String.valueOf(file) == null
@@ -209,13 +219,11 @@ public class GroupProfileController {
 				return ResponseEntity.ok(response);
 			}
 			
-			List<Integer> contactList = getContactIdList(contacts);
-			
 			 groupProfileService.deleteContactsById(groupid, contacts);
 			
 			 List<GroupProfile> getGroupUserList = groupProfileService.findById(groupid);
 			 
-			GroupProfile groupProfile = getGroupUserList.get(0);
+			 GroupProfile groupProfile = getGroupUserList.get(0);
 			
 				response.setStatus("Success");
 				response.setMessage("Group Created successfully");
@@ -230,9 +238,9 @@ public class GroupProfileController {
 
 	
 	@SuppressWarnings("unused")
-	@PutMapping("/displayName/{id}")
+	@PostMapping("/displayName/{groupId}")
 	public ResponseEntity<ResponseObject> updateDisplayName(@RequestParam("displayName") String displayName,
-			@PathVariable(value = "id") String profileid) throws ResourceNotFoundException {
+			@PathVariable(value = "groupId") String profileid) throws ResourceNotFoundException {
 
 		if (displayName.equals("") && displayName == null && profileid.equals("") && profileid == null) {
 
@@ -264,11 +272,15 @@ public class GroupProfileController {
 			if (!profile.isEmpty()) {
 
 				profile.get(0).setDisplayName(displayName);
+				profile.get(0).setCurrentProfile(profile.get(0).getFiles().get(0).getFilePath());
+				System.out.println(profile.get(0).getCreatedBy());
+				profile.get(0).setCreatedBy(profile.get(0).getCreatedBy());
+				profile.get(0).setAboutGroup(profile.get(0).getAboutGroup());
 				profile.get(0).setGroupId(id);
 				updateDisplayName = groupProfileService.save(profile.get(0));
 
 				response.setMessage("your Display name updated successfully");
-				response.setData(updateDisplayName);
+				response.setData(profile.get(0));
 				response.setError("");
 				response.setStatus("success");
 
@@ -283,26 +295,53 @@ public class GroupProfileController {
 		}
 	}
 
-	@PostMapping("/likes/{userId}")
+	@PostMapping("/like")
 	public ResponseEntity<ResponseObject> totalLikes(@RequestParam("fileid") int fileid,
-			@RequestParam("isLiked") boolean isLiked, @PathVariable(value = "userId") int userId) {
+			@RequestParam("isLiked") boolean isLiked, @RequestParam(value = "userId") int userId) {
 		MediaFiles mediaFiles = mediaFileRepo.getById(fileid);
+		
 		UserRegister userRegister = registerRepository.getOne(userId);
-		LikedUsers likedUsers = new LikedUsers();
-		likedUsers.setUserName(userRegister.getUserName());
-		likedUsers.setMarkType(Constant.LIKE);
-		mediaFiles.getLikedUsers().add(likedUsers);
+		
+		List<LikedUsers> likedUsersList= mediaFileService.getUserLikesByFileId(fileid, userRegister.getUserName());
+		
 		long count = 0;
 
-		if (mediaFiles.getLikes() == null) {
+		if (mediaFiles.getLikes() == null || mediaFiles.getLikes() == 0) {
 			count = 0;
 		} else {
 			count = mediaFiles.getLikes();
 		}
-		if (isLiked == true) {
+		
+		if(likedUsersList.isEmpty()) {
+			LikedUsers likedUsers = new LikedUsers();
+			count = count + 1;
+			mediaFiles.setLikes(count);
+			mediaFiles.setIsRated(true);
+			
+			likedUsers.setUserName(userRegister.getUserName());
+			likedUsers.setMarkType(Constant.LIKE);
+			mediaFiles.setIsLiked(true);
+			mediaFiles.getLikedUsers().add(likedUsers);
+			mediaFileRepo.save(mediaFiles);
+
+			response.setError("0");
+			response.setMessage("user liked successfully");
+			response.setData(mediaFiles);
+			response.setStatus("SUCCESS");
+			return ResponseEntity.ok(response);
+			
+		}else {
+			LikedUsers likedUsers = likedUsersList.get(0);
+		
+		if (likedUsers.getMarkType() == Constant.UNLIKED || likedUsers.getMarkType().equals(Constant.UNLIKED)) {
 
 			count = count + 1;
 			mediaFiles.setLikes(count);
+			mediaFiles.setIsRated(true);
+			likedUsers.setUserName(userRegister.getUserName());
+			likedUsers.setMarkType(Constant.LIKE);
+			likedUsers.setUserId(userId);
+			mediaFiles.getLikedUsers().add(likedUsers);
 			mediaFileRepo.save(mediaFiles);
 
 			response.setError("0");
@@ -314,25 +353,32 @@ public class GroupProfileController {
 		} else {
 
 			count = count - 1;
+			likedUsers.setMarkType(Constant.UNLIKED);
+			likedUsers.setUserId(userId);
+			likedUsers.setUserName(userRegister.getUserName());
 			mediaFiles.setLikes(count);
+			mediaFiles.setIsRated(true);
+			mediaFiles.getLikedUsers().add(likedUsers);
 			mediaFileRepo.save(mediaFiles);
-
-			response.setError("1");
+			
+			response.setError("0");
 			response.setMessage("user unliked successfully");
-			response.setData(empty);
-			response.setStatus("FAIL");
+			response.setData(mediaFiles);
+			response.setStatus("SUCCESS");
 			return ResponseEntity.ok(response);
 
 		}
+	  }
 
 	}
 
 	@SuppressWarnings("unused")
-	@PostMapping("/rating/{userId}")
+	@PostMapping("/rating")
 	public ResponseEntity<ResponseObject> totalRating(@RequestParam("fileid") String userfileid,
 			@RequestParam("isRated") String isRated, @RequestParam("rateCount") String rateCounts,
-			@PathVariable(value = "userId") int userId) {
+			@RequestParam(value = "userId") int userId) {
 
+		int cRate = Integer.parseInt(rateCounts);
 		if (userfileid.equals("") && userfileid == null && isRated.equals("") && isRated == null
 				&& rateCounts.equals("") && rateCounts == null) {
 
@@ -361,45 +407,84 @@ public class GroupProfileController {
 
 			}
 
+			UserRegister userRegister = registerRepository.getOne(userId);
+			List<LikedUsers> likedUsersList= mediaFileService.getUserRatingByFileId(userfileid, userId);
+
+
 			MediaFiles mediaFiles = mediaFileRepo.getById(fileid);
 
-			UserRegister userRegister = registerRepository.getOne(userId);
-			LikedUsers likedUsers = new LikedUsers();
-			likedUsers.setUserName(userRegister.getUserName());
-			likedUsers.setMarkType(Constant.RATE);
-			mediaFiles.getLikedUsers().add(likedUsers);
-
-			// Long totalLikes=mediaFiles.getLikes();
-			long rate = 0;
+			long rate=0;
 			System.out.println(mediaFiles.getLikes());
-			if (mediaFiles.getRating() == null) {
+			
+			
+			if(mediaFiles.getRating() == null || mediaFiles.getRating() == 0) {
 
-				rate = 0;
+				rate=0;
 
-			} else {
+			} else{
 
-				rate = mediaFiles.getRating();
+				rate=mediaFiles.getRating();
 			}
-
-			if (isRate == true) {
-				rate = rate + rateCount;
+			
+				if(likedUsersList.isEmpty()) {
+				
+				LikedUsers likedUsers=new LikedUsers();
+				likedUsers.setUserName(userRegister.getUserName());
+				likedUsers.setMarkType(Constant.RATE);
+				likedUsers.setUserId(userId);
+				likedUsers.setRating(rateCount);
+				likedUsers.setTypeId(0);
+				
+				rate = rate+rateCount;
 				mediaFiles.setRating(rate);
+				mediaFiles.setIsRated(true);
+				mediaFiles.getLikedUsers().add(likedUsers); 
 				mediaFileRepo.save(mediaFiles);
 
 				response.setError("0");
-				response.setMessage("user rated with : " + rateCount);
+				response.setMessage("user rated with : "+cRate);
 				response.setData(mediaFiles);
 				response.setStatus("SUCCESS");
 				return ResponseEntity.ok(response);
 
-			} else {
+			}
+			else {
+				
+				LikedUsers likedUsers=likedUsersList.get(0);
+				
+				/*
+				 * if(isRate==true&& mediaFiles.getIsRated()==false ) {
+				 * 
+				 * 
+				 * rate = rate+rateCount; mediaFiles.setRating(rate);
+				 * mediaFiles.setIsRated(isRate); mediaFileRepo.save(mediaFiles);
+				 * 
+				 * response.setError("0"); response.setMessage("user rated with : "+rateCount);
+				 * response.setData(mediaFiles); response.setStatus("SUCCESS"); return
+				 * ResponseEntity.ok(response);
+				 * 
+				 * 
+				 * } else {
+				 */
+						if(rate>=0) {
+							rate = rate-likedUsers.getRating();
+							rate = rate+rateCount;
+							likedUsers.setUserName(userRegister.getUserName());
+							likedUsers.setMarkType(Constant.RATE);
+							likedUsers.setUserId(userId);
+							likedUsers.setRating(rateCount);
+							mediaFiles.getLikedUsers().add(likedUsers); 
+							
+						}
 
+				mediaFiles.setIsRated(true);
 				mediaFiles.setRating(rate);
 				mediaFileRepo.save(mediaFiles);
-				response.setError("1");
-				response.setMessage("rating on image is not done");
-				response.setData(empty);
-				response.setStatus("FAIL");
+
+				response.setError("0");
+				response.setMessage("rating updated with "+cRate);
+				response.setData(mediaFiles);
+				response.setStatus("SUCCESS");
 				return ResponseEntity.ok(response);
 			}
 		}

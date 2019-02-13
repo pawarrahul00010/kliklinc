@@ -125,7 +125,6 @@ public class LiveFeedController {
 	    LikedUsers likedUsers=new LikedUsers();
 		likedUsers.setUserName(userRegister.getUserName());
 		likedUsers.setMarkType(Constant.LIKE);
-		likedUsers.setFileID(fileid);
 		mediaFiles.getLikedUsers().add(likedUsers); 
 		long count=0;
 

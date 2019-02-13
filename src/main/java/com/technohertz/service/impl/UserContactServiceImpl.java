@@ -26,8 +26,6 @@ public class UserContactServiceImpl implements IUserContactService {
 	@Autowired
 	public EntityManager entityManager;
 
-
-
 	@Override 
 	public UserContact save(UserContact userContact) { 
 		userContact.setCreateDate(userContact.getCreateDate()); 

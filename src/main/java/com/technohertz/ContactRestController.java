@@ -169,7 +169,7 @@ public class ContactRestController {
 	}
 
 	
-	@RequestMapping(value = "/contactList", method = RequestMethod.POST)
+	@RequestMapping(value = "/contactList", method = RequestMethod.GET)
 	public ResponseEntity<ResponseObject> saveContact(){
 		
 		List<UserContact> userContactList = userContactService.getAll();

@@ -9,8 +9,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,6 +28,7 @@ import com.technohertz.payload.UploadFileResponse;
 import com.technohertz.repo.MediaFileRepo;
 import com.technohertz.repo.UserProfileRepository;
 import com.technohertz.repo.UserRegisterRepository;
+import com.technohertz.service.IMediaFileService;
 import com.technohertz.service.impl.FileStorageService;
 import com.technohertz.util.ResponseObject;
 
@@ -49,6 +48,9 @@ public class UserProfileController {
 
 	@Autowired
 	private MediaFileRepo mediaFileRepo;
+	
+	@Autowired
+	private IMediaFileService mediaFileService;
 
 	@Autowired
 	private ResponseObject response;
@@ -61,7 +63,6 @@ public class UserProfileController {
 	public ResponseEntity<ResponseObject> getAllProfilesById(@RequestParam("userId") Integer userId) {
 		
 		List<MediaFiles> likedUsers=fileStorageService.getAllProfileById(userId);
-//		List<Integer> fileid= fileStorageService.getFileId(userId);
 		List<GetImage> image=new ArrayList<GetImage>();
 
 		for(MediaFiles mediaFiles :likedUsers) {
@@ -70,13 +71,7 @@ public class UserProfileController {
 			img.setfileId(mediaFiles.getFileId());
 			image.add(img);
 		}
-//		for(Integer fileId :fileid)
-//		{
-//			GetImage img = new GetImage();
-//			img.setfileId(fileId);
-//			image.add(img);
-//		}
-////		
+
 		response.setError("0");	
 		response.setMessage("successfully fetched");
 		response.setData(image);
@@ -147,23 +142,42 @@ public class UserProfileController {
 
 	@PostMapping("/likes")
 	public ResponseEntity<ResponseObject> totalLikes(@RequestParam("fileid") int fileid,@RequestParam("isLiked") boolean isLiked,
-			@PathVariable(value = "userId") int  userId) {
+			@RequestParam(value = "userId") int  userId) {
 		MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
+		UserRegister userRegister = registerRepository.getOne(userId);
+		List<LikedUsers> likedUsersList= mediaFileService.getUserLikesByFileId(fileid, userRegister.getUserName());
+
+		if(likedUsersList.isEmpty()) {
+			LikedUsers likedUsers = new LikedUsers();
+			likedUsers.setUserName(userRegister.getUserName());
+			likedUsers.setMarkType(Constant.LIKE);
+			likedUsers.setUserId(userId);
+			mediaFiles.getLikedUsers().add(likedUsers); 
+		}
+		else {
+			
+			LikedUsers likedUsers = likedUsersList.get(0);
+			if(likedUsers.getMarkType().equals(Constant.UNLIKED)) {
+				likedUsers.setUserName(userRegister.getUserName());
+				likedUsers.setMarkType(Constant.LIKE);
+				likedUsers.setUserId(userId);
+				mediaFiles.getLikedUsers().add(likedUsers); 
+			}else {
+				likedUsers.setUserName(userRegister.getUserName());
+				likedUsers.setMarkType(Constant.UNLIKED);
+				likedUsers.setUserId(userId);
+				mediaFiles.getLikedUsers().add(likedUsers); 
+			}
+		}
+		long count=0;
 		
 
-		UserRegister userRegister =registerRepository.getOne(userId);
-	    LikedUsers likedUsers=new LikedUsers();
-		likedUsers.setUserName(userRegister.getUserName());
-		likedUsers.setMarkType(Constant.LIKE);
-		likedUsers.setFileID(fileid);
-		mediaFiles.getLikedUsers().add(likedUsers); 
-		long count=0;
-
 		if(mediaFiles.getLikes() == null) {
-			count=0;
+			count=1;
 		} else{
 			count=mediaFiles.getLikes();
 		}
+		
 		if(isLiked==true && mediaFiles.getIsLiked()==false ) {
 		count = count+1;
 			mediaFiles.setLikes(count);
@@ -184,7 +198,6 @@ public class UserProfileController {
 			mediaFiles.setLikes(count);
 			if(count>=0) {
 			mediaFiles.setIsLiked(false);
-			likedUsers.setMarkType("UNLIKED");
 			mediaFileRepo.save(mediaFiles);
 			}
 			response.setError("0");
@@ -201,6 +214,7 @@ public class UserProfileController {
 			@RequestParam("isRated") String isRated,@RequestParam("rateCount") String rateCounts,
 			@RequestParam(value = "userId") int  userId) {
 
+		int cRate = Integer.parseInt(rateCounts);
 		if(userfileid.equals("") && userfileid == null && isRated.equals("") && isRated == null && rateCounts.equals("") && rateCounts == null) {
 
 			response.setError("1");
@@ -228,20 +242,16 @@ public class UserProfileController {
 				return ResponseEntity.ok(response);
 
 			}
+			UserRegister userRegister = registerRepository.getOne(userId);
+			List<LikedUsers> likedUsersList= mediaFileService.getUserRatingByFileId(userfileid, userId);
 
 			MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
-
-			UserRegister userRegister =registerRepository.getOne(userId);
-			LikedUsers likedUsers=new LikedUsers();
-			likedUsers.setUserName(userRegister.getUserName());
-			likedUsers.setMarkType(Constant.RATE);
-			likedUsers.setFileID(fileid);
-			mediaFiles.getLikedUsers().add(likedUsers); 
-
-			//Long totalLikes=mediaFiles.getLikes();
+			
 			long rate=0;
 			System.out.println(mediaFiles.getLikes());
-			if(mediaFiles.getRating() == null) {
+			
+			
+			if(mediaFiles.getRating() == null || mediaFiles.getRating() == 0) {
 
 				rate=0;
 
@@ -250,49 +260,70 @@ public class UserProfileController {
 				rate=mediaFiles.getRating();
 			}
 
-
-			if(isRate==true&&  mediaFiles.getIsRated()==false ) {
-
-			
+			if(likedUsersList.isEmpty()) {
+				
+				LikedUsers likedUsers=new LikedUsers();
+				likedUsers.setUserName(userRegister.getUserName());
+				likedUsers.setMarkType(Constant.RATE);
+				likedUsers.setUserId(userId);
+				likedUsers.setRating(rateCount);
+				likedUsers.setTypeId(0);
+				
 				rate = rate+rateCount;
 				mediaFiles.setRating(rate);
-				mediaFiles.setIsRated(isRate);
+				mediaFiles.setIsRated(true);
+				mediaFiles.getLikedUsers().add(likedUsers); 
 				mediaFileRepo.save(mediaFiles);
 
 				response.setError("0");
-				response.setMessage("user rated with : "+rateCount);
+				response.setMessage("user rated with : "+cRate);
 				response.setData(mediaFiles);
 				response.setStatus("SUCCESS");
 				return ResponseEntity.ok(response);
 
-
 			}
 			else {
+				
+				LikedUsers likedUsers=likedUsersList.get(0);
+				
+				/*
+				 * if(isRate==true&& mediaFiles.getIsRated()==false ) {
+				 * 
+				 * 
+				 * rate = rate+rateCount; mediaFiles.setRating(rate);
+				 * mediaFiles.setIsRated(isRate); mediaFileRepo.save(mediaFiles);
+				 * 
+				 * response.setError("0"); response.setMessage("user rated with : "+rateCount);
+				 * response.setData(mediaFiles); response.setStatus("SUCCESS"); return
+				 * ResponseEntity.ok(response);
+				 * 
+				 * 
+				 * } else {
+				 */
+						if(rate>=0) {
+							rate = rate-likedUsers.getRating();
+							rate = rate+rateCount;
+							likedUsers.setUserName(userRegister.getUserName());
+							likedUsers.setMarkType(Constant.RATE);
+							likedUsers.setUserId(userId);
+							likedUsers.setRating(rateCount);
+							mediaFiles.getLikedUsers().add(likedUsers); 
+							
+						}
 
-				long totalcount=	mediaFiles.getRating();
-				rate = totalcount-Long.parseLong(rateCounts);
-					mediaFiles.setLikes(rate);
-					if(rate>=0) {
-					mediaFiles.setIsRated(false);
-					likedUsers.setMarkType(Constant.RATE);
-					likedUsers.setFileID(fileid);
-					mediaFiles.setRating(rate);
-				    mediaFileRepo.save(mediaFiles);
-			}
-
-
+				mediaFiles.setIsRated(true);
 				mediaFiles.setRating(rate);
 				mediaFileRepo.save(mediaFiles);
 
 				response.setError("0");
-				response.setMessage("rating updated");
+				response.setMessage("rating updated with "+cRate);
 				response.setData(mediaFiles);
 				response.setStatus("SUCCESS");
 				return ResponseEntity.ok(response);
 			}
 		}
 	}
-
+	
 	@SuppressWarnings("unused")
 	@PostMapping("/aboutUs")
 	public ResponseEntity<ResponseObject> updateStatus(@RequestParam("aboutUs") String aboutUs,
@@ -384,6 +415,7 @@ public class UserProfileController {
     @PostMapping("/uploadFile")
 	public ResponseEntity<ResponseObject> updateProfile(@RequestParam("file") MultipartFile file,@RequestParam(value = "userId") Integer userId) {
 		UserProfile userProfile = fileStorageService.saveProfile(file,userId);
+		
 		MediaFiles files=mediaFileRepo.getOne(Integer.valueOf(String.valueOf(userProfile.getFiles().get(userProfile.getFiles().size()-1).getFileId())));
 		
 	
