@@ -14,7 +14,7 @@ public class Constant {
 
 	public static final String RATE = "RATED";
 	
-	public static final String UNRATED = "UNRATED";
+	public static final String BOOKMARK = "BOOKMARKED";
 	
 	public static final String PROFILE = "PROFILE";
 	

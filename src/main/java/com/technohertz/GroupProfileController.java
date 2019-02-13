@@ -298,78 +298,67 @@ public class GroupProfileController {
 	@PostMapping("/like")
 	public ResponseEntity<ResponseObject> totalLikes(@RequestParam("fileid") int fileid,
 			@RequestParam("isLiked") boolean isLiked, @RequestParam(value = "userId") int userId) {
-		MediaFiles mediaFiles = mediaFileRepo.getById(fileid);
-		
+	
+		MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
 		UserRegister userRegister = registerRepository.getOne(userId);
+		List<LikedUsers> likedUsersList= mediaFileService.getUserLikesByFileId(fileid, userId);
 		
-		List<LikedUsers> likedUsersList= mediaFileService.getUserLikesByFileId(fileid, userRegister.getUserName());
-		
-		long count = 0;
+		long count=0;
 
-		if (mediaFiles.getLikes() == null || mediaFiles.getLikes() == 0) {
-			count = 0;
-		} else {
-			count = mediaFiles.getLikes();
-		}
-		
 		if(likedUsersList.isEmpty()) {
+			count=mediaFiles.getLikes();
 			LikedUsers likedUsers = new LikedUsers();
-			count = count + 1;
-			mediaFiles.setLikes(count);
-			mediaFiles.setIsRated(true);
-			
 			likedUsers.setUserName(userRegister.getUserName());
 			likedUsers.setMarkType(Constant.LIKE);
+			likedUsers.setUserId(userId);
+			mediaFiles.setLikes(count+1);
 			mediaFiles.setIsLiked(true);
-			mediaFiles.getLikedUsers().add(likedUsers);
-			mediaFileRepo.save(mediaFiles);
-
-			response.setError("0");
-			response.setMessage("user liked successfully");
-			response.setData(mediaFiles);
-			response.setStatus("SUCCESS");
-			return ResponseEntity.ok(response);
-			
-		}else {
-			LikedUsers likedUsers = likedUsersList.get(0);
-		
-		if (likedUsers.getMarkType() == Constant.UNLIKED || likedUsers.getMarkType().equals(Constant.UNLIKED)) {
-
-			count = count + 1;
-			mediaFiles.setLikes(count);
-			mediaFiles.setIsRated(true);
-			likedUsers.setUserName(userRegister.getUserName());
-			likedUsers.setMarkType(Constant.LIKE);
-			likedUsers.setUserId(userId);
-			mediaFiles.getLikedUsers().add(likedUsers);
-			mediaFileRepo.save(mediaFiles);
-
-			response.setError("0");
-			response.setMessage("user liked successfully");
-			response.setData(mediaFiles);
-			response.setStatus("SUCCESS");
-			return ResponseEntity.ok(response);
-
-		} else {
-
-			count = count - 1;
-			likedUsers.setMarkType(Constant.UNLIKED);
-			likedUsers.setUserId(userId);
-			likedUsers.setUserName(userRegister.getUserName());
-			mediaFiles.setLikes(count);
-			mediaFiles.setIsRated(true);
-			mediaFiles.getLikedUsers().add(likedUsers);
+			mediaFiles.getLikedUsers().add(likedUsers); 
 			mediaFileRepo.save(mediaFiles);
 			
 			response.setError("0");
-			response.setMessage("user unliked successfully");
+			response.setMessage("user liked successfully");
 			response.setData(mediaFiles);
 			response.setStatus("SUCCESS");
 			return ResponseEntity.ok(response);
 
 		}
-	  }
+		else {
+			count=mediaFiles.getLikes();
+			LikedUsers likedUsers = likedUsersList.get(0);
+			if(likedUsers.getMarkType().equals(Constant.UNLIKED) || likedUsers.getMarkType() == (Constant.UNLIKED)) {
+				likedUsers.setUserName(userRegister.getUserName());
+				likedUsers.setMarkType(Constant.LIKE);
+				likedUsers.setUserId(userId);
+				mediaFiles.setLikes(count+1);
+				mediaFiles.setIsLiked(true);
+				mediaFiles.getLikedUsers().add(likedUsers); 
+				mediaFileRepo.save(mediaFiles);
+				
+				response.setError("0");
+				response.setMessage("user liked successfully");
+				response.setData(mediaFiles);
+				response.setStatus("SUCCESS");
+				return ResponseEntity.ok(response);
 
+			}else {
+				likedUsers.setUserName(userRegister.getUserName());
+				likedUsers.setMarkType(Constant.UNLIKED);
+				likedUsers.setUserId(userId);
+				mediaFiles.setLikes(count-1);
+				mediaFiles.setIsLiked(true);
+				mediaFiles.getLikedUsers().add(likedUsers);
+				mediaFileRepo.save(mediaFiles);
+				
+				response.setError("0");
+				response.setMessage("user unliked successfully");
+				response.setData(mediaFiles);
+				response.setStatus("SUCCESS");
+				return ResponseEntity.ok(response);
+			}
+		}
+		
+			
 	}
 
 	@SuppressWarnings("unused")
@@ -408,7 +397,7 @@ public class GroupProfileController {
 			}
 
 			UserRegister userRegister = registerRepository.getOne(userId);
-			List<LikedUsers> likedUsersList= mediaFileService.getUserRatingByFileId(userfileid, userId);
+			List<LikedUsers> likedUsersList= mediaFileService.getUserRatingByFileId(fileid, userId);
 
 
 			MediaFiles mediaFiles = mediaFileRepo.getById(fileid);

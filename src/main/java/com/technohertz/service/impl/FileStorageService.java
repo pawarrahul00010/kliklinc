@@ -86,6 +86,7 @@ public class FileStorageService {
 			mediaFile.setFileType(fileType);
 			mediaFile.setIsLiked(false);
 			mediaFile.setIsRated(false);
+			mediaFile.setIsBookMarked(false);
 			mediaFile.setCreateDate(dateUtil.getDate());
 			mediaFile.setLastModifiedDate(dateUtil.getDate());
 			groupProfile.getFiles().add(mediaFile);
@@ -119,6 +120,7 @@ public class FileStorageService {
 			mediaFile.setFileType(fileType);
 			mediaFile.setIsLiked(false);
 			mediaFile.setIsRated(false);
+			mediaFile.setIsBookMarked(false);
 			mediaFile.setCreateDate(dateUtil.getDate());
 			mediaFile.setLastModifiedDate(dateUtil.getDate());
 			userprofile.get(0).getFiles().add(mediaFile);
@@ -150,6 +152,7 @@ public class FileStorageService {
 			mfile.setFilePath(fileDownloadUri );
 			mfile.setIsLiked(false);
 			mfile.setIsRated(false);
+			mfile.setIsBookMarked(false);
 			mfile.setCreateDate(dateUtil.getDate());
 			mfile.setLastModifiedDate(dateUtil.getDate());
 			mfile.setFileType("PROFILE");
@@ -186,6 +189,7 @@ public class FileStorageService {
 			mfile.setFilePath(fileDownloadUri);
 			mfile.setIsLiked(false);
 			mfile.setIsRated(false);
+			mfile.setIsBookMarked(false);
 			mfile.setCreateDate(dateUtil.getDate());
 			mfile.setLastModifiedDate(dateUtil.getDate());
 			mfile.setFileType("PROFILE");
@@ -223,6 +227,7 @@ public class FileStorageService {
 			mfile.setLastModifiedDate(dateUtil.getDate());
 			mfile.setIsLiked(false);
 			mfile.setIsRated(false);
+			mfile.setIsBookMarked(false);
 			groupProfile.get(0).setGroupId(userId);
 			groupProfile.get(0).setCurrentProfile(fileDownloadUri);
 			groupProfile.get(0).getFiles().add(mfile);

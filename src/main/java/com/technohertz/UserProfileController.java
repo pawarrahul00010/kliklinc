@@ -143,47 +143,24 @@ public class UserProfileController {
 	@PostMapping("/likes")
 	public ResponseEntity<ResponseObject> totalLikes(@RequestParam("fileid") int fileid,@RequestParam("isLiked") boolean isLiked,
 			@RequestParam(value = "userId") int  userId) {
+		
 		MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
 		UserRegister userRegister = registerRepository.getOne(userId);
-		List<LikedUsers> likedUsersList= mediaFileService.getUserLikesByFileId(fileid, userRegister.getUserName());
+		List<LikedUsers> likedUsersList= mediaFileService.getUserLikesByFileId(fileid, userId);
+		
+		long count=0;
 
 		if(likedUsersList.isEmpty()) {
+			count=mediaFiles.getLikes();
 			LikedUsers likedUsers = new LikedUsers();
 			likedUsers.setUserName(userRegister.getUserName());
 			likedUsers.setMarkType(Constant.LIKE);
 			likedUsers.setUserId(userId);
+			mediaFiles.setLikes(count+1);
+			mediaFiles.setIsLiked(true);
 			mediaFiles.getLikedUsers().add(likedUsers); 
-		}
-		else {
-			
-			LikedUsers likedUsers = likedUsersList.get(0);
-			if(likedUsers.getMarkType().equals(Constant.UNLIKED)) {
-				likedUsers.setUserName(userRegister.getUserName());
-				likedUsers.setMarkType(Constant.LIKE);
-				likedUsers.setUserId(userId);
-				mediaFiles.getLikedUsers().add(likedUsers); 
-			}else {
-				likedUsers.setUserName(userRegister.getUserName());
-				likedUsers.setMarkType(Constant.UNLIKED);
-				likedUsers.setUserId(userId);
-				mediaFiles.getLikedUsers().add(likedUsers); 
-			}
-		}
-		long count=0;
-		
-
-		if(mediaFiles.getLikes() == null) {
-			count=1;
-		} else{
-			count=mediaFiles.getLikes();
-		}
-		
-		if(isLiked==true && mediaFiles.getIsLiked()==false ) {
-		count = count+1;
-			mediaFiles.setLikes(count);
-			mediaFiles.setIsLiked(isLiked);
 			mediaFileRepo.save(mediaFiles);
-
+			
 			response.setError("0");
 			response.setMessage("user liked successfully");
 			response.setData(mediaFiles);
@@ -192,21 +169,43 @@ public class UserProfileController {
 
 		}
 		else {
-	
-		long totalcount=	mediaFiles.getLikes();
-		count = totalcount-1;
-			mediaFiles.setLikes(count);
-			if(count>=0) {
-			mediaFiles.setIsLiked(false);
-			mediaFileRepo.save(mediaFiles);
+			count=mediaFiles.getLikes();
+			LikedUsers likedUsers = likedUsersList.get(0);
+			if(likedUsers.getMarkType().equals(Constant.UNLIKED) || likedUsers.getMarkType() == (Constant.UNLIKED)) {
+				likedUsers.setUserName(userRegister.getUserName());
+				likedUsers.setMarkType(Constant.LIKE);
+				likedUsers.setUserId(userId);
+				mediaFiles.setLikes(count+1);
+				mediaFiles.setIsLiked(true);
+				mediaFiles.getLikedUsers().add(likedUsers); 
+				mediaFileRepo.save(mediaFiles);
+				
+				response.setError("0");
+				response.setMessage("user liked successfully");
+				response.setData(mediaFiles);
+				response.setStatus("SUCCESS");
+				return ResponseEntity.ok(response);
+
+			}else {
+				likedUsers.setUserName(userRegister.getUserName());
+				likedUsers.setMarkType(Constant.UNLIKED);
+				likedUsers.setUserId(userId);
+				mediaFiles.setLikes(count-1);
+				mediaFiles.setIsLiked(true);
+				mediaFiles.getLikedUsers().add(likedUsers);
+				mediaFileRepo.save(mediaFiles);
+				
+				response.setError("0");
+				response.setMessage("user unliked successfully");
+				response.setData(mediaFiles);
+				response.setStatus("SUCCESS");
+				return ResponseEntity.ok(response);
 			}
-			response.setError("0");
-			response.setMessage("user unliked successfully");
-			response.setData(mediaFiles);
-			response.setStatus("SUCCESS");
-			return ResponseEntity.ok(response);
 		}
-		}
+		
+			
+	}
+
 
 	@SuppressWarnings("unused")
 	@PostMapping("/rating")
@@ -243,7 +242,7 @@ public class UserProfileController {
 
 			}
 			UserRegister userRegister = registerRepository.getOne(userId);
-			List<LikedUsers> likedUsersList= mediaFileService.getUserRatingByFileId(userfileid, userId);
+			List<LikedUsers> likedUsersList= mediaFileService.getUserRatingByFileId(fileid, userId);
 
 			MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
 			
