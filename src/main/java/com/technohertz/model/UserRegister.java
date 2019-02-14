@@ -53,6 +53,9 @@ public class UserRegister implements Serializable {
 	
 	@Column(name = "token", nullable = false, length = 200)
 	private long Token;
+	
+	@Column(name = "pattern", nullable = false, length = 200)
+	private String pattern;
 
 
 	@Column(name = "status", nullable = false, length = 200)
@@ -218,17 +221,45 @@ public class UserRegister implements Serializable {
 		this.biometric = biometric;
 	}
 
+	
+	/**
+	 * @return the pattern
+	 */
+	public String getPattern() {
+		return pattern;
+	}
+
+	/**
+	 * @param pattern the pattern to set
+	 */
+	public void setPattern(String pattern) {
+		this.pattern = pattern;
+	}
+
+	/**
+	 * @return the groupList
+	 */
+	public List<GroupProfile> getGroupList() {
+		return groupList;
+	}
+
+	/**
+	 * @param groupList the groupList to set
+	 */
+	public void setGroupList(List<GroupProfile> groupList) {
+		this.groupList = groupList;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
 		return "UserRegister [userId=" + userId + ", userName=" + userName + ", sourceFrom=" + sourceFrom
-				+ ", password=" + password + ", mobilNumber=" + mobilNumber + ", Token=" + Token + ", isActive="
-				+ isActive + ", createDate=" + createDate + ", lastModifiedDate=" + lastModifiedDate + ", profile="
-				+ profile + ", userOtp=" + userOtp + ", userContactList=" + userContactList + ", biometric=" + biometric
-				+ "]";
+				+ ", password=" + password + ", mobilNumber=" + mobilNumber + ", Token=" + Token + ", pattern="
+				+ pattern + ", isActive=" + isActive + ", createDate=" + createDate + ", lastModifiedDate="
+				+ lastModifiedDate + ", profile=" + profile + ", userOtp=" + userOtp + ", userContactList="
+				+ userContactList + ", biometric=" + biometric + ", groupList=" + groupList + "]";
 	}
-
 
 }

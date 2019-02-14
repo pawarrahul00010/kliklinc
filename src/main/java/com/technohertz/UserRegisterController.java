@@ -292,4 +292,146 @@ public class UserRegisterController {
 		return rand;
 
 	}
+	
+	@SuppressWarnings("unused")
+	@PostMapping("/ptrn/unlk")
+	public ResponseEntity<ResponseObject> patternCredential(@RequestParam("userId") String userId,@RequestParam("pattern") String pattern)
+			throws ResourceNotFoundException {
+		
+			if(userId.equals("") && userId == null && pattern.equals("") && pattern == null) {
+				
+				response.setError("1");
+				response.setMessage("wrong userId and pattern please enter correct value");
+				response.setData(empty);
+				response.setStatus("FAIL");
+				return ResponseEntity.ok(response);
+			
+			}
+			else {
+				
+				int userid = 0;
+				try {
+					userid = Integer.parseInt(userId);
+				} catch (NumberFormatException e) {
+
+					response.setError("1");
+					response.setMessage("wrong userId please enter numeric value");
+					response.setData(empty);
+					response.setStatus("FAIL");
+					return ResponseEntity.ok(response);
+
+				}
+				
+				UserRegister userRegister = userRegisterService.getOneById(userid);
+
+						String dbpattern = userRegister.getPattern();
+					
+					if (dbpattern.equals(pattern) || dbpattern == pattern) 
+					{
+						response.setStatus("SUCCESS");
+						response.setMessage("Logged in successfully");
+						response.setError("0");
+						response.setData(userRegister);
+						return ResponseEntity.ok(response);
+						
+					}else {
+						 response.setStatus("FAIL");
+						response.setMessage("pattern does not matched please check");
+						response.setError("1");
+						response.setData(empty);
+						return ResponseEntity.ok(response);
+					}
+				
+			}
+		}
+
+	@SuppressWarnings("unused")
+	@PostMapping(value = {"/ptrn/save","/ptrn/update"})
+	public ResponseEntity<ResponseObject> patternSave(@RequestParam("userId") String userId,@RequestParam("pattern") String pattern)
+			throws ResourceNotFoundException {
+		
+			if(userId.equals("") && userId == null && pattern.equals("") && pattern == null) {
+				
+				response.setError("1");
+				response.setMessage("wrong userId and pattern please enter correct value");
+				response.setData(empty);
+				response.setStatus("FAIL");
+				return ResponseEntity.ok(response);
+			
+			}
+			else {
+				
+				int userid = 0;
+				try {
+					userid = Integer.parseInt(userId);
+				} catch (NumberFormatException e) {
+
+					response.setError("1");
+					response.setMessage("wrong userId please enter numeric value");
+					response.setData(empty);
+					response.setStatus("FAIL");
+					return ResponseEntity.ok(response);
+
+				}
+				
+				UserRegister userRegister = userRegisterService.getOneById(userid);
+
+					userRegister.setPattern(pattern);
+					
+					userRegisterService.save(userRegister);
+					
+					response.setStatus("SUCCESS");
+					response.setMessage("Pattern updated successfully");
+					response.setError("0");
+					response.setData(userRegister);
+					return ResponseEntity.ok(response);
+						
+			}
+		}
+
+	@SuppressWarnings("unused")
+	@PostMapping(value = {"/ptrn/remove"})
+	public ResponseEntity<ResponseObject> patternRemove(@RequestParam("userId") String userId)
+			throws ResourceNotFoundException {
+		
+			if(userId.equals("") && userId == null ) {
+				
+				response.setError("1");
+				response.setMessage("wrong userId please enter correct value");
+				response.setData(empty);
+				response.setStatus("FAIL");
+				return ResponseEntity.ok(response);
+			
+			}
+			else {
+				
+				int userid = 0;
+				try {
+					userid = Integer.parseInt(userId);
+				} catch (NumberFormatException e) {
+
+					response.setError("1");
+					response.setMessage("wrong userId please enter numeric value");
+					response.setData(empty);
+					response.setStatus("FAIL");
+					return ResponseEntity.ok(response);
+
+				}
+				
+				UserRegister userRegister = userRegisterService.getOneById(userid);
+
+					userRegister.setPattern(null);
+					
+					userRegisterService.save(userRegister);
+					
+					response.setStatus("SUCCESS");
+					response.setMessage("pattern removed successfully");
+					response.setError("0");
+					response.setData(userRegister);
+					return ResponseEntity.ok(response);
+						
+			}
+		}
+
+
 }
