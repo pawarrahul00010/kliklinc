@@ -55,15 +55,14 @@ public class LiveFeedController {
     @PostMapping("/video")
     public  ResponseEntity<ResponseObject> uploadVideos(@RequestParam("file") MultipartFile file,
     		@RequestParam(value = "userId") Integer  userId) {
+
+    	UserProfile fileName = fileStorageService.storeFile(file, userId,constant.LIVEFEED);
+
      
-    	@SuppressWarnings("static-access")
-		UserProfile mediaFiles = fileStorageService.storeFile(file, userId, constant.VIDEO);
-    	MediaFiles files=mediaFileRepo.getOne(mediaFiles.getFiles().get(0).getFileId());
-       
-       Object obj=new UploadFileResponse(files.getFilePath(), mediaFiles.getFiles().get(0).getFilePath(),
+        Object obj=new UploadFileResponse(fileName.getFiles().get(0).getFilePath(),fileName.getFiles().get(0).getFilePath(),
                 file.getContentType(), file.getSize());
-       if (!file.isEmpty()||userId!=null) {
-			response.setMessage("your Profile Image updated successfully");
+        if (!file.isEmpty()||userId!=null) {
+			response.setMessage("your File is uploaded successfully");
 
 			response.setData(obj);
 			response.setError("0");
@@ -71,7 +70,7 @@ public class LiveFeedController {
 
 			return ResponseEntity.ok(response);
 		} else {
-			response.setMessage("your Profile Image not updated");
+			response.setMessage("your File is not uploaded");
 
 			response.setData(empty);
 			response.setError("1");

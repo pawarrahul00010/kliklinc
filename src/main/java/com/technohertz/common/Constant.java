@@ -26,6 +26,8 @@ public class Constant {
 
 	public static final String VIDEO = "VIDEO";
 	
+	public static final String LIVEFEED = "LIVEFEED";
+	
 	public static final String IMAGE = "IMAGE";
 	
 	public static final String AUDIO = "AUDIO";
