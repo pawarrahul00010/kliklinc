@@ -85,7 +85,7 @@ public class LiveFeedController {
 		return fileStorageService.getAll(fileid);
 	}
 	
-	@GetMapping("/getAllVideos")
+	@PostMapping("/getAllVideos")
 	public List<LikedUsers> getAllVideoById(@RequestParam(value = "userId") Integer  userId) {
 		return fileStorageService.getAllVideoById(userId);
 	}
