@@ -54,7 +54,7 @@ public class UserRegister implements Serializable {
 	@Column(name = "token", nullable = false, length = 200)
 	private long Token;
 	
-	@Column(name = "pattern", nullable = false, length = 200)
+	@Column(name = "pattern" ,length = 200)
 	private String pattern;
 
 

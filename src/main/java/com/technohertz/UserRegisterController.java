@@ -8,6 +8,7 @@ import java.util.Random;
 import javax.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -111,12 +112,12 @@ public class UserRegisterController {
 			else {
 				UserRegister userRegister=null;
 				List<UserRegister> userRegisterList = userRegisterService.findByUserName(user);
-				List<UserRegister> userList = userRegisterService.findByMobileNumber(user);
+				
 				/*get from database*/
 				
 					if(userRegisterList.isEmpty())
 					{
-						
+						List<UserRegister> userList = userRegisterService.findByMobileNumber(user);
 						if(userList.isEmpty())
 						{
 							
@@ -260,7 +261,7 @@ public class UserRegisterController {
 		}
 		
 
-
+	@Cacheable(value="mobileNumberCache",key="#mobileNumber",unless="#result==null")
 	private boolean userExists(String mobileNumber)
 	{
 		String hql="FROM UserRegister as ur WHERE ur.mobilNumber= ?1";
@@ -269,6 +270,7 @@ public class UserRegisterController {
 		return count>0 ? true : false;
 		
 	}
+	@Cacheable(value="userNameCache",key="#userName",unless="#result==null")
 	private boolean userNameExists(String userName)
 	{
 		String hql="FROM UserRegister as ur WHERE ur.userName= ?1";

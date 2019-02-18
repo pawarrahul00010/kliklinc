@@ -12,6 +12,7 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -283,6 +284,7 @@ public class FileStorageService {
 		return name.substring(lastIndexOf);
 	}
 	@SuppressWarnings("unchecked")
+	@Cacheable(value="viewerCache",key="#fileid",unless="#result==null")
 	public List<LikedUsers> getAll(int fileid) {
 	return entityManager.createNativeQuery("select l.user_name from liked_users l where l.file_id=:fileid and type=:type")
 						.setParameter("fileid", fileid)
@@ -309,6 +311,7 @@ public class FileStorageService {
 	 	
 
 	@SuppressWarnings("unchecked")
+	@Cacheable(value="videoCache",key="#userId",unless="#result==null")
 	public List<LikedUsers> getAllVideoById(Integer userId) {
 		return entityManager.createNativeQuery("select l.File_Path from Media_Files l where l.USR_DET_ID=:userId AND File_Type=:VIDEO")
 				.setParameter("userId", userId)	.setParameter("VIDEO", "VIDEO")

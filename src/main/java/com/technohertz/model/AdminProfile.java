@@ -19,9 +19,9 @@ import org.hibernate.annotations.DynamicUpdate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Table(name = "User_Profile")
+@Table(name = "Admin_Profile")
 @DynamicUpdate
-public class UserProfile implements Serializable{
+public class AdminProfile implements Serializable{
 	/**
 	 * 
 	 */
@@ -37,10 +37,6 @@ public class UserProfile implements Serializable{
 
 	@Column(name = "current_Profile")
 	private String currentProfile;
-	
-	@Column(name = "About_User")
-	private String aboutUser;
-
 
 	 @JsonIgnore
 	@OneToMany(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)
@@ -72,13 +68,6 @@ public class UserProfile implements Serializable{
 		this.displayName = displayName;
 	}
 
-	public String getAboutUser() {
-		return aboutUser;
-	}
-
-	public void setAboutUser(String aboutUser) {
-		this.aboutUser = aboutUser;
-	}
 
 	/**
 	 * @return the currentProfile
@@ -99,9 +88,10 @@ public class UserProfile implements Serializable{
 	 */
 	@Override
 	public String toString() {
-		return "UserProfile [profileId=" + profileId + ", displayName=" + displayName + ", currentProfile="
-				+ currentProfile + ", aboutUser=" + aboutUser + ", files=" + files + "]";
+		return "AdminProfile [profileId=" + profileId + ", displayName=" + displayName + ", currentProfile="
+				+ currentProfile + ", files=" + files + "]";
 	}
+
 
 	
 }
