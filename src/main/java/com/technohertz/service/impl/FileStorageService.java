@@ -89,6 +89,8 @@ public class FileStorageService {
 			mediaFile.setFilePath(fileDownloadUri);
 			mediaFile.setFileType(fileType);
 			mediaFile.setIsLiked(false);
+			mediaFile.setLikes(0l);
+			mediaFile.setRating(0l);
 			mediaFile.setIsRated(false);
 			mediaFile.setIsBookMarked(false);
 			mediaFile.setCreateDate(dateUtil.getDate());
@@ -123,6 +125,8 @@ public class FileStorageService {
 			mediaFile.setFilePath(fileDownloadUri);
 			mediaFile.setFileType(fileType);
 			mediaFile.setIsLiked(false);
+			mediaFile.setLikes(0l);
+			mediaFile.setRating(0l);
 			mediaFile.setIsRated(false);
 			mediaFile.setIsBookMarked(false);
 			mediaFile.setCreateDate(dateUtil.getDate());
@@ -155,6 +159,8 @@ public class FileStorageService {
 			userprofile = userprofileRepo.findById(userId);
 			mfile.setFilePath(fileDownloadUri );
 			mfile.setIsLiked(false);
+			mfile.setLikes(0l);
+			mfile.setRating(0l);
 			mfile.setIsRated(false);
 			mfile.setIsBookMarked(false);
 			mfile.setCreateDate(dateUtil.getDate());
@@ -193,6 +199,8 @@ public class FileStorageService {
 			mfile.setFilePath(fileDownloadUri);
 			mfile.setIsLiked(false);
 			mfile.setIsRated(false);
+			mfile.setLikes(0l);
+			mfile.setRating(0l);
 			mfile.setIsBookMarked(false);
 			mfile.setCreateDate(dateUtil.getDate());
 			mfile.setLastModifiedDate(dateUtil.getDate());
@@ -230,9 +238,12 @@ public class FileStorageService {
 			mfile.setCreateDate(dateUtil.getDate());
 			mfile.setLastModifiedDate(dateUtil.getDate());
 			mfile.setIsLiked(false);
+			mfile.setLikes(0l);
+			mfile.setFileType(Constant.GROUPPROFILE);
+			mfile.setRating(0l);
 			mfile.setIsRated(false);
 			mfile.setIsBookMarked(false);
-			groupProfile.get(0).setGroupId(userId);
+			
 			groupProfile.get(0).setCurrentProfile(fileDownloadUri);
 			groupProfile.get(0).getFiles().add(mfile);
 			// Copy file to the target location (Replacing existing file with the same name)
@@ -319,5 +330,39 @@ public class FileStorageService {
 			return entityManager.createNativeQuery("select * from media_files  where usr_det_id=:userId AND File_Type=:VIDEO ORDER BY file_id  DESC",MediaFiles.class)
 					.setParameter("userId", userId)	.setParameter("VIDEO", "LIVEFEED")
 					.getResultList();
+		}
+		
+		public UserProfile storeLiveFeedFile(MultipartFile file,String text , int userId,String fileType) {
+			String fileName = StringUtils.cleanPath(String.valueOf(userId)+System.currentTimeMillis()+getFileExtension(file));
+			   String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+		                .path("/downloadFile/")
+		                .path(String.valueOf(fileName))
+		                .toUriString();
+			
+			try {
+				if (fileName.contains("..")) {
+					throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
+				}
+				List<UserProfile> userprofile = null;
+				userprofile = userprofileRepo.findById(userId);
+				MediaFiles mediaFile = new MediaFiles();
+				mediaFile.setFilePath(fileDownloadUri);
+				mediaFile.setFileType(fileType);
+				mediaFile.setIsLiked(false);
+				mediaFile.setLikes(0l);
+				mediaFile.setRating(0l);
+				mediaFile.setText(text);
+				mediaFile.setIsRated(false);
+				mediaFile.setIsBookMarked(false);
+				mediaFile.setCreateDate(dateUtil.getDate());
+				mediaFile.setLastModifiedDate(dateUtil.getDate());
+				userprofile.get(0).getFiles().add(mediaFile);
+				Path targetLocation = this.fileStorageLocation.resolve(fileName);
+				Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+				
+				return userprofileRepo.save(userprofile.get(0));
+			} catch (IOException ex) {
+				throw new FileStorageException("Could not store file " + fileName + ". Please try again!", ex);
+			}
 		}
 }

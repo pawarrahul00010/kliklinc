@@ -39,22 +39,21 @@ import com.technohertz.util.ResponseObject;
 @RestController
 @RequestMapping("/groupRest")
 public class GroupProfileController {
-	
-	
+
 	@Autowired
 	private Empty empty;
-	
+
 	@Autowired
 	private GroupResponse groupResponse;
 	@Autowired
 	private IGroupProfileService groupProfileService;
-	
+
 	@Autowired
-	private IUserContactService	userContactService;
+	private IUserContactService userContactService;
 
 	@Autowired
 	private IMediaFileService mediaFileService;
-	
+
 	@Autowired
 	private UserRegisterRepository registerRepository;
 
@@ -66,24 +65,23 @@ public class GroupProfileController {
 
 	@Autowired
 	private EntityManager entityManager;
-	
+
 	@Autowired
 	private CommonUtil commonUtil;
-	
+
 	@Autowired
 	private Constant constant;
 
 	@Autowired
 	private FileStorageService fileStorageService;
-	
-	
+
 	@PostMapping("/create")
 	public ResponseEntity<ResponseObject> createGroup(@RequestParam("contactList") String contacts,
-			@RequestParam("file") MultipartFile file,@RequestParam("groupName") String groupName,
+			@RequestParam("file") MultipartFile file, @RequestParam("groupName") String groupName,
 			@RequestParam("userId") Integer userId) {
 
-		if (contacts.equals("") || contacts == null || String.valueOf(userId).equals("") || String.valueOf(userId) == null
-				|| String.valueOf(file).equals("") || String.valueOf(file) == null
+		if (contacts.equals("") || contacts == null || String.valueOf(userId).equals("")
+				|| String.valueOf(userId) == null || String.valueOf(file).equals("") || String.valueOf(file) == null
 				|| String.valueOf(groupName).equals("") || String.valueOf(groupName) == null) {
 
 			response.setError("1");
@@ -93,58 +91,59 @@ public class GroupProfileController {
 			return ResponseEntity.ok(response);
 
 		} else {
-			
-			List<UserContact> retrivedContactList = userContactService.getAll();//get all user from database
-			
+
+			List<UserContact> retrivedContactList = userContactService.getAll();// get all user from database
+
 			List<UserContact> contactlist = new ArrayList<UserContact>();
-			
+
 			List<String> contactList = getContactList(contacts);
-			
-			Map<String, UserContact> contactProfileList = commonUtil.getContactProfileDetails(contactList, retrivedContactList);
-			
+
+			Map<String, UserContact> contactProfileList = commonUtil.getContactProfileDetails(contactList,
+					retrivedContactList);
+
 			GroupProfile groupProfile = new GroupProfile();
-			
-				for(String contact : contactList) {
-					
-					UserContact userContact = contactProfileList.get(contact); 	
-				
-					contactlist.add(userContact);
-				}
-				
-				@SuppressWarnings("static-access")
-				GroupProfile mediaFiles= fileStorageService.saveGroupProfile(file, userId, constant.GROUPPROFILE);
 
-				groupProfile.setGroupMember(contactlist);
-				groupProfile.setCurrentProfile(mediaFiles.getFiles().get(0).getFilePath());
-				groupProfile.setDisplayName(groupName);
-				groupProfile.setCreatedBy(userId);
-				groupProfileService.save(groupProfile);
-				
-				
-				groupResponse.setGroupId(groupProfile.getGroupId());
-				groupResponse.setGroupMember(groupProfile.getGroupMember());
-				groupResponse.setAboutGroup(groupProfile.getAboutGroup());
-				groupResponse.setCreatedBy(groupProfile.getCreatedBy());
-				groupResponse.setCurrentProfile(groupProfile.getCurrentProfile());
-				groupResponse.setDisplayName(groupProfile.getDisplayName());
-				groupResponse.setFiles(groupProfile.getFiles());
+			for (String contact : contactList) {
 
-				response.setStatus("Success");
-				response.setMessage("Group Created successfully");
-				response.setError("0");
-				response.setData(groupResponse);
+				UserContact userContact = contactProfileList.get(contact);
 
-				return ResponseEntity.ok(response);
-				
-				}	
-			
+				contactlist.add(userContact);
+			}
+
+			@SuppressWarnings("static-access")
+			GroupProfile mediaFiles = fileStorageService.saveGroupProfile(file, userId, constant.GROUPPROFILE);
+
+			groupProfile.setGroupMember(contactlist);
+			groupProfile.setCurrentProfile(mediaFiles.getCurrentProfile());
+			groupProfile.setDisplayName(groupName);
+			groupProfile.setCreatedBy(userId);
+			groupProfileService.save(groupProfile);
+
+			groupResponse.setGroupId(groupProfile.getGroupId());
+			groupResponse.setGroupMember(groupProfile.getGroupMember());
+			groupResponse.setAboutGroup(groupProfile.getAboutGroup());
+			groupResponse.setCreatedBy(groupProfile.getCreatedBy());
+			groupResponse.setCurrentProfile(groupProfile.getCurrentProfile());
+			groupResponse.setDisplayName(groupProfile.getDisplayName());
+			groupResponse.setFiles(groupProfile.getFiles());
+
+			response.setStatus("Success");
+			response.setMessage("Group Created successfully");
+			response.setError("0");
+			response.setData(groupResponse);
+
+			return ResponseEntity.ok(response);
+
 		}
 
-	@PostMapping("/update/contact")
-	public ResponseEntity<ResponseObject> updateGroup(@RequestParam("contactList") String contacts,@RequestParam("groupId") Integer groupId) {
+	}
 
-		if (contacts.equals("") || contacts == null 
-				|| String.valueOf(groupId).equals("") || String.valueOf(groupId) == null) {
+	@PostMapping("/update/contact")
+	public ResponseEntity<ResponseObject> updateGroup(@RequestParam("contactList") String contacts,
+			@RequestParam("groupId") Integer groupId) {
+
+		if (contacts.equals("") || contacts == null || String.valueOf(groupId).equals("")
+				|| String.valueOf(groupId) == null) {
 
 			response.setError("1");
 			response.setMessage("wrong contactList and groupId please enter correct value");
@@ -153,71 +152,68 @@ public class GroupProfileController {
 			return ResponseEntity.ok(response);
 
 		} else {
-			
-			List<UserContact> retrivedContactList = userContactService.getAll();//get all user from database
-			
-			List<String> contactList = getContactList(contacts);
-			
-			Map<String, UserContact> contactProfileList = commonUtil.getContactProfileDetails(contactList, retrivedContactList);
-			
-			List<GroupProfile> getGroupUserList = groupProfileService.findById(groupId);
-			
-			
-			
-			List<String> conlist = groupProfileService.getGroupContactListById(groupId);
-			
-			GroupProfile groupProfile = getGroupUserList.get(0);
-			
-			List<UserContact> contactlist = getContactListTosave(contactList, conlist, contactProfileList, groupProfile );
-			
-				groupProfile.setGroupMember(contactlist);
-				groupProfile.setGroupId(groupId);
-				
-				
-				groupProfileService.save(groupProfile);
-				
-				groupResponse.setGroupId(groupProfile.getGroupId());
-				groupResponse.setGroupMember(groupProfile.getGroupMember());
-				groupResponse.setAboutGroup(groupProfile.getAboutGroup());
-				groupResponse.setCreatedBy(groupProfile.getCreatedBy());
-				groupResponse.setCurrentProfile(groupProfile.getCurrentProfile());
-				groupResponse.setDisplayName(groupProfile.getDisplayName());
-				groupResponse.setFiles(groupProfile.getFiles());
-				
-				response.setStatus("Success");
-				response.setMessage("Contact added in Group successfully");
-				response.setError("0");
-				response.setData(groupResponse);
 
-				return ResponseEntity.ok(response);
-				
-				}	
-			
+			List<UserContact> retrivedContactList = userContactService.getAll();// get all user from database
+
+			List<String> contactList = getContactList(contacts);
+
+			Map<String, UserContact> contactProfileList = commonUtil.getContactProfileDetails(contactList,
+					retrivedContactList);
+
+			List<GroupProfile> getGroupUserList = groupProfileService.findById(groupId);
+
+			List<String> conlist = groupProfileService.getGroupContactListById(groupId);
+
+			GroupProfile groupProfile = getGroupUserList.get(0);
+
+			List<UserContact> contactlist = getContactListTosave(contactList, conlist, contactProfileList,
+					groupProfile);
+
+			groupProfile.setGroupMember(contactlist);
+			groupProfile.setGroupId(groupId);
+
+			groupProfileService.save(groupProfile);
+
+			groupResponse.setGroupId(groupProfile.getGroupId());
+			groupResponse.setGroupMember(groupProfile.getGroupMember());
+			groupResponse.setAboutGroup(groupProfile.getAboutGroup());
+			groupResponse.setCreatedBy(groupProfile.getCreatedBy());
+			groupResponse.setCurrentProfile(groupProfile.getCurrentProfile());
+			groupResponse.setDisplayName(groupProfile.getDisplayName());
+			groupResponse.setFiles(groupProfile.getFiles());
+
+			response.setStatus("Success");
+			response.setMessage("Contact added in Group successfully");
+			response.setError("0");
+			response.setData(groupResponse);
+
+			return ResponseEntity.ok(response);
+
 		}
 
-	
+	}
+
 	private List<UserContact> getContactListTosave(List<String> contactList, List<String> conlist,
 			Map<String, UserContact> contactProfileList, GroupProfile groupProfile) {
-		
-			for(String contact : contactList) {
-				
-				if(!conlist.contains(contact)) {
-					
-					UserContact userContact = contactProfileList.get(contact); 	
-					
-					groupProfile.getGroupMember().add(userContact);
-				}
+
+		for (String contact : contactList) {
+
+			if (!conlist.contains(contact)) {
+
+				UserContact userContact = contactProfileList.get(contact);
+
+				groupProfile.getGroupMember().add(userContact);
 			}
-			
+		}
+
 		return groupProfile.getGroupMember();
 	}
 
 	@PostMapping("/delete/contact")
 	public ResponseEntity<ResponseObject> deleteContactFromGroup(@RequestParam("contactidList") String contacts,
-																 @RequestParam("groupId") String groupId) {
+			@RequestParam("groupId") String groupId) {
 
-		if (contacts.equals("") || contacts == null 
-				|| groupId.equals("") || groupId == null) {
+		if (contacts.equals("") || contacts == null || groupId.equals("") || groupId == null) {
 
 			response.setError("1");
 			response.setMessage("wrong contactList and groupId please enter correct value");
@@ -228,42 +224,41 @@ public class GroupProfileController {
 		} else {
 			int groupid;
 			try {
-				 groupid = Integer.parseInt(groupId);
+				groupid = Integer.parseInt(groupId);
 			} catch (NumberFormatException e) {
-				
+
 				response.setError("1");
 				response.setMessage("wrong contactList and groupId please enter correct value");
 				response.setData(empty);
 				response.setStatus("FAIL");
 				return ResponseEntity.ok(response);
 			}
-			
-			 groupProfileService.deleteContactsById(groupid, contacts);
-			
-			 List<GroupProfile> getGroupUserList = groupProfileService.findById(groupid);
-			 
-			 GroupProfile groupProfile = getGroupUserList.get(0);
-			 
-			 	groupResponse.setGroupId(groupProfile.getGroupId());
-				groupResponse.setGroupMember(groupProfile.getGroupMember());
-				groupResponse.setAboutGroup(groupProfile.getAboutGroup());
-				groupResponse.setCreatedBy(groupProfile.getCreatedBy());
-				groupResponse.setCurrentProfile(groupProfile.getCurrentProfile());
-				groupResponse.setDisplayName(groupProfile.getDisplayName());
-				groupResponse.setFiles(groupProfile.getFiles());
-			
-				response.setStatus("Success");
-				response.setMessage("Group Created successfully");
-				response.setError("0");
-				response.setData(groupResponse);
 
-				return ResponseEntity.ok(response);
-				
-				}	
-			
+			groupProfileService.deleteContactsById(groupid, contacts);
+
+			List<GroupProfile> getGroupUserList = groupProfileService.findById(groupid);
+
+			GroupProfile groupProfile = getGroupUserList.get(0);
+
+			groupResponse.setGroupId(groupProfile.getGroupId());
+			groupResponse.setGroupMember(groupProfile.getGroupMember());
+			groupResponse.setAboutGroup(groupProfile.getAboutGroup());
+			groupResponse.setCreatedBy(groupProfile.getCreatedBy());
+			groupResponse.setCurrentProfile(groupProfile.getCurrentProfile());
+			groupResponse.setDisplayName(groupProfile.getDisplayName());
+			groupResponse.setFiles(groupProfile.getFiles());
+
+			response.setStatus("Success");
+			response.setMessage("Group Created successfully");
+			response.setError("0");
+			response.setData(groupResponse);
+
+			return ResponseEntity.ok(response);
+
 		}
 
-	
+	}
+
 	@SuppressWarnings("unused")
 	@PostMapping("/displayName/{groupId}")
 	public ResponseEntity<ResponseObject> updateDisplayName(@RequestParam("displayName") String displayName,
@@ -306,7 +301,7 @@ public class GroupProfileController {
 				groupProfile.setAboutGroup(GroupProfileList.get(0).getAboutGroup());
 				groupProfile.setGroupId(id);
 				updateDisplayName = groupProfileService.save(groupProfile);
-				
+
 				groupResponse.setGroupId(groupProfile.getGroupId());
 				groupResponse.setGroupMember(groupProfile.getGroupMember());
 				groupResponse.setAboutGroup(groupProfile.getAboutGroup());
@@ -334,58 +329,57 @@ public class GroupProfileController {
 	@PostMapping("/like")
 	public ResponseEntity<ResponseObject> totalLikes(@RequestParam("fileid") int fileid,
 			@RequestParam("isLiked") boolean isLiked, @RequestParam(value = "userId") int userId) {
-	
-		MediaFiles mediaFiles= mediaFileRepo.getById(fileid);
-		UserRegister userRegister = registerRepository.getOne(userId);
-		List<LikedUsers> likedUsersList= mediaFileService.getUserLikesByFileId(fileid, userId);
-		
-		long count=0;
 
-		if(likedUsersList.isEmpty()) {
-			count=mediaFiles.getLikes();
+		MediaFiles mediaFiles = mediaFileRepo.getById(fileid);
+		UserRegister userRegister = registerRepository.getOne(userId);
+		List<LikedUsers> likedUsersList = mediaFileService.getUserLikesByFileId(fileid, userId);
+
+		long count = 0;
+
+		if (likedUsersList.isEmpty()) {
+			count = mediaFiles.getLikes();
 			LikedUsers likedUsers = new LikedUsers();
 			likedUsers.setUserName(userRegister.getUserName());
 			likedUsers.setMarkType(Constant.LIKE);
 			likedUsers.setUserId(userId);
-			mediaFiles.setLikes(count+1);
+			mediaFiles.setLikes(count + 1);
 			mediaFiles.setIsLiked(true);
-			mediaFiles.getLikedUsers().add(likedUsers); 
+			mediaFiles.getLikedUsers().add(likedUsers);
 			mediaFileRepo.save(mediaFiles);
-			
+
 			response.setError("0");
 			response.setMessage("user liked successfully");
 			response.setData(mediaFiles);
 			response.setStatus("SUCCESS");
 			return ResponseEntity.ok(response);
 
-		}
-		else {
-			count=mediaFiles.getLikes();
+		} else {
+			count = mediaFiles.getLikes();
 			LikedUsers likedUsers = likedUsersList.get(0);
-			if(likedUsers.getMarkType().equals(Constant.UNLIKED) || likedUsers.getMarkType() == (Constant.UNLIKED)) {
+			if (likedUsers.getMarkType().equals(Constant.UNLIKED) || likedUsers.getMarkType() == (Constant.UNLIKED)) {
 				likedUsers.setUserName(userRegister.getUserName());
 				likedUsers.setMarkType(Constant.LIKE);
 				likedUsers.setUserId(userId);
-				mediaFiles.setLikes(count+1);
+				mediaFiles.setLikes(count + 1);
 				mediaFiles.setIsLiked(true);
-				mediaFiles.getLikedUsers().add(likedUsers); 
+				mediaFiles.getLikedUsers().add(likedUsers);
 				mediaFileRepo.save(mediaFiles);
-				
+
 				response.setError("0");
 				response.setMessage("user liked successfully");
 				response.setData(mediaFiles);
 				response.setStatus("SUCCESS");
 				return ResponseEntity.ok(response);
 
-			}else {
+			} else {
 				likedUsers.setUserName(userRegister.getUserName());
 				likedUsers.setMarkType(Constant.UNLIKED);
 				likedUsers.setUserId(userId);
-				mediaFiles.setLikes(count-1);
+				mediaFiles.setLikes(count - 1);
 				mediaFiles.setIsLiked(true);
 				mediaFiles.getLikedUsers().add(likedUsers);
 				mediaFileRepo.save(mediaFiles);
-				
+
 				response.setError("0");
 				response.setMessage("user unliked successfully");
 				response.setData(mediaFiles);
@@ -393,8 +387,7 @@ public class GroupProfileController {
 				return ResponseEntity.ok(response);
 			}
 		}
-		
-			
+
 	}
 
 	@SuppressWarnings("unused")
@@ -433,68 +426,64 @@ public class GroupProfileController {
 			}
 
 			UserRegister userRegister = registerRepository.getOne(userId);
-			List<LikedUsers> likedUsersList= mediaFileService.getUserRatingByFileId(fileid, userId);
-
+			List<LikedUsers> likedUsersList = mediaFileService.getUserRatingByFileId(fileid, userId);
 
 			MediaFiles mediaFiles = mediaFileRepo.getById(fileid);
 
-			long rate=0;
+			long rate = 0;
 			System.out.println(mediaFiles.getLikes());
-			
-			
-			if(mediaFiles.getRating() == null || mediaFiles.getRating() == 0) {
 
-				rate=0;
+			if (mediaFiles.getRating() == null || mediaFiles.getRating() == 0) {
 
-			} else{
+				rate = 0;
 
-				rate=mediaFiles.getRating();
+			} else {
+
+				rate = mediaFiles.getRating();
 			}
-			
-				if(likedUsersList.isEmpty()) {
-				
-				LikedUsers likedUsers=new LikedUsers();
+
+			if (likedUsersList.isEmpty()) {
+
+				LikedUsers likedUsers = new LikedUsers();
 				likedUsers.setUserName(userRegister.getUserName());
 				likedUsers.setMarkType(Constant.RATE);
 				likedUsers.setUserId(userId);
 				likedUsers.setRating(rateCount);
 				likedUsers.setTypeId(0);
-				
-				rate = rate+rateCount;
+
+				rate = rate + rateCount;
 				mediaFiles.setRating(rate);
 				mediaFiles.setIsRated(true);
-				mediaFiles.getLikedUsers().add(likedUsers); 
+				mediaFiles.getLikedUsers().add(likedUsers);
 				mediaFileRepo.save(mediaFiles);
 
 				response.setError("0");
-				response.setMessage("user rated with : "+cRate);
+				response.setMessage("user rated with : " + cRate);
 				response.setData(mediaFiles);
 				response.setStatus("SUCCESS");
 				return ResponseEntity.ok(response);
 
-			}
-			else {
-				
-				LikedUsers likedUsers=likedUsersList.get(0);
-				
-				
-						if(rate>=0) {
-							rate = rate-likedUsers.getRating();
-							rate = rate+rateCount;
-							likedUsers.setUserName(userRegister.getUserName());
-							likedUsers.setMarkType(Constant.RATE);
-							likedUsers.setUserId(userId);
-							likedUsers.setRating(rateCount);
-							mediaFiles.getLikedUsers().add(likedUsers); 
-							
-						}
+			} else {
+
+				LikedUsers likedUsers = likedUsersList.get(0);
+
+				if (rate >= 0) {
+					rate = rate - likedUsers.getRating();
+					rate = rate + rateCount;
+					likedUsers.setUserName(userRegister.getUserName());
+					likedUsers.setMarkType(Constant.RATE);
+					likedUsers.setUserId(userId);
+					likedUsers.setRating(rateCount);
+					mediaFiles.getLikedUsers().add(likedUsers);
+
+				}
 
 				mediaFiles.setIsRated(true);
 				mediaFiles.setRating(rate);
 				mediaFileRepo.save(mediaFiles);
 
 				response.setError("0");
-				response.setMessage("rating updated with "+cRate);
+				response.setMessage("rating updated with " + cRate);
 				response.setData(mediaFiles);
 				response.setStatus("SUCCESS");
 				return ResponseEntity.ok(response);
@@ -566,11 +555,17 @@ public class GroupProfileController {
 		MediaFiles files = mediaFileRepo.getOne(Integer
 				.valueOf(String.valueOf(groupProfile.getFiles().get(groupProfile.getFiles().size() - 1).getFileId())));
 		System.out.println(files);
-		String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/downloadFile/")
-				.path(String.valueOf(files.getFilePath())).toUriString();
-		Object obj = new UploadFileResponse(groupProfile.getCurrentProfile(), fileDownloadUri, file.getContentType(),
-				file.getSize());
-		if (!file.isEmpty()||userId!=null) {
+
+		/*
+		 * String fileDownloadUri =
+		 * ServletUriComponentsBuilder.fromCurrentContextPath().path("/downloadFile/")
+		 * .path(String.valueOf(files.getFilePath())).toUriString();
+		 */
+
+		Object obj = new UploadFileResponse(groupProfile.getCurrentProfile(), groupProfile.getCurrentProfile(),
+				file.getContentType(), file.getSize());
+
+		if (!file.isEmpty() || userId != null) {
 			response.setMessage("your Profile Image updated successfully");
 
 			response.setData(obj);
@@ -590,35 +585,35 @@ public class GroupProfileController {
 	}
 
 	private List<String> getContactList(String userContactList) {
-		
+
 		List<String> contactList = new ArrayList<String>();
 		String sContact[] = userContactList.split(",");
-		
-		for(String userContact : sContact ) {
-		
+
+		for (String userContact : sContact) {
+
 			try {
 				contactList.add(userContact);
 			} catch (NumberFormatException e) {
 				continue;
 			}
-		
+
 		}
 		return contactList;
 	}
-	
+
 	private List<Integer> getContactIdList(String userContactList) {
-		
+
 		List<Integer> contactList = new ArrayList<Integer>();
 		String sContact[] = userContactList.split(",");
-		
-		for(String userContact : sContact ) {
-		
+
+		for (String userContact : sContact) {
+
 			try {
 				contactList.add(Integer.parseInt(userContact));
 			} catch (NumberFormatException e) {
 				continue;
 			}
-		
+
 		}
 		return contactList;
 	}

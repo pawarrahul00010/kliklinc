@@ -136,6 +136,7 @@ public class FileController {
 			LikedUsers likedUsers = new LikedUsers();
 			likedUsers.setUserName(userRegister.getUserName());
 			likedUsers.setMarkType(Constant.LIKE);
+			likedUsers.setRating(0);
 			likedUsers.setUserId(userId);
 			mediaFiles.setLikes(count+1);
 			mediaFiles.setIsLiked(true);
@@ -155,6 +156,7 @@ public class FileController {
 			if(likedUsers.getMarkType().equals(Constant.UNLIKED) || likedUsers.getMarkType() == (Constant.UNLIKED)) {
 				likedUsers.setUserName(userRegister.getUserName());
 				likedUsers.setMarkType(Constant.LIKE);
+				likedUsers.setRating(0);
 				likedUsers.setUserId(userId);
 				mediaFiles.setLikes(count+1);
 				mediaFiles.setIsLiked(true);
@@ -171,6 +173,7 @@ public class FileController {
 				likedUsers.setUserName(userRegister.getUserName());
 				likedUsers.setMarkType(Constant.UNLIKED);
 				likedUsers.setUserId(userId);
+				likedUsers.setRating(0);
 				mediaFiles.setLikes(count-1);
 				mediaFiles.setIsLiked(true);
 				mediaFiles.getLikedUsers().add(likedUsers);
@@ -301,6 +304,7 @@ public class FileController {
 			likedUsers.setUserName(userRegister.getUserName());
 			likedUsers.setMarkType(Constant.BOOKMARK);
 			likedUsers.setUserId(userId);
+			likedUsers.setRating(0);
 			mediaFiles.getLikedUsers().add(likedUsers); 
 			mediaFileRepo.save(mediaFiles);
 			

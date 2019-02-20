@@ -65,9 +65,9 @@ public class LiveFeedController {
 			
 			  produces = MediaType.APPLICATION_JSON_VALUE)
     public  ResponseEntity<ResponseObject> uploadVideos(@RequestParam("file") MultipartFile file,
-    		@RequestParam(value = "userId") Integer  userId) {
+    		@RequestParam(value = "userId") Integer  userId,@RequestParam(value = "saySomething") String  saySomething) {
 
-    	UserProfile fileName = fileStorageService.storeFile(file, userId,constant.LIVEFEED);
+    	UserProfile fileName = fileStorageService.storeLiveFeedFile(file,saySomething, userId,constant.LIVEFEED);
 
      
         Object obj=new UploadFileResponse(fileName.getFiles().get(0).getFilePath(),fileName.getFiles().get(0).getFilePath(),
