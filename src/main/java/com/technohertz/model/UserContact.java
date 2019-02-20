@@ -15,6 +15,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
@@ -39,14 +40,16 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 	
 	@Column(name = "profile_Pic")
 	private String profilePic;
-
+	
+	@ColumnDefault("false")
 	@Column(name = "ISBLOCKED")
 	private boolean isBlocked;
 
+	@ColumnDefault("false")
 	@Column(name = "ISACTIVE")
 	private boolean isActive;
 	
-	@Column(name = "CREATE_DATE", nullable = false, length = 200)
+	@Column(name = "CREATE_DATE", nullable = true, length = 200)
 	private LocalDateTime createDate;
 	
 	/*

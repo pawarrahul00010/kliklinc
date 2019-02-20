@@ -19,6 +19,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -45,7 +46,7 @@ public class UserRegister implements Serializable {
 	@Column(name = "user_name", nullable = false, length = 100)
 	private String userName;
 
-	@Column(name = "Source_From", nullable = false, length = 200)
+	@Column(name = "Source_From", nullable = true, length = 200)
 	private String sourceFrom;
 
 	@Column(name = "pass_word", nullable = false, length = 100)
@@ -55,20 +56,20 @@ public class UserRegister implements Serializable {
 	@Column(name = "mobil_number", nullable = false, length = 200)
 	private String mobilNumber;
 	
-	@Column(name = "token", nullable = false, length = 200)
+	@Column(name = "token", nullable = true, length = 200)
 	private long Token;
 	
 	@Column(name = "pattern" ,nullable = true, length = 200)
 	private String pattern;
 
-
-	@Column(name = "status", nullable = false, length = 200)
+	@ColumnDefault("false")
+	@Column(name = "status", nullable = true, length = 200)
 	private Boolean isActive;
 	
-	@Column(name = "createDate", nullable = false)
+	@Column(name = "createDate", nullable = true)
 	private LocalDateTime createDate;
 	
-	@Column(name = "lastModifiedDate", nullable = false, length = 200)
+	@Column(name = "lastModifiedDate", nullable = true, length = 200)
 	private LocalDateTime lastModifiedDate;
 	
 

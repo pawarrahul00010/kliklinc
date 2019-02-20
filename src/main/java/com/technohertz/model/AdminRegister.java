@@ -37,7 +37,7 @@ public class AdminRegister implements Serializable {
 	@Column(name = "adminId")
 	private int adminId;
 
-	@Column(name = "Source_From", nullable = false, length = 200)
+	@Column(name = "Source_From", nullable = true, length = 200)
 	private String sourceFrom;
 
 	@Column(name = "pass_word", nullable = false, length = 100)
@@ -47,17 +47,17 @@ public class AdminRegister implements Serializable {
 	@Column(name = "mail_id", nullable = false, length = 200)
 	private String mailId;
 	
-	@Column(name = "token", nullable = false, length = 200)
+	@Column(name = "token", nullable = true, length = 200)
 	private long Token;
 
 
-	@Column(name = "status", nullable = false, length = 200)
+	@Column(name = "status", nullable = true, length = 200)
 	private Boolean isActive;
 	
-	@Column(name = "createDate", nullable = false)
+	@Column(name = "createDate", nullable = true)
 	private LocalDateTime createDate;
 	
-	@Column(name = "lastModifiedDate", nullable = false, length = 200)
+	@Column(name = "lastModifiedDate", nullable = true, length = 200)
 	private LocalDateTime lastModifiedDate;
 
 	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

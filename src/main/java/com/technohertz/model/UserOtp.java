@@ -10,14 +10,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.ColumnDefault;
+
 @Entity
 @Table(name = "USER_OTP")
 
 public class UserOtp implements Comparable<UserOtp>,Serializable {
 
-
-
-	
 
 	private static final long serialVersionUID = 1L;
 
@@ -29,13 +28,14 @@ public class UserOtp implements Comparable<UserOtp>,Serializable {
 	@Column(name = "OTP")
 	private int otp;
 
+	@ColumnDefault("false")
 	@Column(name = "ISACTIVE")
 	private boolean is_active;
 	
-	@Column(name = "CREATE_DATE", nullable = false, length = 200)
+	@Column(name = "CREATE_DATE", nullable = true, length = 200)
 	private LocalDateTime createDate;
 	
-	@Column(name = "LAST_MODIFIED_DATE", nullable = false, length = 200)
+	@Column(name = "LAST_MODIFIED_DATE", nullable = true, length = 200)
 	private LocalDateTime lastModifiedDate;
 	
 	public UserOtp() {

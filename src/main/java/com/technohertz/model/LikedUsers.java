@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
@@ -35,6 +36,7 @@ public class LikedUsers {
 	@Column(name = "userId")
 	private int userId;
 	
+	@ColumnDefault("0")
 	@Column(name = "rating")
 	private Integer rating;
 

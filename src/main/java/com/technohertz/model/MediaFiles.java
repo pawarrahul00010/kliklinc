@@ -16,6 +16,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -41,9 +42,11 @@ public class MediaFiles implements Serializable {
 	@Column(name = "File_Last_Modified_Date")
 	private LocalDateTime lastModifiedDate;
 	
+	@ColumnDefault("0")
 	@Column(name = "Total_Likes")
 	private Long likes;
 	
+	@ColumnDefault("0")
 	@Column(name = "Total_Rating")
 	private Long rating;
 	

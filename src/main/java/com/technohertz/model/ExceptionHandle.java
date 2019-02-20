@@ -2,6 +2,7 @@ package com.technohertz.model;
 
 import java.io.Serializable;
 
+@SuppressWarnings("serial")
 public class ExceptionHandle implements Serializable {
 private String error_code;
 private String status;

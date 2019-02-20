@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicUpdate;
 @Entity
 @Table(name = "Biometric_Table")
@@ -25,10 +26,14 @@ public class Biometric implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "Biometric_ID")
 	private int biometricId;
+	
 	@Column(name = "Biometric_Images")
 	private String biometricImage;
+	
+	@ColumnDefault("false")
 	@Column(name = "Status")
 	private Boolean isActive;
+	
 	@Column(name = "Biometric_Create_Date")
 	private LocalDateTime createDate;
 	
