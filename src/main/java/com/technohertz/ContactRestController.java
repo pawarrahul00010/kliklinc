@@ -119,8 +119,7 @@ public class ContactRestController {
 				List<UserContact> userCon = userContactService.getUserContactdetailByUserId(userId);
 				
 				List<String> userContains = userContactService.getUserContactsByUserId(userId);
-				System.out.println(userCon);
-//				 userContactService.deleteByUserId(userId);
+
 				
 				for(String contactNumber : craziContact){	
 					

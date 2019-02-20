@@ -6,9 +6,6 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
-import org.hibernate.Hibernate;
-import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.proxy.HibernateProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,6 +33,7 @@ import com.technohertz.service.IMediaFileService;
 import com.technohertz.service.IUserContactService;
 import com.technohertz.service.impl.FileStorageService;
 import com.technohertz.util.CommonUtil;
+import com.technohertz.util.GroupResponse;
 import com.technohertz.util.ResponseObject;
 
 @RestController
@@ -46,6 +44,8 @@ public class GroupProfileController {
 	@Autowired
 	private Empty empty;
 	
+	@Autowired
+	private GroupResponse groupResponse;
 	@Autowired
 	private IGroupProfileService groupProfileService;
 	
@@ -119,11 +119,20 @@ public class GroupProfileController {
 				groupProfile.setDisplayName(groupName);
 				groupProfile.setCreatedBy(userId);
 				groupProfileService.save(groupProfile);
+				
+				
+				groupResponse.setGroupId(groupProfile.getGroupId());
+				groupResponse.setGroupMember(groupProfile.getGroupMember());
+				groupResponse.setAboutGroup(groupProfile.getAboutGroup());
+				groupResponse.setCreatedBy(groupProfile.getCreatedBy());
+				groupResponse.setCurrentProfile(groupProfile.getCurrentProfile());
+				groupResponse.setDisplayName(groupProfile.getDisplayName());
+				groupResponse.setFiles(groupProfile.getFiles());
 
 				response.setStatus("Success");
 				response.setMessage("Group Created successfully");
 				response.setError("0");
-				response.setData(groupProfile);
+				response.setData(groupResponse);
 
 				return ResponseEntity.ok(response);
 				
@@ -163,12 +172,22 @@ public class GroupProfileController {
 			
 				groupProfile.setGroupMember(contactlist);
 				groupProfile.setGroupId(groupId);
+				
+				
 				groupProfileService.save(groupProfile);
-
+				
+				groupResponse.setGroupId(groupProfile.getGroupId());
+				groupResponse.setGroupMember(groupProfile.getGroupMember());
+				groupResponse.setAboutGroup(groupProfile.getAboutGroup());
+				groupResponse.setCreatedBy(groupProfile.getCreatedBy());
+				groupResponse.setCurrentProfile(groupProfile.getCurrentProfile());
+				groupResponse.setDisplayName(groupProfile.getDisplayName());
+				groupResponse.setFiles(groupProfile.getFiles());
+				
 				response.setStatus("Success");
-				response.setMessage("Group Created successfully");
+				response.setMessage("Contact added in Group successfully");
 				response.setError("0");
-				response.setData(groupProfile);
+				response.setData(groupResponse);
 
 				return ResponseEntity.ok(response);
 				
@@ -224,11 +243,19 @@ public class GroupProfileController {
 			 List<GroupProfile> getGroupUserList = groupProfileService.findById(groupid);
 			 
 			 GroupProfile groupProfile = getGroupUserList.get(0);
+			 
+			 	groupResponse.setGroupId(groupProfile.getGroupId());
+				groupResponse.setGroupMember(groupProfile.getGroupMember());
+				groupResponse.setAboutGroup(groupProfile.getAboutGroup());
+				groupResponse.setCreatedBy(groupProfile.getCreatedBy());
+				groupResponse.setCurrentProfile(groupProfile.getCurrentProfile());
+				groupResponse.setDisplayName(groupProfile.getDisplayName());
+				groupResponse.setFiles(groupProfile.getFiles());
 			
 				response.setStatus("Success");
 				response.setMessage("Group Created successfully");
 				response.setError("0");
-				response.setData(groupProfile);
+				response.setData(groupResponse);
 
 				return ResponseEntity.ok(response);
 				
@@ -265,22 +292,31 @@ public class GroupProfileController {
 
 			}
 
-			List<GroupProfile> profile = null;
+			List<GroupProfile> GroupProfileList = null;
 			GroupProfile updateDisplayName = null;
 
-			profile = groupProfileService.findById(id);
-			if (!profile.isEmpty()) {
+			GroupProfileList = groupProfileService.findById(id);
+			if (!GroupProfileList.isEmpty()) {
 
-				profile.get(0).setDisplayName(displayName);
-				profile.get(0).setCurrentProfile(profile.get(0).getFiles().get(0).getFilePath());
-				System.out.println(profile.get(0).getCreatedBy());
-				profile.get(0).setCreatedBy(profile.get(0).getCreatedBy());
-				profile.get(0).setAboutGroup(profile.get(0).getAboutGroup());
-				profile.get(0).setGroupId(id);
-				updateDisplayName = groupProfileService.save(profile.get(0));
+				GroupProfile groupProfile = GroupProfileList.get(0);
+				groupProfile.setDisplayName(displayName);
+				groupProfile.setCurrentProfile(groupProfile.getFiles().get(0).getFilePath());
+				System.out.println(groupProfile.getCreatedBy());
+				groupProfile.setCreatedBy(GroupProfileList.get(0).getCreatedBy());
+				groupProfile.setAboutGroup(GroupProfileList.get(0).getAboutGroup());
+				groupProfile.setGroupId(id);
+				updateDisplayName = groupProfileService.save(groupProfile);
+				
+				groupResponse.setGroupId(groupProfile.getGroupId());
+				groupResponse.setGroupMember(groupProfile.getGroupMember());
+				groupResponse.setAboutGroup(groupProfile.getAboutGroup());
+				groupResponse.setCreatedBy(groupProfile.getCreatedBy());
+				groupResponse.setCurrentProfile(groupProfile.getCurrentProfile());
+				groupResponse.setDisplayName(groupProfile.getDisplayName());
+				groupResponse.setFiles(groupProfile.getFiles());
 
 				response.setMessage("your Display name updated successfully");
-				response.setData(profile.get(0));
+				response.setData(groupResponse);
 				response.setError("");
 				response.setStatus("success");
 
@@ -441,20 +477,7 @@ public class GroupProfileController {
 				
 				LikedUsers likedUsers=likedUsersList.get(0);
 				
-				/*
-				 * if(isRate==true&& mediaFiles.getIsRated()==false ) {
-				 * 
-				 * 
-				 * rate = rate+rateCount; mediaFiles.setRating(rate);
-				 * mediaFiles.setIsRated(isRate); mediaFileRepo.save(mediaFiles);
-				 * 
-				 * response.setError("0"); response.setMessage("user rated with : "+rateCount);
-				 * response.setData(mediaFiles); response.setStatus("SUCCESS"); return
-				 * ResponseEntity.ok(response);
-				 * 
-				 * 
-				 * } else {
-				 */
+				
 						if(rate>=0) {
 							rate = rate-likedUsers.getRating();
 							rate = rate+rateCount;
@@ -520,7 +543,7 @@ public class GroupProfileController {
 
 				response.setMessage("your status updated successfully");
 				response.setData(updateDisplayName);
-				response.setError("");
+				response.setError("0");
 				response.setStatus("success");
 
 				return ResponseEntity.ok(response);
@@ -551,7 +574,7 @@ public class GroupProfileController {
 			response.setMessage("your Profile Image updated successfully");
 
 			response.setData(obj);
-			response.setError("");
+			response.setError("0");
 			response.setStatus("success");
 
 			return ResponseEntity.ok(response);
@@ -559,8 +582,8 @@ public class GroupProfileController {
 			response.setMessage("your Profile Image not updated");
 
 			response.setData(empty);
-			response.setError("");
-			response.setStatus("success");
+			response.setError("1");
+			response.setStatus("fail");
 
 			return ResponseEntity.ok(response);
 		}

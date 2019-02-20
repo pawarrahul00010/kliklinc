@@ -2,6 +2,7 @@ package com.technohertz;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,13 +18,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.technohertz.common.Constant;
 import com.technohertz.model.Empty;
+import com.technohertz.model.GetVideos;
 import com.technohertz.model.LikedUsers;
 import com.technohertz.model.MediaFiles;
 import com.technohertz.model.UserProfile;
@@ -33,13 +35,19 @@ import com.technohertz.repo.MediaFileRepo;
 import com.technohertz.repo.UserRegisterRepository;
 import com.technohertz.service.impl.FileStorageService;
 import com.technohertz.util.ResponseObject;
+import com.technohertz.util.Thumbnail;
 
 @RestController
 @RequestMapping("/livefeed")
 public class LiveFeedController {
+	private static final Logger logger = LoggerFactory.getLogger(LiveFeedController.class);
+	
 	@Autowired
 	private Empty empty;
-    private static final Logger logger = LoggerFactory.getLogger(LiveFeedController.class);
+	
+	@Autowired
+	private Thumbnail videoUtil;
+	
 	@Autowired
 	private MediaFileRepo mediaFileRepo;
     @Autowired
@@ -52,7 +60,10 @@ public class LiveFeedController {
     @Autowired
 	private Constant constant;
 
-    @PostMapping("/video")
+    @SuppressWarnings({ "static-access", "unused" })
+	@RequestMapping(value ="/video" ,method=RequestMethod.POST, 
+			
+			  produces = MediaType.APPLICATION_JSON_VALUE)
     public  ResponseEntity<ResponseObject> uploadVideos(@RequestParam("file") MultipartFile file,
     		@RequestParam(value = "userId") Integer  userId) {
 
@@ -61,6 +72,7 @@ public class LiveFeedController {
      
         Object obj=new UploadFileResponse(fileName.getFiles().get(0).getFilePath(),fileName.getFiles().get(0).getFilePath(),
                 file.getContentType(), file.getSize());
+        
         if (!file.isEmpty()||userId!=null) {
 			response.setMessage("your File is uploaded successfully");
 
@@ -79,16 +91,59 @@ public class LiveFeedController {
 			return ResponseEntity.ok(response);
 		}
     }
-	@GetMapping("/listViewrs")
-	public List<LikedUsers> getAllViewers(@RequestParam(value = "fileid") int  fileid) {
-		return fileStorageService.getAll(fileid);
+    @GetMapping("/listViewrs")
+	public  ResponseEntity<ResponseObject> getAllViewers(@RequestParam(value = "fileid") int  fileid) {
+		List<LikedUsers> file= fileStorageService.getAll(fileid);
+		
+		  if (!file.isEmpty()) {
+				response.setMessage("your viewers retrived successfully");
+				response.setData(file);
+				response.setError("0");
+				response.setStatus("SUCCESS");
+
+				return ResponseEntity.ok(response);
+			}
+		  else {
+				response.setMessage("No one view yet");
+
+				response.setData(empty);
+				response.setError("1");
+				response.setStatus("FAIL");
+
+				return ResponseEntity.ok(response);
+			}
 	}
 	
 	@PostMapping("/getAllVideos")
-	public List<LikedUsers> getAllVideoById(@RequestParam(value = "userId") Integer  userId) {
-		return fileStorageService.getAllVideoById(userId);
-	}
+	public ResponseEntity<ResponseObject> getAllVideoById(@RequestParam(value = "userId") Integer  userId) {
+		List<MediaFiles> fileList= fileStorageService.getAllVideoById(userId);
+		List<GetVideos> image=new ArrayList<GetVideos>();
 
+		for(MediaFiles mediaFiles :fileList) {
+			GetVideos video = new GetVideos();
+			video.setUrl(mediaFiles.getFilePath());
+			video.setText(mediaFiles.getText());
+			image.add(video);
+		}
+		  if (!image.isEmpty()) {
+				response.setMessage("your file retrived successfully");
+
+				response.setData(image);
+				response.setError("0");
+				response.setStatus("SUCCESS");
+
+				return ResponseEntity.ok(response);
+			}
+		  else {
+				response.setMessage("No files are found");
+
+				response.setData(empty);
+				response.setError("1");
+				response.setStatus("FAIL");
+
+				return ResponseEntity.ok(response);
+			}
+	}
 	/* @GetMapping("/downloadFile/{fileName:.+}") */
     @GetMapping("/downloadFile/{fileName:.+}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName , HttpServletRequest request) {

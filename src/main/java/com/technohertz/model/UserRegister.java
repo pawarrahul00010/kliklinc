@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -12,12 +13,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.DynamicUpdate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
@@ -54,7 +58,7 @@ public class UserRegister implements Serializable {
 	@Column(name = "token", nullable = false, length = 200)
 	private long Token;
 	
-	@Column(name = "pattern" ,length = 200)
+	@Column(name = "pattern" ,nullable = true, length = 200)
 	private String pattern;
 
 
@@ -92,10 +96,20 @@ public class UserRegister implements Serializable {
 	@JoinColumn(name="BIOMETRIC_ID")
 	private List<Biometric> biometric=new ArrayList<Biometric>();
 
-	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-	@OneToMany(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)		
-	@JoinColumn(name="userid")
-	private List<GroupProfile> groupList=new ArrayList<GroupProfile>();
+	/*
+	 * @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+	 * 
+	 * @OneToMany(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)
+	 * 
+	 * @JoinColumn(name="userid") private List<GroupProfile> groupList=new
+	 * ArrayList<GroupProfile>();
+	 */	
+	@JsonIgnore
+	@ManyToMany(cascade=CascadeType.ALL)
+	@JoinTable (name = "user_groups", joinColumns=
+	    { @JoinColumn (name = "userid")}, inverseJoinColumns=
+	    { @JoinColumn (name = "group_id")})
+	private List<GroupProfile> groupList;
 	
 	public int getUserId() {
 		return userId;
@@ -236,23 +250,15 @@ public class UserRegister implements Serializable {
 		this.pattern = pattern;
 	}
 
-	/**
-	 * @return the groupList
-	 */
+
 	public List<GroupProfile> getGroupList() {
 		return groupList;
 	}
 
-	/**
-	 * @param groupList the groupList to set
-	 */
 	public void setGroupList(List<GroupProfile> groupList) {
 		this.groupList = groupList;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "UserRegister [userId=" + userId + ", userName=" + userName + ", sourceFrom=" + sourceFrom
@@ -261,5 +267,6 @@ public class UserRegister implements Serializable {
 				+ lastModifiedDate + ", profile=" + profile + ", userOtp=" + userOtp + ", userContactList="
 				+ userContactList + ", biometric=" + biometric + ", groupList=" + groupList + "]";
 	}
+
 
 }

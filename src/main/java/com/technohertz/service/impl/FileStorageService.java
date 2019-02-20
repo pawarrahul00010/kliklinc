@@ -49,6 +49,9 @@ public class FileStorageService {
 
 	@Autowired
 	private GroupProfileRepository groupProfileRepository;
+	
+	@Autowired
+	private GroupProfileServiceImpl groupProfileServiceImpl;
 
 	@Autowired
 	FileStorageProperties fileStorageProperty;
@@ -79,7 +82,7 @@ public class FileStorageService {
 			if (fileName.contains("..")) {
 				throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
 			}
-			groupProfileList = groupProfileRepository.findById(userId);
+			groupProfileList = groupProfileServiceImpl.findById(userId);
 			if(groupProfileList.isEmpty()) {
 				GroupProfile groupProfile = new GroupProfile();
 			MediaFiles mediaFile = new MediaFiles();
@@ -221,7 +224,7 @@ public class FileStorageService {
 			}
 			List<GroupProfile> groupProfile = null;
 			MediaFiles mfile = new MediaFiles();
-			groupProfile = groupProfileRepository.findById(userId);
+			groupProfile = groupProfileServiceImpl.findById(userId);
 			mfile.setFilePath(fileDownloadUri);
 			// mfile.setFileId(id);
 			mfile.setCreateDate(dateUtil.getDate());
@@ -310,11 +313,11 @@ public class FileStorageService {
 		   }
 	 	
 
-	@SuppressWarnings("unchecked")
-	@Cacheable(value="videoCache",key="#userId",unless="#result==null")
-	public List<LikedUsers> getAllVideoById(Integer userId) {
-		return entityManager.createNativeQuery("select l.File_Path from Media_Files l where l.USR_DET_ID=:userId AND File_Type=:VIDEO")
-				.setParameter("userId", userId)	.setParameter("VIDEO", "VIDEO")
-				.getResultList();
-	}
+		@SuppressWarnings("unchecked")
+		//@Cacheable(value="videoCache",key="#userId",unless="#result==null")
+		public List<MediaFiles> getAllVideoById(Integer userId) {
+			return entityManager.createNativeQuery("select * from media_files  where usr_det_id=:userId AND File_Type=:VIDEO ORDER BY file_id  DESC",MediaFiles.class)
+					.setParameter("userId", userId)	.setParameter("VIDEO", "LIVEFEED")
+					.getResultList();
+		}
 }

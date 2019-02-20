@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,7 @@ public class GroupProfileServiceImpl implements IGroupProfileService{
 	@Autowired
 	private GroupProfileRepository groupProfileRepository;
 	
-	@Autowired
+	@PersistenceContext
 	public EntityManager entityManager;
 
 
@@ -34,7 +35,10 @@ public class GroupProfileServiceImpl implements IGroupProfileService{
 	@Override
 	public List<GroupProfile> findById(int groupId) {
 		// TODO Auto-generated method stub
-		return groupProfileRepository.findById(groupId);
+		
+		return entityManager.createQuery(" SELECT r from GroupProfile r WHERE r.groupId=:groupId",GroupProfile.class)
+				.setParameter("groupId", groupId).getResultList();
+		
 	}
 
 	@Transactional

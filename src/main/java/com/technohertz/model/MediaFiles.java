@@ -50,6 +50,23 @@ public class MediaFiles implements Serializable {
 	@Column(name = "File_Type")
 	private String fileType;
 	
+	@Column(name = "Text")
+	private String Text;
+	
+	/**
+	 * @return the text
+	 */
+	public String getText() {
+		return Text;
+	}
+
+	/**
+	 * @param text the text to set
+	 */
+	public void setText(String text) {
+		Text = text;
+	}
+
 	@Column(name = "Bookmarked_Status")
 	private Boolean isBookMarked;
 

@@ -5,6 +5,7 @@ package com.technohertz.service.impl;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,7 +24,7 @@ public class UserContactServiceImpl implements IUserContactService {
 	@Autowired
 	private UserContactRepository userContactRepo;
 	
-	@Autowired
+	@PersistenceContext
 	public EntityManager entityManager;
 
 	@Override 

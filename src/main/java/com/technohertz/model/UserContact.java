@@ -2,8 +2,7 @@ package com.technohertz.model;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -11,6 +10,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
@@ -48,8 +49,22 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 	@Column(name = "CREATE_DATE", nullable = false, length = 200)
 	private LocalDateTime createDate;
 	
-	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
-    private List<GroupProfile> groupList = new ArrayList<>();
+	/*
+	 * @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE}) private
+	 * List<GroupProfile> groupList = new ArrayList<>();
+	 */
+	
+	//for joing the tables (many-to-many)
+	@ManyToMany(cascade=CascadeType.ALL)
+	@JoinTable(name = "group_profile_group_member",
+	joinColumns = {
+	@JoinColumn(name="contact_id") 
+	},
+	inverseJoinColumns = {
+	@JoinColumn(name="group_id")
+	}
+	)
+	private Set<GroupProfile> groupList;
 	
 	public UserContact() {
 		super();
@@ -187,9 +202,18 @@ public class UserContact implements Comparable<UserContact>, Serializable{
 	}
 
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
+
+
+	public Set<GroupProfile> getGroupList() {
+		return groupList;
+	}
+
+
+	public void setGroupList(Set<GroupProfile> groupList) {
+		this.groupList = groupList;
+	}
+
+
 	@Override
 	public String toString() {
 		return "UserContact [contactId=" + contactId + ", contactName=" + contactName + ", contactNumber="

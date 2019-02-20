@@ -56,7 +56,7 @@ public class UserRegisterServiceImpl implements IUserRegisterService {
 	public UserRegister getOneById(int userId) { 
 		return
 			userRegisterRepo.getOne(userId); }
-	@Cacheable(value="craziCache",key="#userId",unless="#result==null")
+	//@Cacheable(value="craziCache",key="#userId",unless="#result==null")
 	@Override 
 	public List<UserRegister> getAll() { 
 		List<UserRegister> list=userRegisterRepo.findAll(); 

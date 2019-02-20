@@ -20,6 +20,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "Group_Profile")
@@ -52,12 +53,32 @@ public class GroupProfile implements Serializable {
 	@JoinColumn(name = "GROUP_ID")
 	private List<MediaFiles> files = new ArrayList<MediaFiles>();
 
+	/*
+	 * @JsonIgnore
+	 * 
+	 * @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+	 * 
+	 * @JoinTable(name = "group_profile_group_member", joinColumns =
+	 * {@JoinColumn(name="groupId")}, inverseJoinColumns =
+	 * {@JoinColumn(name="contactId")}) private List<UserContact> groupMember = new
+	 * ArrayList<UserContact>();
+	 */	
+	
 	@JsonIgnore
-	 @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
-	@JoinTable(name = "group_profile_group_member", joinColumns = {@JoinColumn(name="groupId")},
-													inverseJoinColumns = {@JoinColumn(name="contactId")})
-	private List<UserContact> groupMember = new ArrayList<UserContact>();
+	@ManyToMany(cascade=CascadeType.ALL)
+	@JoinTable (name = "group_profile_group_member", joinColumns=
+	    { @JoinColumn (name = "group_id")}, inverseJoinColumns=
+	    { @JoinColumn (name = "contact_id")})
+	private List<UserContact> groupMember;
+	
+	@JsonIgnore
+	@ManyToMany(cascade=CascadeType.ALL)
+	@JoinTable (name = "user_groups", joinColumns=
+	    { @JoinColumn (name = "group_id")}, inverseJoinColumns=
+	    { @JoinColumn (name = "userid")})
+	private List<GroupProfile> userList;
 
+	
 	/**
 	 * @return the groupId
 	 */
@@ -155,15 +176,24 @@ public class GroupProfile implements Serializable {
 	public void setGroupMember(List<UserContact> groupMember) {
 		this.groupMember = groupMember;
 	}
+	
+	
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
+	public List<GroupProfile> getUserList() {
+		return userList;
+	}
+
+	public void setUserList(List<GroupProfile> userList) {
+		this.userList = userList;
+	}
+
 	@Override
 	public String toString() {
 		return "GroupProfile [groupId=" + groupId + ", displayName=" + displayName + ", createdBy=" + createdBy
 				+ ", currentProfile=" + currentProfile + ", aboutGroup=" + aboutGroup + ", files=" + files
-				+ ", groupMember=" + groupMember + "]";
+				+ ", groupMember=" + groupMember + ", userList=" + userList + "]";
 	}
+
+
 
 }
