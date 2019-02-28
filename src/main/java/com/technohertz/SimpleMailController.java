@@ -12,11 +12,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.technohertz.util.TockenUtil;
+
 @RestController
 public class SimpleMailController {
 	@Autowired
 	private JavaMailSender sender;
-
+	
+	@Autowired
+	TockenUtil tockenUtil;
+	
 	@RequestMapping("/sendMail")
 	public String sendMail(@RequestParam("mailId") String mailId) {
 		MimeMessage message = sender.createMimeMessage();
@@ -24,8 +29,8 @@ public class SimpleMailController {
 
 		try {
 			helper.setTo(mailId);
-			helper.setText("Your craziapp password reset link : ");
-			helper.setSubject("Mail From Spring Boot");
+			helper.setText(" http://localhost:8080/userRest/validate/"+tockenUtil.getOTP());
+			helper.setSubject("This is an Authentication mail from KLIKLINK please click on the link to verify your account");
 		} catch (MessagingException e) {
 			e.printStackTrace();
 			return "Error while sending mail ..";

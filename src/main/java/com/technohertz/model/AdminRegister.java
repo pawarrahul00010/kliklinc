@@ -65,10 +65,6 @@ public class AdminRegister implements Serializable {
 	@JoinColumn(name="userid")
 	private List<UserRegister> userList=new ArrayList<UserRegister>();
 
-	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-	@OneToMany(cascade=javax.persistence.CascadeType.ALL,fetch=FetchType.LAZY)		
-	@JoinColumn(name="BIOMETRIC_ID")
-	private List<Biometric> biometric=new ArrayList<Biometric>();
 
 	
 	public String getSourceFrom() {
@@ -168,24 +164,13 @@ public class AdminRegister implements Serializable {
 		this.userList = userList;
 	}
 
-	public List<Biometric> getBiometric() {
-		return biometric;
-	}
-
-	public void setBiometric(List<Biometric> biometric) {
-		this.biometric = biometric;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "AdminRegister [adminId=" + adminId + ", sourceFrom=" + sourceFrom + ", password=" + password
 				+ ", mailId=" + mailId + ", Token=" + Token + ", isActive=" + isActive + ", createDate=" + createDate
-				+ ", lastModifiedDate=" + lastModifiedDate + ", userList=" + userList + ", biometric=" + biometric
-				+ "]";
+				+ ", lastModifiedDate=" + lastModifiedDate + ", userList=" + userList + "]";
 	}
+
 
 
 

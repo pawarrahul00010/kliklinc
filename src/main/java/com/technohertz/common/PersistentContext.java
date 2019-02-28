@@ -2,7 +2,7 @@ package com.technohertz.common;
 
 import java.util.HashMap;
 
-public class PersistentContext extends HashMap{
+public class PersistentContext extends HashMap<Object, Object>{
 
 	/**
 	 * Serial Version Id.
@@ -21,7 +21,6 @@ public class PersistentContext extends HashMap{
 	 * @param _key
 	 * @param _object
 	 */
-	@SuppressWarnings("unchecked")
 	public void setAttribute(String _key, Object _object){
 		this.put(_key, _object);
 	}

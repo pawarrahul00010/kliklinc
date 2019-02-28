@@ -2,122 +2,75 @@ package com.technohertz.service.impl;
 
 
 
-import java.util.List;
-
-import javax.persistence.EntityManager;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import com.technohertz.model.UserRegister;
 import com.technohertz.repo.UserRegisterRepository;
 import com.technohertz.service.IUserRegisterService;
+import com.technohertz.util.DateUtil;
+import com.technohertz.util.TockenUtil;
+import com.technohertz.vo.VoUserRegister;
 
 @Service
 public class UserRegisterServiceImpl implements IUserRegisterService {
+	@Autowired
+	DateUtil dateUtil;
 
 	@Autowired
-	private UserRegisterRepository userRegisterRepo;
-
-	@Autowired
-	public EntityManager entityManager;
-
-	@Override 
-	public UserRegister save(UserRegister user) { 
-		user.setCreateDate(user.getLastModifiedDate()); 
-		return userRegisterRepo.save(user); 
-	}
-
-	@Override 
-	public List<UserRegister> saveMultiple(List<UserRegister> list) {
-		return userRegisterRepo.saveAll(list);
-		}
-
-	@Override 
-	public void update(UserRegister user) { 
-		user.setCreateDate(userRegisterRepo.getOne(user.getUserId()) .getCreateDate());
-		user.setLastModifiedDate(user.getLastModifiedDate()); 
-		userRegisterRepo.save(user);
-	}
-
-	@Override 
-	public void deleteById(int userId) {
-		if(userRegisterRepo.existsById(userId))
-			{ 
-				userRegisterRepo.deleteById(userId); 
-			} 
-		}
-	@Cacheable(value="craziCache",key="#userId",unless="#result==null")
-	@Override 
-	public UserRegister getOneById(int userId) { 
-		return
-			userRegisterRepo.getOne(userId); }
-	//@Cacheable(value="craziCache",key="#userId",unless="#result==null")
-	@Override 
-	public List<UserRegister> getAll() { 
-		List<UserRegister> list=userRegisterRepo.findAll(); 
-
-		return list; 
-	}
-	@Cacheable(value="craziCache",key="#userId",unless="#result==null")
-	@Override 
-	public Page<UserRegister> getAll(Specification<UserRegister> s, Pageable pageable)
-		{ 
-			Page<UserRegister> page=userRegisterRepo.findAll(s, pageable); 
-			
-			return page; 
-		}
-
-//	@Override
-//	public List<UserRegister> findByUserNameAndPassword(String userName, String password) {
-//	List<UserRegister> user=userRegisterRepo.findByUserNameAndPassword(userName, password);
-//		return user;
-//	}
-	@Cacheable(value="userNameCache",key="#userName",unless="#result==null")
-	@Override
-	public List<UserRegister> findByUserName(String userName) {
-		List<UserRegister> userList=userRegisterRepo.findByUserName(userName);
-		return userList;
-	}
-	@Cacheable(value="mobileNumberCache",key="#user",unless="#result==null")
-	@Override
-	public List<UserRegister> findByMobileNumber(String user) {
-		List<UserRegister> userList=userRegisterRepo.findByMobileNumber(user);
-		return userList;
-	}
-
-	@Cacheable(value="craziCache",key="#userId",unless="#result==null")
-	@Override
-	public List<UserRegister> getById(Integer userId) {
-		List<UserRegister> idList=userRegisterRepo.getById(userId);
-		return idList;
-	}
-	@Cacheable(value="craziCache",key="#mobilNumber,userName",unless="#result==null")
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<UserRegister> findByMobileOrUserName(Long mobilNumber, String userName) {
-		
-		return entityManager.createQuery("from UserRegister r WHERE "+
-				"(:userName is null or r.userName=:userName) and "+
-				"(:mobilNumber is null or r.mobilNumber=:mobilNumber)")
-				.setParameter("userName", userName)
-				.setParameter("mobilNumber", mobilNumber).getResultList();
-
-	}
+	TockenUtil tockenUtil;
 	
+	@Autowired
+	UserRegisterRepository userRegisterRepository;
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<String> getAllMobile() {
-		
-		return entityManager.createQuery("SELECT r.mobilNumber from UserRegister r ")
-				.getResultList();
+	
+	@Autowired
+	private JavaMailSender sender;
 
+	
+	public VoUserRegister convertToNoteEntity(VoUserRegister viewModel) {
+		viewModel.setCreateDate(dateUtil.getDate());
+		viewModel.setLastModifiedDate(dateUtil.getDate());
+		viewModel.setToken(tockenUtil.getOTP());
+
+		return viewModel;
 	}
-
+	public String sendMail(String mail)
+	{
+		MimeMessage message = sender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message);
+		UserRegister userRegister = userRegisterRepository.findByEmail(mail);
+		Integer token=userRegister.getToken();
+		try {
+			helper.setTo(mail);
+			helper.setText("Wel-Come to KLIKLINC \n \n "+" http://localhost:8080/userRest/validate/"+token+"    \n This is an Authentication mail from KLIKLINK please click on the link to verify your account");
+			helper.setSubject("KLIKLINC");
+		} catch (MessagingException e) {
+			e.printStackTrace();
+			return "Error while sending mail ..";
+		}
+		sender.send(message);
+		return "Mail Sent Success!";
+	}
+	public UserRegister authenticateUser(Integer token) {
+		UserRegister userRegister=userRegisterRepository.findByToken(token);
+		Integer dbToken=userRegister.getToken();
+		if(dbToken.equals(token))
+		{
+			userRegister.setIsActive(true);
+			return userRegister;
+		}
+		else
+		{
+			userRegister.setIsActive(false);
+			return userRegister;
+		}
+	
+	}
 
 }
